@@ -12,11 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.alessandrojean.toshokan.R
 
 @Composable
 fun SelectionTopAppBar(
+  modifier: Modifier = Modifier,
   selectionCount: Int,
   onClearSelectionClick: () -> Unit = {},
   onEditClick: () -> Unit = {},
@@ -24,6 +26,7 @@ fun SelectionTopAppBar(
   scrollBehavior: TopAppBarScrollBehavior
 ) {
   SmallTopAppBar(
+    modifier = modifier,
     colors = TopAppBarDefaults.smallTopAppBarColors(
       containerColor = MaterialTheme.colorScheme.surfaceVariant,
       navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,

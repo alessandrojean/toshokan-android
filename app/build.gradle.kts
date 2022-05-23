@@ -104,6 +104,9 @@ dependencies {
   implementation("com.google.android.material:material:1.7.0-alpha01")
   implementation("com.google.android.material:compose-theme-adapter-3:1.0.10")
 
+  // Accompanist
+  implementation("com.google.accompanist:accompanist-systemuicontroller:0.24.9-beta")
+
   // OkHttp
   val okhttpVersion = "4.9.3"
   implementation("com.squareup.okhttp3:okhttp:$okhttpVersion")

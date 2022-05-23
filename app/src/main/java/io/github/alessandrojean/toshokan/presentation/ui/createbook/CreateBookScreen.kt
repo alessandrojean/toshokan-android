@@ -6,9 +6,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -66,6 +71,11 @@ fun CreateBookScreen(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
       CreateBookTopBar(
+        modifier = Modifier.windowInsetsPadding(
+          WindowInsets.systemBars.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+          )
+        ),
         searchText = uiState.searchQuery,
         placeholderText = stringResource(R.string.isbn_search_placeholder),
         scrollBehavior = scrollBehavior,
@@ -128,6 +138,7 @@ fun CreateBookScreen(
 
 @Composable
 fun CreateBookTopBar(
+  modifier: Modifier = Modifier,
   searchText: String = "",
   placeholderText: String = "",
   scrollBehavior: TopAppBarScrollBehavior,
@@ -141,13 +152,13 @@ fun CreateBookTopBar(
   val focusRequester = remember { FocusRequester() }
 
   SmallTopAppBar(
+    modifier = modifier,
     scrollBehavior = scrollBehavior,
     navigationIcon = {
       IconButton(onClick = onNavigationClick) {
         Icon(
           Icons.Default.ArrowBack,
-          contentDescription = stringResource(R.string.action_back),
-          tint = MaterialTheme.colorScheme.onSurfaceVariant
+          contentDescription = stringResource(R.string.action_back)
         )
       }
     },

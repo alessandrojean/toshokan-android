@@ -9,9 +9,16 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,6 +42,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -51,6 +59,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
@@ -78,6 +87,19 @@ fun PeopleScreen(
   }
 
   val people by uiState.people.collectAsState(emptyList())
+
+  val systemUiController = rememberSystemUiController()
+  val statusBarColor = if (selectionMode) {
+    MaterialTheme.colorScheme.surfaceVariant
+  } else {
+    MaterialTheme.colorScheme.surface
+  }
+
+  SideEffect {
+    systemUiController.setStatusBarColor(
+      color = statusBarColor
+    )
+  }
 
   if (uiState.showManageDialog) {
     Dialog(
@@ -130,6 +152,11 @@ fun PeopleScreen(
       Crossfade(targetState = selectionMode) { selection ->
         if (selection) {
           SelectionTopAppBar(
+            modifier = Modifier.windowInsetsPadding(
+              WindowInsets.systemBars.only(
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+              )
+            ),
             selectionCount = uiState.selected.size,
             onClearSelectionClick = { peopleViewModel.clearSelection() },
             onEditClick = {
@@ -141,6 +168,7 @@ fun PeopleScreen(
           )
         } else {
           SmallTopAppBar(
+            modifier = Modifier.statusBarsPadding(),
             navigationIcon = {
               IconButton(onClick = { navController.navigateUp() }) {
                 Icon(
@@ -203,6 +231,15 @@ fun PeopleScreen(
           }
         }
       }
+    },
+    bottomBar = {
+      Spacer(
+        modifier = Modifier.windowInsetsPadding(
+          WindowInsets.systemBars.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+          )
+        )
+      )
     }
   )
 }

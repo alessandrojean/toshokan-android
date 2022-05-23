@@ -1,6 +1,11 @@
 package io.github.alessandrojean.toshokan.presentation.ui.library
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
@@ -25,6 +30,9 @@ fun LibraryScreen(
   Scaffold(
     topBar = {
       SmallTopAppBar(
+        modifier = Modifier.windowInsetsPadding(
+          WindowInsets.systemBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+        ),
         title = { Text(stringResource(R.string.library)) },
         actions = {
           IconButton(onClick = { /*TODO*/ }) {
