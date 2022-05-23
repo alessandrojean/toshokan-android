@@ -2,74 +2,74 @@
   <string name="app_name">Toshokan</string>
 
   <!-- Common -->
-  <string name="action_back">Voltar</string>
-  <string name="action_search">Buscar</string>
-  <string name="action_clear">Limpar</string>
-  <string name="action_check">Selecionar</string>
-  <string name="action_edit">Editar</string>
-  <string name="action_delete">Deletar</string>
-  <string name="action_finish">Concluir</string>
-  <string name="action_save">Salvar</string>
-  <string name="action_cancel">Cancelar</string>
+  <string name="action_back">Back</string>
+  <string name="action_search">Search</string>
+  <string name="action_clear">Clear</string>
+  <string name="action_check">Select</string>
+  <string name="action_edit">Edit</string>
+  <string name="action_delete">Delete</string>
+  <string name="action_finish">Finish</string>
+  <string name="action_save">Save</string>
+  <string name="action_cancel">Cancel</string>
 
   <!-- Websites -->
-  <string name="website">Site</string>
+  <string name="website">Website</string>
   <string name="instagram">Instagram</string>
   <string name="twitter">Twitter</string>
 
   <!-- Common fields -->
-  <string name="name">Nome</string>
-  <string name="description">Descrição</string>
-  <string name="country">País</string>
+  <string name="name">Name</string>
+  <string name="description">Description</string>
+  <string name="country">Country</string>
 
   <!-- Library -->
-  <string name="library">Biblioteca</string>
-  <string name="create_book">Novo livro</string>
-  <string name="action_new_book">Novo</string>
-  <string name="action_fill_manually">Preencher manualmente</string>
+  <string name="library">Library</string>
+  <string name="create_book">New book</string>
+  <string name="action_new_book">New</string>
+  <string name="action_fill_manually">Fill manually</string>
   <string name="isbn">ISBN</string>
-  <string name="isbn_search_placeholder">Procurar por ISBN</string>
-  <string name="no_results_found">Nenhum resultado encontrado.</string>
+  <string name="isbn_search_placeholder">Search by ISBN</string>
+  <string name="no_results_found">No results found</string>
 
   <!-- Statistics -->
-  <string name="statistics">Estatísticas</string>
+  <string name="statistics">Statistics</string>
 
   <!-- More -->
-  <string name="more">Mais</string>
+  <string name="more">More</string>
 
   <!-- Publishers -->
-  <string name="publishers">Editoras</string>
-  <string name="no_publishers_found">Nenhuma editora encontrada</string>
-  <string name="create_publisher">Nova editora</string>
+  <string name="publishers">Publishers</string>
+  <string name="no_publishers_found">No publishers found</string>
+  <string name="create_publisher">New publisher</string>
   <plurals name="publisher_delete_warning">
     <item quantity="one">
-      Ao deletar a editora, todos os livros dela também serão deletados.
+      By deleting a publisher, all books published by them will also be deleted.
     </item>
     <item quantity="other">
-      Ao deletar editoras, todos os livros delas também serão deletados.
+      By deleting publishers, all books published by them will also be deleted.
     </item>
   </plurals>
 
   <!-- Stores -->
-  <string name="stores">Lojas</string>
+  <string name="stores">Stores</string>
 
   <!-- Groups -->
-  <string name="groups">Grupos</string>
+  <string name="groups">Groups</string>
 
   <!-- People -->
-  <string name="people">Pessoas</string>
-  <string name="no_people_found">Nenhuma pessoa encontrada</string>
-  <string name="create_person">Nova pessoa</string>
+  <string name="people">People</string>
+  <string name="no_people_found">No person found</string>
+  <string name="create_person">New person</string>
   <plurals name="person_delete_warning">
     <item quantity="one">
-      Ao deletar a pessoa, suas atribuições serão removidas dos livros na biblioteca.
+      By deleting a person, all their credits will also be deleted from the books in your library.
     </item>
     <item quantity="other">
-      Ao deletar pessoas, suas atribuições serão removidas dos livros na biblioteca.
+      By deleting people, all their credits will also be deleted from the books in your library.
     </item>
   </plurals>
 
   <!-- Settings -->
-  <string name="settings">Configurações</string>
-  <string name="about">Sobre</string>
+  <string name="settings">Settings</string>
+  <string name="about">About</string>
 </resources>
