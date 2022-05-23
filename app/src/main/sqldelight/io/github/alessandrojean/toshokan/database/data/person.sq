@@ -13,6 +13,36 @@ CREATE TABLE Person(
 
 CREATE INDEX person_name ON Person (name);
 
+selectAll:
+SELECT *
+FROM Person
+ORDER BY name ASC;
+
 insert:
-INSERT INTO Person(id, name, description, country, website, instagram_profile, twitter_profile, created_at, updated_at)
-VALUES ?;
+INSERT INTO Person(
+  id,
+  name,
+  description,
+  country,
+  website,
+  instagram_profile,
+  twitter_profile,
+  created_at,
+  updated_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE Person
+SET name = ?,
+  description = ?,
+  country = ?,
+  website = ?,
+  instagram_profile = ?,
+  twitter_profile = ?,
+  updated_at = ?
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM Person
+WHERE id IN ?;

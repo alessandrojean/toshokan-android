@@ -29,7 +29,8 @@ import io.github.alessandrojean.toshokan.R
 
 @Composable
 fun MoreScreen(
-  navigateToPublishers: () -> Unit
+  navigateToPublishers: () -> Unit,
+  navigateToPeople: () -> Unit
 ) {
   Scaffold(
     topBar = {
@@ -52,7 +53,7 @@ fun MoreScreen(
           NavigationItem(
             title = stringResource(R.string.people),
             icon = Icons.Outlined.Group,
-            onClick = {}
+            onClick = navigateToPeople
           )
           NavigationItem(
             title = stringResource(R.string.stores),

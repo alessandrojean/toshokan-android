@@ -24,13 +24,28 @@ WHERE name = ?
 LIMIT 1;
 
 insert:
-INSERT OR IGNORE INTO Publisher(id, name, description, website, instagram_user, twitter_user, created_at, updated_at)
+INSERT OR IGNORE INTO Publisher(
+  id,
+  name,
+  description,
+  website,
+  instagram_user,
+  twitter_user,
+  created_at,
+  updated_at
+)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE Publisher
-SET name = ?, description = ?, website = ?, instagram_user = ?, twitter_user = ?, updated_at = ?
+SET name = ?,
+  description = ?,
+  website = ?,
+  instagram_user = ?,
+  twitter_user = ?,
+  updated_at = ?
 WHERE id = ?;
 
 deleteBulk:
-DELETE FROM Publisher WHERE id IN ?;
+DELETE FROM Publisher
+WHERE id IN ?;

@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import javax.inject.Singleton
 
@@ -37,6 +38,12 @@ object DatabaseModule {
   @Provides
   fun providePublishersRepository(database: ToshokanDatabase): PublishersRepository {
     return PublishersRepository(database)
+  }
+
+  @Singleton
+  @Provides
+  fun providePeopleRepository(database: ToshokanDatabase): PeopleRepository {
+    return PeopleRepository(database)
   }
 
 }

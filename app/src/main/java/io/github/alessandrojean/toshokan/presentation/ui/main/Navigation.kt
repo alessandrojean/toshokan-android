@@ -13,6 +13,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.createbook.CreateBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
+import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
 
@@ -74,6 +75,7 @@ private fun NavGraphBuilder.addMoreTopLevel(
   ) {
     addMore(navController, topScreen)
     addPublishersList(navController, topScreen)
+    addPeopleList(navController, topScreen)
   }
 }
 
@@ -112,6 +114,9 @@ private fun NavGraphBuilder.addMore(
     MoreScreen(
       navigateToPublishers = {
         navController.navigate(LeafScreen.Publishers.createRoute(root))
+      },
+      navigateToPeople = {
+        navController.navigate(LeafScreen.People.createRoute(root))
       }
     )
   }
@@ -147,6 +152,18 @@ private fun NavGraphBuilder.addPublishersList(
     PublishersScreen(
       navController,
       publishersViewModel = hiltViewModel()
+    )
+  }
+}
+
+private fun NavGraphBuilder.addPeopleList(
+  navController: NavController,
+  root: TopScreen
+) {
+  composable(LeafScreen.People.createRoute(root)) {
+    PeopleScreen(
+      navController,
+      peopleViewModel = hiltViewModel()
     )
   }
 }

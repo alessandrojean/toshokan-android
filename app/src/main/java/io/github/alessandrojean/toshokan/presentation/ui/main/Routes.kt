@@ -23,6 +23,8 @@ sealed class LeafScreen(private val route: String) {
 
   object Publishers : LeafScreen("publishers")
 
+  object People : LeafScreen("people")
+
   object Stores : LeafScreen("stores")
 
   object Groups : LeafScreen("groups")

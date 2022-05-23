@@ -20,6 +20,7 @@
   <!-- Common fields -->
   <string name="name">Nome</string>
   <string name="description">Descrição</string>
+  <string name="country">País</string>
 
   <!-- Library -->
   <string name="library">Biblioteca</string>
@@ -57,6 +58,16 @@
 
   <!-- People -->
   <string name="people">Pessoas</string>
+  <string name="no_people_found">Nenhuma pessoa encontrada</string>
+  <string name="create_person">Nova pessoa</string>
+  <plurals name="person_delete_warning">
+    <item quantity="one">
+      Ao deletar a pessoa, suas atribuições serão removidas dos livros na biblioteca.
+    </item>
+    <item quantity="other">
+      Ao deletar pessoas, suas atribuições serão removidas dos livros na biblioteca.
+    </item>
+  </plurals>
 
   <!-- Settings -->
   <string name="settings">Configurações</string>
