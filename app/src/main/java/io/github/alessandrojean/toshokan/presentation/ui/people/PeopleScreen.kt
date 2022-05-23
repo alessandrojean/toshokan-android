@@ -53,6 +53,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleMode
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleScreen
 
@@ -174,7 +176,10 @@ fun PeopleScreen(
     },
     content = { innerPadding ->
       if (people.isEmpty()) {
-        NoPeopleFound(modifier = Modifier.padding(innerPadding))
+        NoItemsFound(
+          modifier = Modifier.padding(innerPadding),
+          text = stringResource(R.string.no_people_found)
+        )
       } else {
         LazyColumn(
           contentPadding = innerPadding,
@@ -197,51 +202,6 @@ fun PeopleScreen(
             )
           }
         }
-      }
-    }
-  )
-}
-
-@Composable
-fun SelectionTopAppBar(
-  selectionCount: Int,
-  onClearSelectionClick: () -> Unit = {},
-  onEditClick: () -> Unit = {},
-  onDeleteClick: () -> Unit = {},
-  scrollBehavior: TopAppBarScrollBehavior
-) {
-  SmallTopAppBar(
-    colors = TopAppBarDefaults.smallTopAppBarColors(
-      containerColor = MaterialTheme.colorScheme.surfaceVariant,
-      navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-      actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-      titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-    ),
-    scrollBehavior = scrollBehavior,
-    navigationIcon = {
-      IconButton(onClick = onClearSelectionClick) {
-        Icon(
-          Icons.Default.Close,
-          contentDescription = stringResource(R.string.action_cancel)
-        )
-      }
-    },
-    title = { Text(selectionCount.toString()) },
-    actions = {
-      if (selectionCount == 1) {
-        IconButton(onClick = onEditClick) {
-          Icon(
-            Icons.Outlined.Edit,
-            contentDescription = stringResource(R.string.action_edit)
-          )
-        }
-      }
-
-      IconButton(onClick = onDeleteClick) {
-        Icon(
-          Icons.Outlined.Delete,
-          contentDescription = stringResource(R.string.action_delete)
-        )
       }
     }
   )
@@ -272,23 +232,5 @@ fun PersonItem(
       .padding(16.dp)
   ) {
     Text(text = person.name)
-  }
-}
-
-@Composable
-fun NoPeopleFound(modifier: Modifier = Modifier) {
-  Box(
-    modifier = modifier
-      .fillMaxSize()
-      .padding(16.dp),
-    contentAlignment = Alignment.Center
-  ) {
-    Text(
-      text = stringResource(R.string.no_people_found),
-      textAlign = TextAlign.Center,
-      style = MaterialTheme.typography.bodyMedium.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-    )
   }
 }
