@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.presentation.ui.theme.theme
+package io.github.alessandrojean.toshokan.presentation.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
