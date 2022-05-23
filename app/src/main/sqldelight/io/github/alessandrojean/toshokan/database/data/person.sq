@@ -1,0 +1,18 @@
+CREATE TABLE Person(
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  country TEXT,
+  website TEXT,
+  instagram_profile TEXT,
+  twitter_profile TEXT,
+
+  created_at INTEGER AS Long NOT NULL,
+  updated_at INTEGER AS Long NOT NULL
+);
+
+CREATE INDEX person_name ON Person (name);
+
+insert:
+INSERT INTO Person(id, name, description, country, website, instagram_profile, twitter_profile, created_at, updated_at)
+VALUES ?;

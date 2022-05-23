@@ -1,0 +1,32 @@
+CREATE TABLE Book(
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  code TEXT,
+  title TEXT NOT NULL,
+  volume TEXT,
+  synopsis TEXT,
+  notes TEXT,
+  publisher_id INTEGER NOT NULL,
+  group_id INTEGER NOT NULL,
+  paid_price_currency TEXT NOT NULL,
+  paid_price_value REAL AS Float NOT NULL,
+  label_price_currency TEXT NOT NULL,
+  label_price_value REAL AS Float NOT NULL,
+  store_id INTEGER,
+  bought_at INTEGER AS Long,
+  is_future INTEGER AS Boolean DEFAULT 0,
+  cover_url TEXT,
+
+  created_at INTEGER AS Long NOT NULL,
+  updated_at INTEGER AS Long NOT NULL,
+
+  FOREIGN KEY (publisher_id) REFERENCES Publisher (id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (group_id) REFERENCES BookGroup (id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (store_id) REFERENCES Store (id)
+    ON DELETE SET NULL
+);
+
+insert:
+INSERT INTO Book(id, code, title, volume, synopsis, notes, publisher_id, group_id, paid_price_currency, paid_price_value, label_price_currency, label_price_value, store_id, bought_at, is_future, cover_url, created_at, updated_at)
+VALUES ?;

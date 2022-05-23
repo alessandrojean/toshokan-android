@@ -1,0 +1,17 @@
+CREATE TABLE Store(
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  website TEXT,
+  instagram_profile TEXT,
+  twitter_profile TEXT,
+
+  created_at INTEGER AS Long NOT NULL,
+  updated_at INTEGER AS Long NOT NULL
+);
+
+CREATE INDEX store_name ON Store (name);
+
+insert:
+INSERT OR IGNORE INTO Store(id, name, description, website, instagram_profile, twitter_profile, created_at, updated_at)
+VALUES ?;

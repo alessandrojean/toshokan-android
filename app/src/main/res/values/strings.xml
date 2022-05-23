@@ -1,0 +1,64 @@
+<resources>
+  <string name="app_name">Toshokan</string>
+
+  <!-- Common -->
+  <string name="action_back">Voltar</string>
+  <string name="action_search">Buscar</string>
+  <string name="action_clear">Limpar</string>
+  <string name="action_check">Selecionar</string>
+  <string name="action_edit">Editar</string>
+  <string name="action_delete">Deletar</string>
+  <string name="action_finish">Concluir</string>
+  <string name="action_save">Salvar</string>
+  <string name="action_cancel">Cancelar</string>
+
+  <!-- Websites -->
+  <string name="website">Site</string>
+  <string name="instagram">Instagram</string>
+  <string name="twitter">Twitter</string>
+
+  <!-- Common fields -->
+  <string name="name">Nome</string>
+  <string name="description">Descrição</string>
+
+  <!-- Library -->
+  <string name="library">Biblioteca</string>
+  <string name="create_book">Novo livro</string>
+  <string name="action_new_book">Novo</string>
+  <string name="action_fill_manually">Preencher manualmente</string>
+  <string name="isbn">ISBN</string>
+  <string name="isbn_search_placeholder">Procurar por ISBN</string>
+  <string name="no_results_found">Nenhum resultado encontrado.</string>
+
+  <!-- Statistics -->
+  <string name="statistics">Estatísticas</string>
+
+  <!-- More -->
+  <string name="more">Mais</string>
+
+  <!-- Publishers -->
+  <string name="publishers">Editoras</string>
+  <string name="no_publishers_found">Nenhuma editora encontrada</string>
+  <string name="create_publisher">Nova editora</string>
+  <plurals name="publisher_delete_warning">
+    <item quantity="one">
+      Ao deletar a editora, todos os livros dela também serão deletados.
+    </item>
+    <item quantity="other">
+      Ao deletar editoras, todos os livros delas também serão deletados.
+    </item>
+  </plurals>
+
+  <!-- Stores -->
+  <string name="stores">Lojas</string>
+
+  <!-- Groups -->
+  <string name="groups">Grupos</string>
+
+  <!-- People -->
+  <string name="people">Pessoas</string>
+
+  <!-- Settings -->
+  <string name="settings">Configurações</string>
+  <string name="about">Sobre</string>
+</resources>
