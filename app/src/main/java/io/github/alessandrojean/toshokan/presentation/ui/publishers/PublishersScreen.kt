@@ -2,8 +2,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.publishers
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -51,8 +48,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -61,7 +56,7 @@ import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherMode
-import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherScreen
+import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherDialog
 
 @Composable
 fun PublishersScreen(
@@ -98,47 +93,21 @@ fun PublishersScreen(
   }
 
   if (uiState.showManageDialog) {
-    Dialog(
-      onDismissRequest = { publishersViewModel.hideManageDialog() },
-      properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-      Surface(modifier = Modifier.fillMaxWidth()) {
-        ManagePublisherScreen(
-          mode = uiState.manageDialogMode,
-          publisher = publishers.firstOrNull { it.id == uiState.selected.firstOrNull() },
-          onClose = { publishersViewModel.hideManageDialog() },
-          managePublisherViewModel = hiltViewModel()
-        )
-      }
-    }
-  }
-
-  if (uiState.showDeleteWarning) {
-    AlertDialog(
-      onDismissRequest = { publishersViewModel.hideDeleteWarning() },
-      text = {
-        Text(
-          text = pluralStringResource(
-            R.plurals.publisher_delete_warning,
-            uiState.selected.size
-          )
-        )
+    ManagePublisherDialog(
+      mode = uiState.manageDialogMode,
+      publisher = publishers.firstOrNull { it.id == uiState.selected.firstOrNull() },
+      onClose = { publishersViewModel.hideManageDialog() },
+      managePublisherViewModel = hiltViewModel()
+    )
+  } else if (uiState.showDeleteWarning) {
+    DeletePublishersWarningDialog(
+      selectedCount = uiState.selected.size,
+      onClose = { publishersViewModel.hideDeleteWarning() },
+      onConfirmClick = {
+        publishersViewModel.deleteSelected()
+        publishersViewModel.hideDeleteWarning()
       },
-      confirmButton = {
-        TextButton(
-          onClick = {
-            publishersViewModel.deleteSelected()
-            publishersViewModel.hideDeleteWarning()
-          }
-        ) {
-          Text(stringResource(R.string.action_delete))
-        }
-      },
-      dismissButton = {
-        TextButton(onClick = { publishersViewModel.hideDeleteWarning() }) {
-          Text(stringResource(R.string.action_cancel))
-        }
-      }
+      onDismissClick = { publishersViewModel.hideDeleteWarning() }
     )
   }
 
@@ -232,6 +201,36 @@ fun PublishersScreen(
           )
         )
       )
+    }
+  )
+}
+
+@Composable
+fun DeletePublishersWarningDialog(
+  selectedCount: Int,
+  onClose: () -> Unit = {},
+  onConfirmClick: () -> Unit = {},
+  onDismissClick: () -> Unit = {}
+) {
+  AlertDialog(
+    onDismissRequest = onClose,
+    text = {
+      Text(
+        text = pluralStringResource(
+          R.plurals.publisher_delete_warning,
+          selectedCount
+        )
+      )
+    },
+    confirmButton = {
+      TextButton(onClick = onConfirmClick) {
+        Text(stringResource(R.string.action_delete))
+      }
+    },
+    dismissButton = {
+      TextButton(onClick = onDismissClick) {
+        Text(stringResource(R.string.action_cancel))
+      }
     }
   )
 }

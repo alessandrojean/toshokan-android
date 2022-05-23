@@ -7,12 +7,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -26,9 +24,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -40,7 +35,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -53,7 +47,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -65,7 +58,7 @@ import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleMode
-import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleScreen
+import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleDialog
 
 @Composable
 fun PeopleScreen(
@@ -102,47 +95,23 @@ fun PeopleScreen(
   }
 
   if (uiState.showManageDialog) {
-    Dialog(
-      onDismissRequest = { peopleViewModel.hideManageDialog() },
-      properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-      Surface(modifier = Modifier.fillMaxWidth()) {
-        ManagePeopleScreen(
-          mode = uiState.manageDialogMode,
-          person = people.firstOrNull { it.id == uiState.selected.firstOrNull() },
-          onClose = { peopleViewModel.hideManageDialog() },
-          managePeopleViewModel = hiltViewModel()
-        )
-      }
-    }
+    ManagePeopleDialog(
+      mode = uiState.manageDialogMode,
+      person = people.firstOrNull { it.id == uiState.selected.firstOrNull() },
+      onClose = { peopleViewModel.hideManageDialog() },
+      managePeopleViewModel = hiltViewModel()
+    )
   }
 
   if (uiState.showDeleteWarning) {
-    AlertDialog(
-      onDismissRequest = { peopleViewModel.hideDeleteWarning() },
-      text = {
-        Text(
-          text = pluralStringResource(
-            R.plurals.person_delete_warning,
-            uiState.selected.size
-          )
-        )
+    DeletePeopleWarningDialog(
+      selectedCount = uiState.selected.size,
+      onClose = { peopleViewModel.hideDeleteWarning() },
+      onConfirmClick = {
+        peopleViewModel.deleteSelected()
+        peopleViewModel.hideDeleteWarning()
       },
-      confirmButton = {
-        TextButton(
-          onClick = {
-            peopleViewModel.deleteSelected()
-            peopleViewModel.hideDeleteWarning()
-          }
-        ) {
-          Text(stringResource(R.string.action_delete))
-        }
-      },
-      dismissButton = {
-        TextButton(onClick = { peopleViewModel.hideDeleteWarning() }) {
-          Text(stringResource(R.string.action_cancel))
-        }
-      }
+      onDismissClick = { peopleViewModel.hideDeleteWarning() }
     )
   }
 
@@ -240,6 +209,36 @@ fun PeopleScreen(
           )
         )
       )
+    }
+  )
+}
+
+@Composable
+fun DeletePeopleWarningDialog(
+  selectedCount: Int,
+  onClose: () -> Unit = {},
+  onConfirmClick: () -> Unit = {},
+  onDismissClick: () -> Unit = {}
+) {
+  AlertDialog(
+    onDismissRequest = onClose,
+    text = {
+      Text(
+        text = pluralStringResource(
+          R.plurals.person_delete_warning,
+          selectedCount
+        )
+      )
+    },
+    confirmButton = {
+      TextButton(onClick = onConfirmClick) {
+        Text(stringResource(R.string.action_delete))
+      }
+    },
+    dismissButton = {
+      TextButton(onClick = onDismissClick) {
+        Text(stringResource(R.string.action_cancel))
+      }
     }
   )
 }
