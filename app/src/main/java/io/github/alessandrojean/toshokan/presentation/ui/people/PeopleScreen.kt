@@ -82,10 +82,13 @@ fun PeopleScreen(
   val people by uiState.people.collectAsState(emptyList())
 
   val systemUiController = rememberSystemUiController()
-  val statusBarColor = if (selectionMode) {
-    MaterialTheme.colorScheme.surfaceVariant
-  } else {
-    MaterialTheme.colorScheme.surface
+  val statusBarColor = when {
+    selectionMode -> MaterialTheme.colorScheme.surfaceVariant
+    scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+      .smallTopAppBarColors()
+      .containerColor(scrollBehavior.scrollFraction)
+      .value
+    else -> MaterialTheme.colorScheme.surface
   }
 
   SideEffect {

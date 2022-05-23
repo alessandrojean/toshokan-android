@@ -34,6 +34,7 @@ import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -80,10 +81,13 @@ fun PublishersScreen(
   val publishers by uiState.publishers.collectAsState(emptyList())
 
   val systemUiController = rememberSystemUiController()
-  val statusBarColor = if (selectionMode) {
-    MaterialTheme.colorScheme.surfaceVariant
-  } else {
-    MaterialTheme.colorScheme.surface
+  val statusBarColor = when {
+    selectionMode -> MaterialTheme.colorScheme.surfaceVariant
+    scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+      .smallTopAppBarColors()
+      .containerColor(scrollBehavior.scrollFraction)
+      .value
+    else -> MaterialTheme.colorScheme.surface
   }
 
   SideEffect {
