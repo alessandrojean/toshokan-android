@@ -31,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -48,8 +47,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -124,11 +121,7 @@ fun PeopleScreen(
       Crossfade(targetState = selectionMode) { selection ->
         if (selection) {
           SelectionTopAppBar(
-            modifier = Modifier.windowInsetsPadding(
-              WindowInsets.systemBars.only(
-                WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-              )
-            ),
+            modifier = Modifier.statusBarsPadding(),
             selectionCount = uiState.selected.size,
             onClearSelectionClick = { peopleViewModel.clearSelection() },
             onEditClick = {

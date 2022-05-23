@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -72,6 +74,9 @@ fun MainNavHost (startScreen: TopScreen = TopScreen.Library) {
   }
 
   Scaffold(
+    modifier = Modifier.windowInsetsPadding(
+      WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
+    ),
     content = { innerPadding ->
       Box(modifier = Modifier.padding(innerPadding)) {
         Navigation(
@@ -84,10 +89,12 @@ fun MainNavHost (startScreen: TopScreen = TopScreen.Library) {
     bottomBar = {
       AnimatedVisibility(
         visible = isBottomBarVisible,
-        enter = expandVertically(expandFrom = Alignment.Top, initialHeight = { 0 }) +
-          slideInVertically(initialOffsetY = { it }),
+        enter = expandVertically(expandFrom = Alignment.Bottom, initialHeight = { 0 }) +
+          slideInVertically(initialOffsetY = { it }) +
+          fadeIn(),
         exit = slideOutVertically(targetOffsetY = { it }) +
-          shrinkVertically(targetHeight = { 0 })
+          shrinkVertically(targetHeight = { 0 }) +
+          fadeOut()
       ) {
         NavigationBar(
           modifier = Modifier.navigationBarsPadding()

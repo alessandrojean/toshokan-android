@@ -45,7 +45,8 @@ android {
       "-opt-in=kotlin.Experimental",
       "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
       "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-      "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+      "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+      "-opt-in=androidx.compose.animation.ExperimentalAnimationApi"
     )
   }
 

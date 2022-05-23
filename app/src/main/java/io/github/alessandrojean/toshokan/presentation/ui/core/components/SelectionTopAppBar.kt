@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Delete
@@ -42,7 +43,11 @@ fun SelectionTopAppBar(
         )
       }
     },
-    title = { Text(selectionCount.toString()) },
+    title = {
+      AnimatedContent(targetState = selectionCount) { targetCount ->
+        Text(targetCount.toString())
+      }
+    },
     actions = {
       if (selectionCount == 1) {
         IconButton(onClick = onEditClick) {
