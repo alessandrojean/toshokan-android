@@ -1,7 +1,7 @@
 package io.github.alessandrojean.toshokan.di
 
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.service.lookup.LookupRepository
@@ -10,12 +10,12 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
+abstract class RepositoryModule {
 
+  @Binds
   @Singleton
-  @Provides
-  fun provideLookupRepository(): LookupRepository {
-    return LookupRepositoryImpl()
-  }
+  abstract fun bindLookupRepository(
+    lookupRepositoryImpl: LookupRepositoryImpl
+  ): LookupRepository
 
 }

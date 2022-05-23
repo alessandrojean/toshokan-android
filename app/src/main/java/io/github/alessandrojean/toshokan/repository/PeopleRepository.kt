@@ -7,7 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class PeopleRepository @Inject constructor(
   private val database: ToshokanDatabase
 ) {

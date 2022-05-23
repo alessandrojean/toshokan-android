@@ -7,10 +7,14 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import javax.inject.Inject
 
-class OpenLibraryLookup : LookupProvider() {
+class OpenLibraryLookup @Inject constructor (
+  override val client: OkHttpClient
+) : LookupProvider() {
 
   override val name = "Open Library"
 

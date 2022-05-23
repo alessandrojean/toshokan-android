@@ -25,8 +25,7 @@ data class CreateBookState(
 
 @HiltViewModel
 class CreateBookViewModel @Inject constructor(
-  private val lookupRepository: LookupRepository,
-  private val database: ToshokanDatabase
+  private val lookupRepository: LookupRepository
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(CreateBookState())
   val uiState: StateFlow<CreateBookState> = _uiState.asStateFlow()

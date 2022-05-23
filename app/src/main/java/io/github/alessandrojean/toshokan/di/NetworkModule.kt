@@ -4,8 +4,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.github.alessandrojean.toshokan.network.HttpClient
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Singleton
 
 @Module
@@ -14,14 +14,13 @@ object NetworkModule {
 
   @Singleton
   @Provides
-  fun provideHttpClient(): HttpClient {
-    return HttpClient
-  }
+  fun provideHttpClient(): OkHttpClient {
+    val logging = HttpLoggingInterceptor()
+      .apply { level = HttpLoggingInterceptor.Level.BODY }
 
-  @Singleton
-  @Provides
-  fun provideDefaultOkHttpClient(): OkHttpClient {
-    return HttpClient.default
+    return OkHttpClient.Builder()
+      .addInterceptor(logging)
+      .build()
   }
 
 }

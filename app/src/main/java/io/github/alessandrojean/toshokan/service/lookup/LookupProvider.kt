@@ -1,6 +1,5 @@
 package io.github.alessandrojean.toshokan.service.lookup
 
-import io.github.alessandrojean.toshokan.network.HttpClient
 import io.github.alessandrojean.toshokan.network.awaitSuccess
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import okhttp3.Headers
@@ -28,7 +27,7 @@ abstract class LookupProvider {
   /**
    * Client used to do the HTTP calls.
    */
-  protected open val client: OkHttpClient = HttpClient.default
+  protected abstract val client: OkHttpClient
 
   /**
    * Create the headers to be used in the requests.

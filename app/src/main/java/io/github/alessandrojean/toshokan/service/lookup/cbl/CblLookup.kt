@@ -12,11 +12,15 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import javax.inject.Inject
 
-class CblLookup : LookupProvider() {
+class CblLookup @Inject constructor (
+  override val client: OkHttpClient
+): LookupProvider() {
 
   override val name = "CBL"
 
