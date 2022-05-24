@@ -12,6 +12,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -73,6 +75,11 @@ fun MainNavHost (startScreen: TopScreen = TopScreen.Library) {
     )
   }
 
+  val navigationBarHeight = WindowInsets.navigationBars
+    .asPaddingValues()
+    .calculateBottomPadding()
+    .value.toInt()
+
   Scaffold(
     modifier = Modifier.windowInsetsPadding(
       WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
@@ -89,12 +96,10 @@ fun MainNavHost (startScreen: TopScreen = TopScreen.Library) {
     bottomBar = {
       AnimatedVisibility(
         visible = isBottomBarVisible,
-        enter = expandVertically(expandFrom = Alignment.Bottom, initialHeight = { 0 }) +
-          slideInVertically(initialOffsetY = { it }) +
-          fadeIn(),
-        exit = slideOutVertically(targetOffsetY = { it }) +
-          shrinkVertically(targetHeight = { 0 }) +
-          fadeOut()
+        enter = fadeIn() + slideInVertically(initialOffsetY = { it + navigationBarHeight }) +
+          expandVertically(expandFrom = Alignment.Top, initialHeight = { 0 }, clip = false),
+        exit = fadeOut() + slideOutVertically(targetOffsetY = { it + navigationBarHeight }) +
+          shrinkVertically(targetHeight = { 0 }, clip = false)
       ) {
         NavigationBar(
           modifier = Modifier.navigationBarsPadding()

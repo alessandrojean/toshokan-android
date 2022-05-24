@@ -12,6 +12,34 @@ CREATE TABLE Store(
 
 CREATE INDEX store_name ON Store (name);
 
+selectAll:
+SELECT *
+FROM Store
+ORDER BY name ASC;
+
 insert:
-INSERT OR IGNORE INTO Store(id, name, description, website, instagram_profile, twitter_profile, created_at, updated_at)
-VALUES ?;
+INSERT OR IGNORE INTO Store(
+  id,
+  name,
+  description,
+  website,
+  instagram_profile,
+  twitter_profile,
+  created_at,
+  updated_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE Store
+SET name = ?,
+  description = ?,
+  website = ?,
+  instagram_profile = ?,
+  twitter_profile = ?,
+  updated_at = ?
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM Store
+WHERE id IN ?;

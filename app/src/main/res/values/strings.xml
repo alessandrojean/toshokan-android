@@ -52,6 +52,16 @@
 
   <!-- Stores -->
   <string name="stores">Stores</string>
+  <string name="no_stores_found">No stores found</string>
+  <string name="create_store">New store</string>
+  <plurals name="store_delete_warning">
+    <item quantity="one">
+      By deleting a store, all books bought in it will have the information removed.
+    </item>
+    <item quantity="other">
+      By deleting stores, all books bought in it will have the information removed.
+    </item>
+  </plurals>
 
   <!-- Groups -->
   <string name="groups">Groups</string>

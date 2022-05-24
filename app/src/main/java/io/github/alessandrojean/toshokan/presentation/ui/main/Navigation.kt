@@ -16,6 +16,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
+import io.github.alessandrojean.toshokan.presentation.ui.stores.StoresScreen
 
 @Composable
 internal fun Navigation(
@@ -76,6 +77,7 @@ private fun NavGraphBuilder.addMoreTopLevel(
     addMore(navController, topScreen)
     addPublishersList(navController, topScreen)
     addPeopleList(navController, topScreen)
+    addStoreList(navController, topScreen)
   }
 }
 
@@ -117,6 +119,9 @@ private fun NavGraphBuilder.addMore(
       },
       navigateToPeople = {
         navController.navigate(LeafScreen.People.createRoute(root))
+      },
+      navigateToStores = {
+        navController.navigate(LeafScreen.Stores.createRoute(root))
       }
     )
   }
@@ -164,6 +169,18 @@ private fun NavGraphBuilder.addPeopleList(
     PeopleScreen(
       navController,
       peopleViewModel = hiltViewModel()
+    )
+  }
+}
+
+private fun NavGraphBuilder.addStoreList(
+  navController: NavController,
+  root: TopScreen
+) {
+  composable(LeafScreen.Stores.createRoute(root)) {
+    StoresScreen(
+      navController,
+      storesViewModel = hiltViewModel()
     )
   }
 }

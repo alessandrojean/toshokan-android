@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Domain
 import androidx.compose.material.icons.outlined.Group
@@ -20,61 +23,101 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
+
+private data class Destination(
+  val title: String,
+  val icon: ImageVector,
+  val onClick: () -> Unit
+)
 
 @Composable
 fun MoreScreen(
   navigateToPublishers: () -> Unit,
-  navigateToPeople: () -> Unit
+  navigateToPeople: () -> Unit,
+  navigateToStores: () -> Unit
 ) {
+
+  val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+  val listState = rememberLazyListState()
+
+  val destinations = listOf(
+    Destination(
+      title = stringResource(R.string.publishers),
+      icon = Icons.Outlined.Domain,
+      onClick = navigateToPublishers
+    ),
+    Destination(
+      title = stringResource(R.string.people),
+      icon = Icons.Outlined.Group,
+      onClick = navigateToPeople
+    ),
+    Destination(
+      title = stringResource(R.string.stores),
+      icon = Icons.Outlined.ShoppingCart,
+      onClick = navigateToStores
+    ),
+    Destination(
+      title = stringResource(R.string.groups),
+      icon = Icons.Outlined.GroupWork,
+      onClick = {}
+    ),
+    Destination(
+      title = stringResource(R.string.settings),
+      icon = Icons.Outlined.Settings,
+      onClick = {}
+    ),
+    Destination(
+      title = stringResource(R.string.about),
+      icon = Icons.Outlined.Info,
+      onClick = {}
+    )
+  )
+
+  val systemUiController = rememberSystemUiController()
+  val statusBarColor = when {
+    scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+      .smallTopAppBarColors()
+      .containerColor(scrollBehavior.scrollFraction)
+      .value
+    else -> MaterialTheme.colorScheme.surface
+  }
+
+  SideEffect {
+    systemUiController.setStatusBarColor(
+      color = statusBarColor
+    )
+  }
+
   Scaffold(
+    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
       SmallTopAppBar(
         modifier = Modifier.statusBarsPadding(),
-        title = { Text(stringResource(R.string.more)) }
+        title = { Text(stringResource(R.string.more)) },
+        scrollBehavior = scrollBehavior
       )
     },
     content = { innerPadding ->
-      Box(
-        modifier = Modifier
-          .padding(innerPadding)
-          .fillMaxSize()
+      LazyColumn(
+        state = listState,
+        contentPadding = innerPadding
       ) {
-        Column {
+        items(destinations) { destination ->
           NavigationItem(
-            title = stringResource(R.string.publishers),
-            icon = Icons.Outlined.Domain,
-            onClick = navigateToPublishers
-          )
-          NavigationItem(
-            title = stringResource(R.string.people),
-            icon = Icons.Outlined.Group,
-            onClick = navigateToPeople
-          )
-          NavigationItem(
-            title = stringResource(R.string.stores),
-            icon = Icons.Outlined.ShoppingCart,
-            onClick = {}
-          )
-          NavigationItem(
-            title = stringResource(R.string.groups),
-            icon = Icons.Outlined.GroupWork,
-            onClick = {}
-          )
-          NavigationItem(
-            title = stringResource(R.string.settings),
-            icon = Icons.Outlined.Settings,
-            onClick = {}
-          )
-          NavigationItem(
-            title = stringResource(R.string.about),
-            icon = Icons.Outlined.Info,
-            onClick = {}
+            title = destination.title,
+            icon = destination.icon,
+            onClick = destination.onClick
           )
         }
       }

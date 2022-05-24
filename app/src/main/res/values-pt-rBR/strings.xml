@@ -52,6 +52,16 @@
 
   <!-- Stores -->
   <string name="stores">Lojas</string>
+  <string name="no_stores_found">Nenhuma loja encontrada</string>
+  <string name="create_store">Nova loja</string>
+  <plurals name="store_delete_warning">
+    <item quantity="one" tools:ignore="ImpliedQuantity">
+      Ao deletar uma loja, todos os livros comprados lá terão esta informação removida.
+    </item>
+    <item quantity="other">
+      Ao deletar lojas, todos os livros comprados nelas terão estas informações removidas.
+    </item>
+  </plurals>
 
   <!-- Groups -->
   <string name="groups">Grupos</string>
