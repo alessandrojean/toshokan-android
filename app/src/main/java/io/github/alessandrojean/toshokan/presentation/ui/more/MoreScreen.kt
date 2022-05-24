@@ -16,6 +16,7 @@ import androidx.compose.material.icons.outlined.Domain
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.GroupWork
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LocalMall
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
@@ -64,7 +65,7 @@ fun MoreScreen(
     ),
     Destination(
       title = stringResource(R.string.stores),
-      icon = Icons.Outlined.ShoppingCart,
+      icon = Icons.Outlined.LocalMall,
       onClick = navigateToStores
     ),
     Destination(
