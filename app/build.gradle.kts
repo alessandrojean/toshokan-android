@@ -136,6 +136,9 @@ dependencies {
   val sqlDelightVersion = rootProject.extra["sqldelight_version"]
   implementation("com.squareup.sqldelight:android-driver:$sqlDelightVersion")
   implementation("com.squareup.sqldelight:coroutines-extensions-jvm:$sqlDelightVersion")
+
+  // Compose Reorderable
+  implementation("org.burnoutcrew.composereorderable:reorderable:0.8.1")
 }
 
 kapt {

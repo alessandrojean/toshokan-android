@@ -14,6 +14,10 @@ SELECT *
 FROM BookGroup
 ORDER BY sort ASC;
 
+nextSortValue:
+SELECT max(sort) + 1
+FROM BookGroup;
+
 insert:
 INSERT OR IGNORE INTO BookGroup(
   id,
@@ -24,3 +28,16 @@ INSERT OR IGNORE INTO BookGroup(
 )
 VALUES (?, ?, ?, ?, ?);
 
+updateName:
+UPDATE BookGroup
+SET name = ?, updated_at = ?
+WHERE id = ?;
+
+updateSort:
+UPDATE BookGroup
+SET sort = ?, updated_at = ?
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM BookGroup
+WHERE id IN ?;

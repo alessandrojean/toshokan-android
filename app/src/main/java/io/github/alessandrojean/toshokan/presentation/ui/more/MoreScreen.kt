@@ -46,7 +46,8 @@ private data class Destination(
 fun MoreScreen(
   navigateToPublishers: () -> Unit,
   navigateToPeople: () -> Unit,
-  navigateToStores: () -> Unit
+  navigateToStores: () -> Unit,
+  navigateToGroups: () -> Unit
 ) {
 
   val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
@@ -71,7 +72,7 @@ fun MoreScreen(
     Destination(
       title = stringResource(R.string.groups),
       icon = Icons.Outlined.GroupWork,
-      onClick = {}
+      onClick = navigateToGroups
     ),
     Destination(
       title = stringResource(R.string.settings),

@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.stores
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
@@ -93,6 +94,10 @@ fun StoresScreen(
     systemUiController.setStatusBarColor(
       color = statusBarColor
     )
+  }
+
+  BackHandler(enabled = selectionMode) {
+    storesViewModel.clearSelection()
   }
 
   if (uiState.showManageDialog) {

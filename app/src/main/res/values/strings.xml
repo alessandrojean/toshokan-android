@@ -11,6 +11,7 @@
   <string name="action_finish">Finish</string>
   <string name="action_save">Save</string>
   <string name="action_cancel">Cancel</string>
+  <string name="action_reorder">Reorder</string>
 
   <!-- Websites -->
   <string name="website">Website</string>
@@ -65,6 +66,16 @@
 
   <!-- Groups -->
   <string name="groups">Groups</string>
+  <string name="no_groups_found">No groups found</string>
+  <string name="create_group">New group</string>
+  <plurals name="group_delete_warning">
+    <item quantity="one">
+      By deleting a group, all books inside it will also be deleted from the library.
+    </item>
+    <item quantity="other">
+      By deleting groups, all books inside it will also be deleted from the library.
+    </item>
+  </plurals>
 
   <!-- People -->
   <string name="people">People</string>

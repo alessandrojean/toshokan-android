@@ -11,6 +11,7 @@
   <string name="action_finish">Concluir</string>
   <string name="action_save">Salvar</string>
   <string name="action_cancel">Cancelar</string>
+  <string name="action_reorder">Reordernar</string>
 
   <!-- Websites -->
   <string name="website">Site</string>
@@ -65,6 +66,16 @@
 
   <!-- Groups -->
   <string name="groups">Grupos</string>
+  <string name="no_groups_found">Nenhum grupo encontrado</string>
+  <string name="create_group">Novo grupo</string>
+  <plurals name="group_delete_warning">
+    <item quantity="one" tools:ignore="ImpliedQuantity">
+      Ao deletar um grupo, todos os livros dentro dele também serão deletados da biblioteca.
+    </item>
+    <item quantity="other">
+      Ao deletar grupos, todos os livros dentro deles também serão deletados da biblioteca.
+    </item>
+  </plurals>
 
   <!-- People -->
   <string name="people">Pessoas</string>

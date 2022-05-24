@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.createbook.CreateBookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.groups.GroupsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
@@ -78,6 +79,7 @@ private fun NavGraphBuilder.addMoreTopLevel(
     addPublishersList(navController, topScreen)
     addPeopleList(navController, topScreen)
     addStoreList(navController, topScreen)
+    addGroupList(navController, topScreen)
   }
 }
 
@@ -122,6 +124,9 @@ private fun NavGraphBuilder.addMore(
       },
       navigateToStores = {
         navController.navigate(LeafScreen.Stores.createRoute(root))
+      },
+      navigateToGroups = {
+        navController.navigate(LeafScreen.Groups.createRoute(root))
       }
     )
   }
@@ -181,6 +186,18 @@ private fun NavGraphBuilder.addStoreList(
     StoresScreen(
       navController,
       storesViewModel = hiltViewModel()
+    )
+  }
+}
+
+private fun NavGraphBuilder.addGroupList(
+  navController: NavController,
+  root: TopScreen
+) {
+  composable(LeafScreen.Groups.createRoute(root)) {
+    GroupsScreen(
+      navController,
+      groupsViewModel = hiltViewModel()
     )
   }
 }
