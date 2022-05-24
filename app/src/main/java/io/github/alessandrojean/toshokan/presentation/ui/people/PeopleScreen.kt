@@ -24,6 +24,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -171,7 +172,8 @@ fun PeopleScreen(
       if (people.isEmpty()) {
         NoItemsFound(
           modifier = Modifier.padding(innerPadding),
-          text = stringResource(R.string.no_people_found)
+          text = stringResource(R.string.no_people_found),
+          icon = Icons.Outlined.Group
         )
       } else {
         LazyColumn(

@@ -24,6 +24,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.LocalMall
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -169,7 +170,8 @@ fun StoresScreen(
       if (stores.isEmpty()) {
         NoItemsFound(
           modifier = Modifier.padding(innerPadding),
-          text = stringResource(R.string.no_stores_found)
+          text = stringResource(R.string.no_stores_found),
+          icon = Icons.Outlined.LocalMall
         )
       } else {
         LazyColumn(
