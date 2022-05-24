@@ -58,11 +58,11 @@ class ManagePublisherViewModel @Inject constructor(
     writing = true
 
     publishersRepository.insert(
-      name = name,
-      description = description,
-      website = website,
-      instagramProfile = instagramProfile,
-      twitterProfile = twitterProfile
+      name = name.trim(),
+      description = description.trim(),
+      website = website.trim(),
+      instagramProfile = instagramProfile.trim(),
+      twitterProfile = twitterProfile.trim()
     )
 
     clearFields()
@@ -78,11 +78,11 @@ class ManagePublisherViewModel @Inject constructor(
 
     publishersRepository.update(
       id = id!!,
-      name = name,
-      description = description,
-      website = website,
-      instagramProfile = instagramProfile,
-      twitterProfile = twitterProfile,
+      name = name.trim(),
+      description = description.trim(),
+      website = website.trim(),
+      instagramProfile = instagramProfile.trim(),
+      twitterProfile = twitterProfile.trim(),
     )
 
     clearFields()

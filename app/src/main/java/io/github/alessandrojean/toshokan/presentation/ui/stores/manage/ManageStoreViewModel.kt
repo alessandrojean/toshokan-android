@@ -58,11 +58,11 @@ class ManageStoreViewModel @Inject constructor(
     writing = true
 
     storesRepository.insert(
-      name = name,
-      description = description,
-      website = website,
-      instagramProfile = instagramProfile,
-      twitterProfile = twitterProfile
+      name = name.trim(),
+      description = description.trim(),
+      website = website.trim(),
+      instagramProfile = instagramProfile.trim(),
+      twitterProfile = twitterProfile.trim()
     )
 
     clearFields()
@@ -78,11 +78,11 @@ class ManageStoreViewModel @Inject constructor(
 
     storesRepository.update(
       id = id!!,
-      name = name,
-      description = description,
-      website = website,
-      instagramProfile = instagramProfile,
-      twitterProfile = twitterProfile,
+      name = name.trim(),
+      description = description.trim(),
+      website = website.trim(),
+      instagramProfile = instagramProfile.trim(),
+      twitterProfile = twitterProfile.trim(),
     )
 
     clearFields()

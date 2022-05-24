@@ -9,6 +9,18 @@ CREATE TABLE BookGroup(
 
 CREATE INDEX group_name ON BookGroup (name);
 
+selectAll:
+SELECT *
+FROM BookGroup
+ORDER BY sort ASC;
+
 insert:
-INSERT OR IGNORE INTO BookGroup(id, name, sort, created_at, updated_at)
-VALUES ?;
+INSERT OR IGNORE INTO BookGroup(
+  id,
+  name,
+  sort,
+  created_at,
+  updated_at
+)
+VALUES (?, ?, ?, ?, ?);
+

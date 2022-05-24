@@ -61,12 +61,12 @@ class ManagePeopleViewModel @Inject constructor(
     writing = true
 
     peopleRepository.insert(
-      name = name,
-      description = description,
-      country = country,
-      website = website,
-      instagramProfile = instagramProfile,
-      twitterProfile = twitterProfile
+      name = name.trim(),
+      description = description.trim(),
+      country = country.trim(),
+      website = website.trim(),
+      instagramProfile = instagramProfile.trim(),
+      twitterProfile = twitterProfile.trim()
     )
 
     clearFields()
@@ -82,12 +82,12 @@ class ManagePeopleViewModel @Inject constructor(
 
     peopleRepository.update(
       id = id!!,
-      name = name,
-      description = description,
-      country = country,
-      website = website,
-      instagramProfile = instagramProfile,
-      twitterProfile = twitterProfile,
+      name = name.trim(),
+      description = description.trim(),
+      country = country.trim(),
+      website = website.trim(),
+      instagramProfile = instagramProfile.trim(),
+      twitterProfile = twitterProfile.trim(),
     )
 
     clearFields()
