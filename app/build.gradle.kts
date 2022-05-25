@@ -93,13 +93,12 @@ dependencies {
   androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
   debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
 
-  // Navigation
-  val navVersion = "2.4.2"
-  implementation("androidx.navigation:navigation-runtime-ktx:$navVersion")
-  implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
-  implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
-  implementation("androidx.navigation:navigation-dynamic-features-fragment:$navVersion")
-  implementation("androidx.navigation:navigation-compose:2.5.0-rc01")
+  // Navigation (Voyager)
+  val voyagerVersion = "1.0.0-rc02"
+  implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
+  implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
+  implementation("cafe.adriel.voyager:voyager-androidx:$voyagerVersion")
+  implementation("cafe.adriel.voyager:voyager-hilt:$voyagerVersion")
 
   // Material Design
   implementation("com.google.android.material:material:1.7.0-alpha01")
@@ -125,9 +124,6 @@ dependencies {
   val hiltVersion = rootProject.extra["hilt_version"]
   implementation("com.google.dagger:hilt-android:$hiltVersion")
   kapt("com.google.dagger:hilt-compiler:$hiltVersion")
-
-  // Hilt navigation
-  implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
   // Coil
   implementation("io.coil-kt:coil-compose:2.1.0")

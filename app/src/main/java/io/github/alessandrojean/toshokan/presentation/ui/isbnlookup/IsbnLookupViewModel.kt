@@ -1,9 +1,8 @@
-package io.github.alessandrojean.toshokan.presentation.ui.createbook
+package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.service.lookup.LookupRepository
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.Provider
@@ -14,7 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-data class CreateBookState(
+data class IsbnLookupState(
   val loading: Boolean = false,
   val results: Map<Provider, List<LookupBookResult>> = emptyMap(),
   val selected: LookupBookResult? = null,
@@ -24,11 +23,11 @@ data class CreateBookState(
 )
 
 @HiltViewModel
-class CreateBookViewModel @Inject constructor(
+class IsbnLookupViewModel @Inject constructor(
   private val lookupRepository: LookupRepository
 ) : ViewModel() {
-  private val _uiState = MutableStateFlow(CreateBookState())
-  val uiState: StateFlow<CreateBookState> = _uiState.asStateFlow()
+  private val _uiState = MutableStateFlow(IsbnLookupState())
+  val uiState: StateFlow<IsbnLookupState> = _uiState.asStateFlow()
 
   fun onSearchQueryChange(newSearchQuery: String) {
     _uiState.update { it.copy(searchQuery = newSearchQuery) }

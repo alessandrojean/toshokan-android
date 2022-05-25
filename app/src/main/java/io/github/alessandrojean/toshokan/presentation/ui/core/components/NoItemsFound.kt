@@ -23,9 +23,9 @@ fun NoItemsFound(
   icon: ImageVector? = null
 ) {
   Column(
-    modifier = modifier
+    modifier = Modifier
       .fillMaxSize()
-      .padding(16.dp),
+      .then(modifier),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {

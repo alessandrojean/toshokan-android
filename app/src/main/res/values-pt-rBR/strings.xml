@@ -12,6 +12,7 @@
   <string name="action_save">Salvar</string>
   <string name="action_cancel">Cancelar</string>
   <string name="action_reorder">Reordernar</string>
+  <string name="action_select">Selecionar</string>
 
   <!-- Websites -->
   <string name="website">Site</string>

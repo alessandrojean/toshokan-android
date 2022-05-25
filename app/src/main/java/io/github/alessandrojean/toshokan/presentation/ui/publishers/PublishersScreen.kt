@@ -49,8 +49,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.hilt.getViewModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
@@ -59,215 +61,219 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.Selecti
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherMode
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherDialog
 
-@Composable
-fun PublishersScreen(
-  navController: NavController,
-  publishersViewModel: PublishersViewModel
-) {
-  val uiState by publishersViewModel.uiState.collectAsState()
-  val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
-  val listState = rememberLazyListState()
-  val expandedFab by remember {
-    derivedStateOf {
-      listState.firstVisibleItemIndex == 0
-    }
-  }
-  val selectionMode by remember {
-    derivedStateOf {
-      uiState.selected.isNotEmpty()
-    }
-  }
+class PublishersScreen : Screen {
 
-  val publishers by uiState.publishers.collectAsState(emptyList())
-
-  val systemUiController = rememberSystemUiController()
-  val statusBarColor = when {
-    selectionMode -> MaterialTheme.colorScheme.surfaceVariant
-    scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-      .smallTopAppBarColors()
-      .containerColor(scrollBehavior.scrollFraction)
-      .value
-    else -> MaterialTheme.colorScheme.surface
-  }
-
-  SideEffect {
-    systemUiController.setStatusBarColor(
-      color = statusBarColor
-    )
-  }
-
-  BackHandler(enabled = selectionMode) {
-    publishersViewModel.clearSelection()
-  }
-
-  if (uiState.showManageDialog) {
-    ManagePublisherDialog(
-      mode = uiState.manageDialogMode,
-      publisher = publishers.firstOrNull { it.id == uiState.selected.firstOrNull() },
-      onClose = { publishersViewModel.hideManageDialog() },
-      managePublisherViewModel = hiltViewModel()
-    )
-  } else if (uiState.showDeleteWarning) {
-    DeletePublishersWarningDialog(
-      selectedCount = uiState.selected.size,
-      onClose = { publishersViewModel.hideDeleteWarning() },
-      onConfirmClick = {
-        publishersViewModel.deleteSelected()
-        publishersViewModel.hideDeleteWarning()
-      },
-      onDismissClick = { publishersViewModel.hideDeleteWarning() }
-    )
-  }
-
-  Scaffold(
-    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-    topBar = {
-      Crossfade(targetState = selectionMode) { selection ->
-        if (selection) {
-          SelectionTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            selectionCount = uiState.selected.size,
-            onClearSelectionClick = { publishersViewModel.clearSelection() },
-            onEditClick = {
-              publishersViewModel.changeManageDialogMode(ManagePublisherMode.EDIT)
-              publishersViewModel.showManageDialog()
-            },
-            onDeleteClick = { publishersViewModel.showDeleteWarning() },
-            scrollBehavior = scrollBehavior
-          )
-        } else {
-          SmallTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            navigationIcon = {
-              IconButton(onClick = { navController.navigateUp() }) {
-                Icon(
-                  Icons.Default.ArrowBack,
-                  contentDescription = stringResource(R.string.action_back)
-                )
-              }
-            },
-            title = { Text(stringResource(R.string.publishers)) },
-            scrollBehavior = scrollBehavior
-          )
-        }
+  @Composable
+  override fun Content() {
+    val publishersViewModel = getViewModel<PublishersViewModel>()
+    val navigator = LocalNavigator.currentOrThrow
+    val uiState by publishersViewModel.uiState.collectAsState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val listState = rememberLazyListState()
+    val expandedFab by remember {
+      derivedStateOf {
+        listState.firstVisibleItemIndex == 0
       }
-    },
-    floatingActionButton = {
-      AnimatedVisibility(
-        visible = !selectionMode,
-        enter = fadeIn(),
-        exit = fadeOut()
-      ) {
-        ExtendedFloatingActionButton(
-          onClick = { publishersViewModel.showManageDialog() },
-          expanded = expandedFab,
-          icon = {
-            Icon(
-              imageVector = Icons.Filled.Add,
-              contentDescription = stringResource(R.string.create_publisher)
+    }
+    val selectionMode by remember {
+      derivedStateOf {
+        uiState.selected.isNotEmpty()
+      }
+    }
+
+    val publishers by uiState.publishers.collectAsState(emptyList())
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = when {
+      selectionMode -> MaterialTheme.colorScheme.surfaceVariant
+      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+        .smallTopAppBarColors()
+        .containerColor(scrollBehavior.scrollFraction)
+        .value
+      else -> MaterialTheme.colorScheme.surface
+    }
+
+    SideEffect {
+      systemUiController.setStatusBarColor(
+        color = statusBarColor
+      )
+    }
+
+    BackHandler(enabled = selectionMode) {
+      publishersViewModel.clearSelection()
+    }
+
+    if (uiState.showManageDialog) {
+      ManagePublisherDialog(
+        mode = uiState.manageDialogMode,
+        publisher = publishers.firstOrNull { it.id == uiState.selected.firstOrNull() },
+        onClose = { publishersViewModel.hideManageDialog() },
+        managePublisherViewModel = getViewModel()
+      )
+    } else if (uiState.showDeleteWarning) {
+      DeletePublishersWarningDialog(
+        selectedCount = uiState.selected.size,
+        onClose = { publishersViewModel.hideDeleteWarning() },
+        onConfirmClick = {
+          publishersViewModel.deleteSelected()
+          publishersViewModel.hideDeleteWarning()
+        },
+        onDismissClick = { publishersViewModel.hideDeleteWarning() }
+      )
+    }
+
+    Scaffold(
+      modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+      topBar = {
+        Crossfade(targetState = selectionMode) { selection ->
+          if (selection) {
+            SelectionTopAppBar(
+              modifier = Modifier.statusBarsPadding(),
+              selectionCount = uiState.selected.size,
+              onClearSelectionClick = { publishersViewModel.clearSelection() },
+              onEditClick = {
+                publishersViewModel.changeManageDialogMode(ManagePublisherMode.EDIT)
+                publishersViewModel.showManageDialog()
+              },
+              onDeleteClick = { publishersViewModel.showDeleteWarning() },
+              scrollBehavior = scrollBehavior
             )
-          },
-          text = { Text(stringResource(R.string.create_publisher)) }
-        )
-      }
-    },
-    content = { innerPadding ->
-      if (publishers.isEmpty()) {
-        NoItemsFound(
-          modifier = Modifier.padding(innerPadding),
-          text = stringResource(R.string.no_publishers_found),
-          icon = Icons.Outlined.Domain
-        )
-      } else {
-        LazyColumn(
-          contentPadding = innerPadding,
-          modifier = Modifier.selectableGroup(),
-          state = listState,
-          verticalArrangement = Arrangement.Top,
-          horizontalAlignment = Alignment.Start
-        ) {
-          items(publishers) { publisher ->
-            PublisherItem(
-              modifier = Modifier.fillMaxWidth(),
-              publisher = publisher,
-              selected = publisher.id in uiState.selected,
-              onClick = {
-                if (selectionMode) {
-                  publishersViewModel.toggleSelection(publisher.id)
+          } else {
+            SmallTopAppBar(
+              modifier = Modifier.statusBarsPadding(),
+              navigationIcon = {
+                IconButton(onClick = { navigator.pop() }) {
+                  Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = stringResource(R.string.action_back)
+                  )
                 }
               },
-              onLongClick = { publishersViewModel.toggleSelection(publisher.id) }
+              title = { Text(stringResource(R.string.publishers)) },
+              scrollBehavior = scrollBehavior
             )
           }
         }
-      }
-    },
-    bottomBar = {
-      Spacer(
-        modifier = Modifier.windowInsetsPadding(
-          WindowInsets.systemBars.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+      },
+      floatingActionButton = {
+        AnimatedVisibility(
+          visible = !selectionMode,
+          enter = fadeIn(),
+          exit = fadeOut()
+        ) {
+          ExtendedFloatingActionButton(
+            onClick = { publishersViewModel.showManageDialog() },
+            expanded = expandedFab,
+            icon = {
+              Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.create_publisher)
+              )
+            },
+            text = { Text(stringResource(R.string.create_publisher)) }
+          )
+        }
+      },
+      content = { innerPadding ->
+        if (publishers.isEmpty()) {
+          NoItemsFound(
+            modifier = Modifier.padding(innerPadding),
+            text = stringResource(R.string.no_publishers_found),
+            icon = Icons.Outlined.Domain
+          )
+        } else {
+          LazyColumn(
+            contentPadding = innerPadding,
+            modifier = Modifier.selectableGroup(),
+            state = listState,
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+          ) {
+            items(publishers) { publisher ->
+              PublisherItem(
+                modifier = Modifier.fillMaxWidth(),
+                publisher = publisher,
+                selected = publisher.id in uiState.selected,
+                onClick = {
+                  if (selectionMode) {
+                    publishersViewModel.toggleSelection(publisher.id)
+                  }
+                },
+                onLongClick = { publishersViewModel.toggleSelection(publisher.id) }
+              )
+            }
+          }
+        }
+      },
+      bottomBar = {
+        Spacer(
+          modifier = Modifier.windowInsetsPadding(
+            WindowInsets.systemBars.only(
+              WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+            )
           )
         )
-      )
-    }
-  )
-}
-
-@Composable
-fun DeletePublishersWarningDialog(
-  selectedCount: Int,
-  onClose: () -> Unit = {},
-  onConfirmClick: () -> Unit = {},
-  onDismissClick: () -> Unit = {}
-) {
-  AlertDialog(
-    onDismissRequest = onClose,
-    text = {
-      Text(
-        text = pluralStringResource(
-          R.plurals.publisher_delete_warning,
-          selectedCount
-        )
-      )
-    },
-    confirmButton = {
-      TextButton(onClick = onConfirmClick) {
-        Text(stringResource(R.string.action_delete))
       }
-    },
-    dismissButton = {
-      TextButton(onClick = onDismissClick) {
-        Text(stringResource(R.string.action_cancel))
-      }
-    }
-  )
-}
-
-@Composable
-fun PublisherItem(
-  modifier: Modifier = Modifier,
-  publisher: Publisher,
-  selected: Boolean = false,
-  onClick: () -> Unit = {},
-  onLongClick: () -> Unit = {}
-) {
-  Row(
-    modifier = modifier
-      .combinedClickable(
-        onClick = onClick,
-        onLongClick = onLongClick,
-        role = Role.Checkbox
-      )
-      .background(
-        color = if (selected) {
-          MaterialTheme.colorScheme.surfaceVariant
-        } else {
-          MaterialTheme.colorScheme.surface
-        }
-      )
-      .padding(16.dp)
-  ) {
-    Text(text = publisher.name)
+    )
   }
+
+  @Composable
+  fun DeletePublishersWarningDialog(
+    selectedCount: Int,
+    onClose: () -> Unit = {},
+    onConfirmClick: () -> Unit = {},
+    onDismissClick: () -> Unit = {}
+  ) {
+    AlertDialog(
+      onDismissRequest = onClose,
+      text = {
+        Text(
+          text = pluralStringResource(
+            R.plurals.publisher_delete_warning,
+            selectedCount
+          )
+        )
+      },
+      confirmButton = {
+        TextButton(onClick = onConfirmClick) {
+          Text(stringResource(R.string.action_delete))
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = onDismissClick) {
+          Text(stringResource(R.string.action_cancel))
+        }
+      }
+    )
+  }
+
+  @Composable
+  fun PublisherItem(
+    modifier: Modifier = Modifier,
+    publisher: Publisher,
+    selected: Boolean = false,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
+  ) {
+    Row(
+      modifier = modifier
+        .combinedClickable(
+          onClick = onClick,
+          onLongClick = onLongClick,
+          role = Role.Checkbox
+        )
+        .background(
+          color = if (selected) {
+            MaterialTheme.colorScheme.surfaceVariant
+          } else {
+            MaterialTheme.colorScheme.surface
+          }
+        )
+        .padding(16.dp)
+    ) {
+      Text(text = publisher.name)
+    }
+  }
+
 }
+

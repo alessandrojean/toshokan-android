@@ -2,7 +2,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.main
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -36,135 +34,128 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.CurrentScreen
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.FadeTransition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
+import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
+import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
+import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
 
 @Composable
-fun MainNavHost (startScreen: TopScreen = TopScreen.Library) {
-  val navController = rememberNavController()
-  val navBackStackEntry by navController.currentBackStackEntryAsState()
-  val currentDestination = navBackStackEntry?.destination
-  val currentRoute = currentDestination?.route
-
-  val (requestedHideBottomNav, requestHideBottomNav) = remember { mutableStateOf(false) }
-
-  DisposableEffect(navBackStackEntry) {
-    onDispose {
-      requestHideBottomNav(false)
-    }
-  }
-
-  val isBottomBarVisible = TopLevelRoutes.isTopLevelRoute(currentRoute) && !requestedHideBottomNav
-  val bottomBarOffset by animateFloatAsState(if (isBottomBarVisible) 0f else 80f)
-
-  val systemUiController = rememberSystemUiController()
-  val navigationBarColor = if (isBottomBarVisible) {
-    MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation()
-  } else {
-    Color.Transparent
-  }
-
-  SideEffect {
-    systemUiController.setNavigationBarColor(
-      color = navigationBarColor
-    )
-  }
-
+fun MainNavHost() {
   val navigationBarHeight = WindowInsets.navigationBars
     .asPaddingValues()
     .calculateBottomPadding()
     .value.toInt()
 
-  Scaffold(
-    modifier = Modifier.windowInsetsPadding(
-      WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
-    ),
-    content = { innerPadding ->
-      Box(modifier = Modifier.padding(innerPadding)) {
-        Navigation(
-          navController = navController,
-          startScreen = startScreen,
-          requestHideNavigator = requestHideBottomNav
-        )
+  Navigator(TopLevelRoutes.Library.screen) { navigator ->
+    val (requestedHideBottomNav, requestHideBottomNav) = remember { mutableStateOf(false) }
+
+    val isBottomBarVisible by remember {
+      derivedStateOf {
+        TopLevelRoutes.isTopLevelRoute(navigator) && !requestedHideBottomNav
       }
-    },
-    bottomBar = {
-      AnimatedVisibility(
-        visible = isBottomBarVisible,
-        enter = fadeIn() + slideInVertically(initialOffsetY = { it + navigationBarHeight }) +
-          expandVertically(expandFrom = Alignment.Top, initialHeight = { 0 }, clip = false),
-        exit = fadeOut() + slideOutVertically(targetOffsetY = { it + navigationBarHeight }) +
-          shrinkVertically(targetHeight = { 0 }, clip = false)
-      ) {
-        NavigationBar(
-          modifier = Modifier.navigationBarsPadding()
+    }
+
+    val systemUiController = rememberSystemUiController()
+    val navigationBarColor = if (isBottomBarVisible || navigator.isEmpty) {
+      MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation()
+    } else {
+      Color.Transparent
+    }
+
+    DisposableEffect(navigator.lastItem) {
+      onDispose {
+        requestHideBottomNav(false)
+      }
+    }
+
+    SideEffect {
+      systemUiController.setNavigationBarColor(
+        color = navigationBarColor
+      )
+    }
+
+    Scaffold(
+      modifier = Modifier.windowInsetsPadding(
+        WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
+      ),
+      content = { innerPadding ->
+        FadeTransition(navigator) { screen ->
+          Box(modifier = Modifier.padding(innerPadding)) {
+            screen.Content()
+          }
+        }
+      },
+      bottomBar = {
+        AnimatedVisibility(
+          visible = isBottomBarVisible,
+          enter = fadeIn() + slideInVertically(initialOffsetY = { it + navigationBarHeight }) +
+            expandVertically(expandFrom = Alignment.Top, initialHeight = { 0 }, clip = false),
+          exit = fadeOut() + slideOutVertically(targetOffsetY = { it + navigationBarHeight }) +
+            shrinkVertically(targetHeight = { 0 }, clip = false)
         ) {
-          TopLevelRoutes.values.forEach {
-            val isSelected = currentRoute?.startsWith(it.screen.route) ?: false
+          NavigationBar(
+            modifier = Modifier.navigationBarsPadding()
+          ) {
+            TopLevelRoutes.values.forEach {
+              val isSelected = navigator.lastItem.key == it.screen.key
 
-            NavigationBarItem(
-              icon = {
-                Icon(
-                  if (isSelected) it.selectedIcon else it.unselectedIcon,
-                  contentDescription = null
-                )
-              },
-              label = {
-                Text(stringResource(it.text), maxLines = 1, overflow = TextOverflow.Ellipsis)
-              },
-              selected = isSelected,
-              onClick = {
-                navController.navigate(it.screen.route) {
-                  // Avoid multiple copies of the same destination when
-                  // reselecting the same item.
-                  launchSingleTop = true
-
-                  // Restore state when reselecting a previously selected item.
-                  restoreState = true
-
-                  // Pop up to the start destination of the graph to
-                  // avoid building up a large stack of destinations
-                  // on the back stack as users select items.
-                  popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
+              NavigationBarItem(
+                icon = {
+                  Icon(
+                    if (isSelected) it.selectedIcon else it.unselectedIcon,
+                    contentDescription = null
+                  )
+                },
+                label = {
+                  Text(
+                    text = stringResource(it.text),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                  )
+                },
+                selected = isSelected,
+                onClick = {
+                  if (!isSelected) {
+                    navigator.replace(it.screen)
                   }
                 }
-              }
-            )
+              )
+            }
           }
         }
       }
-    }
-  )
+    )
+  }
 }
 
 private enum class TopLevelRoutes(
-  val screen: TopScreen,
+  val screen: Screen,
   @StringRes val text: Int,
   val selectedIcon: ImageVector,
   val unselectedIcon: ImageVector = selectedIcon
 ) {
   Library(
-    TopScreen.Library,
+    LibraryScreen(),
     R.string.library,
     Icons.Default.CollectionsBookmark,
     Icons.Outlined.CollectionsBookmark
   ),
 
   Statistics(
-    TopScreen.Statistics,
+    StatisticsScreen(),
     R.string.statistics,
     Icons.Default.InsertChart,
     Icons.Outlined.InsertChart
   ),
 
   More(
-    TopScreen.More,
+    MoreScreen(),
     R.string.more,
     Icons.Default.MoreHoriz,
     Icons.Outlined.MoreHoriz
@@ -173,9 +164,8 @@ private enum class TopLevelRoutes(
   companion object {
     val values = values().toList()
 
-    fun isTopLevelRoute(route: String?): Boolean {
-      val nestedRoute = route?.substringAfter("/")
-      return nestedRoute != null && values.any { it.screen.route == nestedRoute }
+    fun isTopLevelRoute(navigator: Navigator): Boolean {
+      return values.any { it.screen.key == navigator.lastItemOrNull?.key }
     }
   }
 }

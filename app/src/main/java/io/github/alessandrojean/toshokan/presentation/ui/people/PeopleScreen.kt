@@ -49,8 +49,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.hilt.getViewModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
@@ -59,217 +61,220 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.Selecti
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleMode
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleDialog
 
-@Composable
-fun PeopleScreen(
-  navController: NavController,
-  peopleViewModel: PeopleViewModel
-) {
-  val uiState by peopleViewModel.uiState.collectAsState()
-  val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
-  val listState = rememberLazyListState()
-  val expandedFab by remember {
-    derivedStateOf {
-      listState.firstVisibleItemIndex == 0
-    }
-  }
-  val selectionMode by remember {
-    derivedStateOf {
-      uiState.selected.isNotEmpty()
-    }
-  }
+class PeopleScreen : Screen {
 
-  val people by uiState.people.collectAsState(emptyList())
-
-  val systemUiController = rememberSystemUiController()
-  val statusBarColor = when {
-    selectionMode -> MaterialTheme.colorScheme.surfaceVariant
-    scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-      .smallTopAppBarColors()
-      .containerColor(scrollBehavior.scrollFraction)
-      .value
-    else -> MaterialTheme.colorScheme.surface
-  }
-
-  SideEffect {
-    systemUiController.setStatusBarColor(
-      color = statusBarColor
-    )
-  }
-
-  BackHandler(enabled = selectionMode) {
-    peopleViewModel.clearSelection()
-  }
-
-  if (uiState.showManageDialog) {
-    ManagePeopleDialog(
-      mode = uiState.manageDialogMode,
-      person = people.firstOrNull { it.id == uiState.selected.firstOrNull() },
-      onClose = { peopleViewModel.hideManageDialog() },
-      managePeopleViewModel = hiltViewModel()
-    )
-  }
-
-  if (uiState.showDeleteWarning) {
-    DeletePeopleWarningDialog(
-      selectedCount = uiState.selected.size,
-      onClose = { peopleViewModel.hideDeleteWarning() },
-      onConfirmClick = {
-        peopleViewModel.deleteSelected()
-        peopleViewModel.hideDeleteWarning()
-      },
-      onDismissClick = { peopleViewModel.hideDeleteWarning() }
-    )
-  }
-
-  Scaffold(
-    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-    topBar = {
-      Crossfade(targetState = selectionMode) { selection ->
-        if (selection) {
-          SelectionTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            selectionCount = uiState.selected.size,
-            onClearSelectionClick = { peopleViewModel.clearSelection() },
-            onEditClick = {
-              peopleViewModel.changeManageDialogMode(ManagePeopleMode.EDIT)
-              peopleViewModel.showManageDialog()
-            },
-            onDeleteClick = { peopleViewModel.showDeleteWarning() },
-            scrollBehavior = scrollBehavior
-          )
-        } else {
-          SmallTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            navigationIcon = {
-              IconButton(onClick = { navController.navigateUp() }) {
-                Icon(
-                  Icons.Default.ArrowBack,
-                  contentDescription = stringResource(R.string.action_back)
-                )
-              }
-            },
-            title = { Text(stringResource(R.string.people)) },
-            scrollBehavior = scrollBehavior
-          )
-        }
+  @Composable
+  override fun Content() {
+    val peopleViewModel = getViewModel<PeopleViewModel>()
+    val uiState by peopleViewModel.uiState.collectAsState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val listState = rememberLazyListState()
+    val navigator = LocalNavigator.currentOrThrow
+    val expandedFab by remember {
+      derivedStateOf {
+        listState.firstVisibleItemIndex == 0
       }
-    },
-    floatingActionButton = {
-      AnimatedVisibility(
-        visible = !selectionMode,
-        enter = fadeIn(),
-        exit = fadeOut()
-      ) {
-        ExtendedFloatingActionButton(
-          onClick = { peopleViewModel.showManageDialog() },
-          expanded = expandedFab,
-          icon = {
-            Icon(
-              imageVector = Icons.Filled.Add,
-              contentDescription = stringResource(R.string.create_person)
+    }
+    val selectionMode by remember {
+      derivedStateOf {
+        uiState.selected.isNotEmpty()
+      }
+    }
+
+    val people by uiState.people.collectAsState(emptyList())
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = when {
+      selectionMode -> MaterialTheme.colorScheme.surfaceVariant
+      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+        .smallTopAppBarColors()
+        .containerColor(scrollBehavior.scrollFraction)
+        .value
+      else -> MaterialTheme.colorScheme.surface
+    }
+
+    SideEffect {
+      systemUiController.setStatusBarColor(
+        color = statusBarColor
+      )
+    }
+
+    BackHandler(enabled = selectionMode) {
+      peopleViewModel.clearSelection()
+    }
+
+    if (uiState.showManageDialog) {
+      ManagePeopleDialog(
+        mode = uiState.manageDialogMode,
+        person = people.firstOrNull { it.id == uiState.selected.firstOrNull() },
+        onClose = { peopleViewModel.hideManageDialog() },
+        managePeopleViewModel = getViewModel()
+      )
+    }
+
+    if (uiState.showDeleteWarning) {
+      DeletePeopleWarningDialog(
+        selectedCount = uiState.selected.size,
+        onClose = { peopleViewModel.hideDeleteWarning() },
+        onConfirmClick = {
+          peopleViewModel.deleteSelected()
+          peopleViewModel.hideDeleteWarning()
+        },
+        onDismissClick = { peopleViewModel.hideDeleteWarning() }
+      )
+    }
+
+    Scaffold(
+      modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+      topBar = {
+        Crossfade(targetState = selectionMode) { selection ->
+          if (selection) {
+            SelectionTopAppBar(
+              modifier = Modifier.statusBarsPadding(),
+              selectionCount = uiState.selected.size,
+              onClearSelectionClick = { peopleViewModel.clearSelection() },
+              onEditClick = {
+                peopleViewModel.changeManageDialogMode(ManagePeopleMode.EDIT)
+                peopleViewModel.showManageDialog()
+              },
+              onDeleteClick = { peopleViewModel.showDeleteWarning() },
+              scrollBehavior = scrollBehavior
             )
-          },
-          text = { Text(stringResource(R.string.create_person)) }
-        )
-      }
-    },
-    content = { innerPadding ->
-      if (people.isEmpty()) {
-        NoItemsFound(
-          modifier = Modifier.padding(innerPadding),
-          text = stringResource(R.string.no_people_found),
-          icon = Icons.Outlined.Group
-        )
-      } else {
-        LazyColumn(
-          contentPadding = innerPadding,
-          modifier = Modifier.selectableGroup(),
-          state = listState,
-          verticalArrangement = Arrangement.Top,
-          horizontalAlignment = Alignment.Start
-        ) {
-          items(people) { person ->
-            PersonItem(
-              modifier = Modifier.fillMaxWidth(),
-              person = person,
-              selected = person.id in uiState.selected,
-              onClick = {
-                if (selectionMode) {
-                  peopleViewModel.toggleSelection(person.id)
+          } else {
+            SmallTopAppBar(
+              modifier = Modifier.statusBarsPadding(),
+              navigationIcon = {
+                IconButton(onClick = { navigator.pop() }) {
+                  Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = stringResource(R.string.action_back)
+                  )
                 }
               },
-              onLongClick = { peopleViewModel.toggleSelection(person.id) }
+              title = { Text(stringResource(R.string.people)) },
+              scrollBehavior = scrollBehavior
             )
           }
         }
-      }
-    },
-    bottomBar = {
-      Spacer(
-        modifier = Modifier.windowInsetsPadding(
-          WindowInsets.systemBars.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+      },
+      floatingActionButton = {
+        AnimatedVisibility(
+          visible = !selectionMode,
+          enter = fadeIn(),
+          exit = fadeOut()
+        ) {
+          ExtendedFloatingActionButton(
+            onClick = { peopleViewModel.showManageDialog() },
+            expanded = expandedFab,
+            icon = {
+              Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.create_person)
+              )
+            },
+            text = { Text(stringResource(R.string.create_person)) }
+          )
+        }
+      },
+      content = { innerPadding ->
+        if (people.isEmpty()) {
+          NoItemsFound(
+            modifier = Modifier.padding(innerPadding),
+            text = stringResource(R.string.no_people_found),
+            icon = Icons.Outlined.Group
+          )
+        } else {
+          LazyColumn(
+            contentPadding = innerPadding,
+            modifier = Modifier.selectableGroup(),
+            state = listState,
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+          ) {
+            items(people) { person ->
+              PersonItem(
+                modifier = Modifier.fillMaxWidth(),
+                person = person,
+                selected = person.id in uiState.selected,
+                onClick = {
+                  if (selectionMode) {
+                    peopleViewModel.toggleSelection(person.id)
+                  }
+                },
+                onLongClick = { peopleViewModel.toggleSelection(person.id) }
+              )
+            }
+          }
+        }
+      },
+      bottomBar = {
+        Spacer(
+          modifier = Modifier.windowInsetsPadding(
+            WindowInsets.systemBars.only(
+              WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+            )
           )
         )
-      )
-    }
-  )
-}
-
-@Composable
-fun DeletePeopleWarningDialog(
-  selectedCount: Int,
-  onClose: () -> Unit = {},
-  onConfirmClick: () -> Unit = {},
-  onDismissClick: () -> Unit = {}
-) {
-  AlertDialog(
-    onDismissRequest = onClose,
-    text = {
-      Text(
-        text = pluralStringResource(
-          R.plurals.person_delete_warning,
-          selectedCount
-        )
-      )
-    },
-    confirmButton = {
-      TextButton(onClick = onConfirmClick) {
-        Text(stringResource(R.string.action_delete))
       }
-    },
-    dismissButton = {
-      TextButton(onClick = onDismissClick) {
-        Text(stringResource(R.string.action_cancel))
-      }
-    }
-  )
-}
-
-@Composable
-fun PersonItem(
-  modifier: Modifier = Modifier,
-  person: Person,
-  selected: Boolean = false,
-  onClick: () -> Unit = {},
-  onLongClick: () -> Unit = {}
-) {
-  Row(
-    modifier = modifier
-      .combinedClickable(
-        onClick = onClick,
-        onLongClick = onLongClick,
-        role = Role.Checkbox
-      )
-      .background(
-        color = if (selected) {
-          MaterialTheme.colorScheme.surfaceVariant
-        } else {
-          MaterialTheme.colorScheme.surface
-        }
-      )
-      .padding(16.dp)
-  ) {
-    Text(text = person.name)
+    )
   }
+
+  @Composable
+  fun DeletePeopleWarningDialog(
+    selectedCount: Int,
+    onClose: () -> Unit = {},
+    onConfirmClick: () -> Unit = {},
+    onDismissClick: () -> Unit = {}
+  ) {
+    AlertDialog(
+      onDismissRequest = onClose,
+      text = {
+        Text(
+          text = pluralStringResource(
+            R.plurals.person_delete_warning,
+            selectedCount
+          )
+        )
+      },
+      confirmButton = {
+        TextButton(onClick = onConfirmClick) {
+          Text(stringResource(R.string.action_delete))
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = onDismissClick) {
+          Text(stringResource(R.string.action_cancel))
+        }
+      }
+    )
+  }
+
+  @Composable
+  fun PersonItem(
+    modifier: Modifier = Modifier,
+    person: Person,
+    selected: Boolean = false,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
+  ) {
+    Row(
+      modifier = modifier
+        .combinedClickable(
+          onClick = onClick,
+          onLongClick = onLongClick,
+          role = Role.Checkbox
+        )
+        .background(
+          color = if (selected) {
+            MaterialTheme.colorScheme.surfaceVariant
+          } else {
+            MaterialTheme.colorScheme.surface
+          }
+        )
+        .padding(16.dp)
+    ) {
+      Text(text = person.name)
+    }
+  }
+
 }

@@ -13,7 +13,8 @@ fun MainApp() {
   val useDarkIcons = !isSystemInDarkTheme()
 
   SideEffect {
-    systemUiController.setSystemBarsColor(
+    // The navigation bar color is handled by the navigation host.
+    systemUiController.setStatusBarColor(
       color = Color.Transparent,
       darkIcons = useDarkIcons
     )
