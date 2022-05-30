@@ -15,11 +15,31 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-
 @Composable
 fun NoItemsFound(
   modifier: Modifier = Modifier,
   text: String,
+  icon: ImageVector? = null
+) {
+  NoItemsFound(
+    modifier = modifier,
+    text = {
+      Text(
+        text = text,
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.bodyMedium.copy(
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      )
+    },
+    icon = icon
+  )
+}
+
+@Composable
+fun NoItemsFound(
+  modifier: Modifier = Modifier,
+  text: @Composable (() -> Unit)? = null,
   icon: ImageVector? = null
 ) {
   Column(
@@ -32,20 +52,14 @@ fun NoItemsFound(
     if (icon != null) {
       Icon(
         imageVector = icon,
-        contentDescription = text,
+        contentDescription = null,
         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
         modifier = Modifier
           .size(96.dp)
-          .padding(bottom = 16.dp)
+          .padding(bottom = if (text != null) 16.dp else 0.dp)
       )
     }
 
-    Text(
-      text = text,
-      textAlign = TextAlign.Center,
-      style = MaterialTheme.typography.bodyMedium.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-    )
+    text?.invoke()
   }
 }

@@ -4,15 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,27 +40,32 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
@@ -86,11 +95,28 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
       isbnLookupViewModel.search()
     }
 
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = when {
+      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+        .smallTopAppBarColors()
+        .containerColor(scrollBehavior.scrollFraction)
+        .value
+      else -> MaterialTheme.colorScheme.surface
+    }
+
+    SideEffect {
+      systemUiController.setStatusBarColor(
+        color = statusBarColor
+      )
+    }
+
     Scaffold(
-      modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+      modifier = Modifier
+        .nestedScroll(scrollBehavior.nestedScrollConnection)
+        .systemBarsPadding(),
       topBar = {
         CreateBookTopBar(
-          modifier = Modifier.statusBarsPadding(),
+          backgroundColor = statusBarColor,
           progress = if (uiState.progress > 0f && uiState.progress < 1f) uiState.progress else null,
           searchText = uiState.searchQuery,
           placeholderText = stringResource(R.string.isbn_search_placeholder),
@@ -105,19 +131,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         )
       },
       content = { innerPadding ->
-        IsbnLookupResultList(
-          results = isbnLookupViewModel.results,
-          modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-            .imePadding(),
-          contentPadding = PaddingValues(12.dp),
-          listState = listState,
-          onResultClick = { result ->
-            navigator.push(ManageBookScreen(result))
-          }
-        )
-        /*when {
+        when {
           uiState.loading && isbnLookupViewModel.results.isEmpty() -> {
             BoxedCircularProgressIndicator(
               modifier = Modifier
@@ -136,10 +150,9 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
           }
           isbnLookupViewModel.results.isEmpty() && !uiState.searchedOnce && !uiState.loading -> {
             NoItemsFound(
-              text = stringResource(R.string.search_by_isbn_tip),
               icon = Icons.Outlined.Search,
               modifier = Modifier
-                .padding()
+                .padding(innerPadding)
                 .imePadding()
             )
           }
@@ -147,18 +160,15 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
             results = isbnLookupViewModel.results,
             modifier = Modifier
               .fillMaxSize()
-              .padding(8.dp)
+              .padding(innerPadding)
               .imePadding(),
-            contentPadding = innerPadding,
+            contentPadding = PaddingValues(12.dp),
             listState = listState,
             onResultClick = { result ->
               navigator.push(ManageBookScreen(result))
             }
           )
-        }*/
-      },
-      bottomBar = {
-        Spacer(modifier = Modifier.navigationBarsPadding())
+        }
       }
     )
   }
@@ -166,6 +176,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
   @Composable
   fun CreateBookTopBar(
     modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     searchText: String = "",
     progress: Float? = null,
     placeholderText: String = "",
@@ -184,10 +195,12 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
       targetValue = progress ?: 0f,
       animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
+    val progressOpacity by animateFloatAsState(if (progress != null) 1f else 0f)
 
     Column(
       modifier = Modifier
-        .fillMaxSize()
+        .background(backgroundColor)
+        .fillMaxWidth()
         .then(modifier)
     ) {
       SmallTopAppBar(
@@ -260,12 +273,12 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         }
       )
 
-      if (progress != null) {
-        LinearProgressIndicator(
-          modifier = Modifier.fillMaxWidth(),
-          progress = animatedProgress
-        )
-      }
+      LinearProgressIndicator(
+        modifier = Modifier
+          .fillMaxWidth()
+          .graphicsLayer(alpha = progressOpacity),
+        progress = animatedProgress
+      )
     }
 
     LaunchedEffect(Unit) {

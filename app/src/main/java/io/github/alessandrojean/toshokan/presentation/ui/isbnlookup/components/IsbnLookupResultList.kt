@@ -20,8 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,12 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
-import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
 
 @Composable
@@ -49,7 +46,9 @@ fun IsbnLookupResultList(
   onResultClick: (LookupBookResult) -> Unit
 ) {
   LazyColumn(
-    modifier = modifier,
+    modifier = Modifier
+      .fillMaxSize()
+      .then(modifier),
     contentPadding = contentPadding,
     state = listState,
     verticalArrangement = Arrangement
@@ -121,19 +120,25 @@ fun IsbnLookupResultRow(
       ) {
         Text(
           text = result.title,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis,
           style = MaterialTheme.typography.titleMedium
         )
         Text(
           text = result.contributors
             .filter { it.role == CreditRole.AUTHOR || it.role == CreditRole.ILLUSTRATOR }
             .joinToString { it.name },
-          style = MaterialTheme.typography.bodyMedium
+          style = MaterialTheme.typography.bodyMedium,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis
         )
         Text(
           text = "${stringResource(result.provider!!.title)} · ${result.publisher}",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-          modifier = Modifier.padding(top = 4.dp)
+          modifier = Modifier.padding(top = 4.dp),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
         )
       }
     }
