@@ -1,12 +1,14 @@
 package io.github.alessandrojean.toshokan.service.lookup.openlibrary
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 typealias OpenLibraryResult = Map<String, OpenLibraryBook>
 
 @Serializable
 data class OpenLibraryBook(
-  val authors: List<OpenLibraryAuthor>? = emptyList(),
+  val authors: List<OpenLibraryContributor>? = emptyList(),
   val cover: OpenLibraryCover? = null,
   val identifiers: Map<String, List<String>> = emptyMap(),
   val publishers: List<OpenLibraryPublisher> = emptyList(),
@@ -15,7 +17,17 @@ data class OpenLibraryBook(
 )
 
 @Serializable
-data class OpenLibraryAuthor(val name: String)
+data class OpenLibraryBookDetails(
+  @SerialName("physical_dimensions") val physicalDimensions: String? = "",
+  val contributors: List<OpenLibraryContributor>? = emptyList(),
+  val description: JsonElement? = null
+)
+
+@Serializable
+data class OpenLibraryContributor(
+  val name: String,
+  val role: String? = null
+)
 
 @Serializable
 data class OpenLibraryPublisher(val name: String)

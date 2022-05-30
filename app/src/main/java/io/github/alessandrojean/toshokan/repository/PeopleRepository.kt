@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.repository
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.database.data.Person
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date
@@ -16,6 +17,14 @@ class PeopleRepository @Inject constructor(
 
   val people = database.personQueries.selectAll().asFlow().mapToList()
 
+  fun selectAll(): List<Person> {
+    return database.personQueries.selectAll().executeAsList()
+  }
+
+  fun findByName(name: String): Person? {
+    return database.personQueries.findByName(name).executeAsOneOrNull()
+  }
+
   suspend fun insert(
     name: String,
     description: String,
@@ -27,7 +36,6 @@ class PeopleRepository @Inject constructor(
     val now = Date().time
 
     database.personQueries.insert(
-      id = null,
       name = name,
       description = description,
       country = country,

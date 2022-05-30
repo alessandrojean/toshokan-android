@@ -1,6 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-  <string name="app_name">Toshokan</string>
-
   <!-- Common -->
   <string name="action_back">Voltar</string>
   <string name="action_search">Buscar</string>
@@ -13,25 +11,73 @@
   <string name="action_cancel">Cancelar</string>
   <string name="action_reorder">Reordernar</string>
   <string name="action_select">Selecionar</string>
+  <string name="action_add">Adicionar</string>
+  <string name="action_pick_date">Escolher data</string>
+  <string name="action_previous_step">Etapa anterior</string>
+  <string name="action_next_step">Próxima etapa</string>
 
   <!-- Websites -->
   <string name="website">Site</string>
-  <string name="instagram">Instagram</string>
-  <string name="twitter">Twitter</string>
 
   <!-- Common fields -->
+  <string name="code">Código</string>
   <string name="name">Nome</string>
   <string name="description">Descrição</string>
   <string name="country">País</string>
+  <string name="title">Título</string>
+  <string name="volume">Volume</string>
+  <string name="synopsis">Sinopse</string>
+  <string name="publisher">Editora</string>
+  <string name="label_price">Preço de capa</string>
+  <string name="paid_price">Preço pago</string>
+  <string name="currency">Moeda</string>
+  <string name="store">Loja</string>
+  <string name="notes">Observações</string>
+  <string name="group">Grupo</string>
+  <string name="future_item">Este livro é um item futuro</string>
+  <string name="bought_at">Data da compra</string>
+  <string name="person">Pessoa</string>
+  <string name="role">Função/cargo</string>
+
+  <!-- Credit roles -->
+  <string name="role_unknown">Desconhecido</string>
+  <string name="role_author">Autor(a)</string>
+  <string name="role_artist">Artista</string>
+  <string name="role_illustrator">Ilustrador(a)</string>
+  <string name="role_script">Roteirista</string>
+  <string name="role_editor">Editor(a)</string>
+  <string name="role_translator">Tradutor(a)</string>
+  <string name="role_cover_design">Capista</string>
+  <string name="role_colorist">Colorista</string>
+  <string name="role_letterer">Letrista</string>
+  <string name="role_others">Outros</string>
 
   <!-- Library -->
   <string name="library">Biblioteca</string>
   <string name="create_book">Novo livro</string>
   <string name="action_new_book">Novo</string>
   <string name="action_fill_manually">Preencher manualmente</string>
+  <string name="action_scan_barcode">Ler código de barras</string>
+  <string name="action_search_by_isbn">Pesquisar por ISBN</string>
   <string name="isbn">ISBN</string>
-  <string name="isbn_search_placeholder">Procurar por ISBN</string>
+  <string name="isbn_search_placeholder">Pesquisar por ISBN</string>
   <string name="no_results_found">Nenhum resultado encontrado</string>
+  <string name="search_by_isbn_tip">Use a barra de busca para encontrar um livro pelo ISBN</string>
+
+  <!-- Books -->
+  <string name="information">Informações</string>
+  <string name="contributors">Contribuidores</string>
+  <string name="organization">Organização</string>
+  <string name="cover">Capa</string>
+  <string name="no_covers_found">Nenhuma capa encontrada</string>
+  <string name="current_cover">Atual</string>
+  <string name="no_contributors">Nenhum contribuidor</string>
+  <string name="person_role">como %s</string>
+  <string name="action_edit_contributor">Editar contribuidor</string>
+  <string name="action_remove_contributor">Remover contribuidor</string>
+  <string name="new_contributor">Novo contribuidor</string>
+  <string name="editing_contributor">Editando contribuidor</string>
+  <string name="steps">Etapa %d de %d</string>
 
   <!-- Statistics -->
   <string name="statistics">Estatísticas</string>
@@ -94,4 +140,11 @@
   <!-- Settings -->
   <string name="settings">Configurações</string>
   <string name="about">Sobre</string>
+
+  <!-- Barcode scanning -->
+  <string name="barcode_scanner">Leitor de códigos de barras</string>
+  <string name="grant_camera_permission">
+    A permissão de uso da câmera é necessária para esta funcionalidade estar disponível.
+  </string>
+  <string name="action_request_permission">Requisitar permissão</string>
 </resources>

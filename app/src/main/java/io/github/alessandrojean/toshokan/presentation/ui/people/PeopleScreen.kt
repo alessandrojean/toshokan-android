@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -49,7 +50,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -59,29 +60,24 @@ import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleMode
-import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleDialog
+import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleScreen
 
-class PeopleScreen : Screen {
+class PeopleScreen : AndroidScreen() {
 
   @Composable
   override fun Content() {
     val peopleViewModel = getViewModel<PeopleViewModel>()
     val uiState by peopleViewModel.uiState.collectAsState()
+    val people by peopleViewModel.people.collectAsState(initial = emptyList())
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
     val expandedFab by remember {
-      derivedStateOf {
-        listState.firstVisibleItemIndex == 0
-      }
+      derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
     val selectionMode by remember {
-      derivedStateOf {
-        uiState.selected.isNotEmpty()
-      }
+      derivedStateOf { uiState.selected.isNotEmpty() }
     }
-
-    val people by uiState.people.collectAsState(emptyList())
 
     val systemUiController = rememberSystemUiController()
     val statusBarColor = when {
@@ -103,13 +99,10 @@ class PeopleScreen : Screen {
       peopleViewModel.clearSelection()
     }
 
-    if (uiState.showManageDialog) {
-      ManagePeopleDialog(
-        mode = uiState.manageDialogMode,
-        person = people.firstOrNull { it.id == uiState.selected.firstOrNull() },
-        onClose = { peopleViewModel.hideManageDialog() },
-        managePeopleViewModel = getViewModel()
-      )
+    LaunchedEffect(navigator.lastItem) {
+      if (navigator.lastItem is PeopleScreen) {
+        peopleViewModel.clearSelection()
+      }
     }
 
     if (uiState.showDeleteWarning) {
@@ -134,8 +127,12 @@ class PeopleScreen : Screen {
               selectionCount = uiState.selected.size,
               onClearSelectionClick = { peopleViewModel.clearSelection() },
               onEditClick = {
-                peopleViewModel.changeManageDialogMode(ManagePeopleMode.EDIT)
-                peopleViewModel.showManageDialog()
+                navigator.push(
+                  ManagePeopleScreen(
+                    mode = ManagePeopleMode.EDIT,
+                    person = people.firstOrNull { it.id == uiState.selected.firstOrNull() }
+                  )
+                )
               },
               onDeleteClick = { peopleViewModel.showDeleteWarning() },
               scrollBehavior = scrollBehavior
@@ -164,7 +161,7 @@ class PeopleScreen : Screen {
           exit = fadeOut()
         ) {
           ExtendedFloatingActionButton(
-            onClick = { peopleViewModel.showManageDialog() },
+            onClick = { navigator.push(ManagePeopleScreen()) },
             expanded = expandedFab,
             icon = {
               Icon(

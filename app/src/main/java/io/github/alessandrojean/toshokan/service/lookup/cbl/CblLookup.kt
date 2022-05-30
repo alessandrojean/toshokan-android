@@ -1,70 +1,72 @@
 package io.github.alessandrojean.toshokan.service.lookup.cbl
 
-import io.github.alessandrojean.toshokan.network.POST
-import io.github.alessandrojean.toshokan.network.parseAs
+import io.github.alessandrojean.toshokan.domain.CreditRole
+import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
-import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
-import okhttp3.Headers
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
+import io.github.alessandrojean.toshokan.util.getIsbnInformation
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.setBody
+import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HeadersBuilder
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import javax.inject.Inject
 
 class CblLookup @Inject constructor (
-  override val client: OkHttpClient
+  override val client: HttpClient
 ): LookupProvider() {
-
-  override val name = "CBL"
 
   override val baseUrl = "https://isbn-search-br.search.windows.net/indexes/isbn-index/docs"
 
   override val provider = Provider.CBL
 
-  override fun headersBuilder(): Headers.Builder = Headers.Builder()
-    .add("Accept", "application/json")
-    .add("Api-Key", CBL_API_KEY)
-    .add("Origin", CBL_SITE_URL)
-    .add("Referer", "$CBL_SITE_URL/")
-    .add("User-Agent", USER_AGENT)
-
-  override fun searchRequest(isbn: String): Request {
-    val jsonPayload = buildJsonObject {
-      put("count", true)
-      putJsonArray("facets") {
-        add("Imprint,count:50")
-        add("Authors,count:50")
-      }
-      put("filter", "")
-      put("orderby", null as String?)
-      put("queryType", "full")
-      put("search", isbn)
-      put("searchFields", "FormattedKey,RowKey")
-      put("searchMode", "any")
-      put("select", FIELDS_TO_SELECT.joinToString(","))
-      put("skip", 0)
-      put("top", 12)
-    }
-
-    val requestBody = jsonPayload.toString().toRequestBody(JSON_MEDIA_TYPE)
-
-    val requestHeaders = headersBuilder()
-      .add("Content-Length", requestBody.contentLength().toString())
-      .add("Content-Type", requestBody.contentType().toString())
-      .build()
-
-    return POST("$baseUrl/search?api-version=$CBL_API_VERSION", requestHeaders, requestBody)
+  override fun headersBuilder(): HeadersBuilder = HeadersBuilder().apply {
+    append(HttpHeaders.Accept, ContentType.Application.Json.toString())
+    append("Api-Key", CBL_API_KEY)
+    append(HttpHeaders.Origin, CBL_SITE_URL)
+    append(HttpHeaders.Referrer, "$CBL_SITE_URL/")
+    append(HttpHeaders.UserAgent, USER_AGENT)
   }
 
-  override fun searchParse(response: Response): List<LookupBookResult> {
-    val result = response.parseAs<CblSearchResult>()
+  override suspend fun searchByIsbn(isbn: String): List<LookupBookResult> {
+    if (isbn.getIsbnInformation()?.country != "BR") {
+      return emptyList()
+    }
+
+    return super.searchByIsbn(isbn)
+  }
+
+  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
+    method = HttpMethod.Post
+    url("$baseUrl/search?api-version=$CBL_API_VERSION")
+    headers.appendAll(this@CblLookup.headers)
+    contentType(ContentType.Application.Json)
+    setBody(
+      CblSearchRequest(
+        count = true,
+        facets = listOf("Imprint,count:50", "Authors,count:50"),
+        filter = "",
+        orderBy = null,
+        queryType = "full",
+        search = isbn,
+        searchFields = "FormattedKey,RowKey",
+        searchMode = "any",
+        select = FIELDS_TO_SELECT.joinToString(","),
+        skip = 0,
+        top = 12
+      )
+    )
+  }
+
+  override suspend fun searchParse(response: HttpResponse): List<LookupBookResult> {
+    val result = response.body<CblSearchResult>()
 
     if (result.count == 0) {
       return emptyList()
@@ -78,10 +80,11 @@ class CblLookup @Inject constructor (
     title = title.trim()
       .replace(TITLE_FIX_REGEX, " #$1")
       .replace(TITLE_VOLUME_REGEX, "#0$1"),
-    authors = if (roles.orEmpty().size >= authors.size) {
-      authors.filterIndexed { i, _ -> ALLOWED_ROLES.contains(roles!![i]) }
+    contributors = if (roles.orEmpty().size != authors.size) {
+      authors.map { LookupBookContributor(it, CreditRole.AUTHOR) }
     } else {
-      authors
+      authors.zip(roles!!)
+        .map { (author, role) -> LookupBookContributor(author, role.toCreditRole()) }
     },
     publisher = PUBLISHER_REPLACEMENTS[publisher] ?: publisher,
     dimensions = dimensions
@@ -94,9 +97,13 @@ class CblLookup @Inject constructor (
           (match.groupValues[3] + "." + match.groupValues[4].ifEmpty { "0" }).toFloatOrNull() ?: 0f
         )
       } ?: emptyList(),
-    synopsis = synopsis.orEmpty(),
+    synopsis = synopsis.orEmpty().trim(),
     providerId = id.orEmpty()
   )
+
+  private fun String.toCreditRole(): CreditRole {
+    return CONTRIBUTION_MAPPING.getOrDefault(this, CreditRole.UNKNOWN)
+  }
 
   companion object {
     private const val CBL_API_KEY = "100216A23C5AEE390338BBD19EA86D29"
@@ -105,8 +112,6 @@ class CblLookup @Inject constructor (
 
     private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36"
-
-    private val JSON_MEDIA_TYPE = "application/json".toMediaType()
     
     private val FIELDS_TO_SELECT = listOf(
       "Authors",
@@ -126,7 +131,13 @@ class CblLookup @Inject constructor (
       "Sinopse"
     )
 
-    private val ALLOWED_ROLES = listOf("Autor", "Ilustrador", "Roteirista")
+    private val CONTRIBUTION_MAPPING = mapOf(
+      "Autor" to CreditRole.AUTHOR,
+      "Ilustrador" to CreditRole.ILLUSTRATOR,
+      "Roteirista" to CreditRole.SCRIPT,
+      "Editor" to CreditRole.EDITOR,
+      "Tradutor" to CreditRole.TRANSLATOR
+    )
     private val PUBLISHER_REPLACEMENTS = mapOf(
       "Editora JBC" to "JBC",
       "INK" to "JBC",

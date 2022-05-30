@@ -5,6 +5,7 @@ import androidx.compose.material3.LocalAbsoluteTonalElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.ln
 
@@ -14,10 +15,15 @@ import kotlin.math.ln
 @Composable
 fun ColorScheme.surfaceColorAtNavigationBarElevation(): Color {
   val elevation = LocalAbsoluteTonalElevation.current + 3.dp
-  if (elevation == 0.dp) {
+  return surfaceWithTonalElevation(elevation)
+}
+
+@Composable
+fun ColorScheme.surfaceWithTonalElevation(tonalElevation: Dp): Color {
+  if (tonalElevation == 0.dp) {
     return surface
   }
 
-  val alpha = ((4.5f * ln(elevation.value + 1)) + 2f) / 100f
+  val alpha = ((4.5f * ln(tonalElevation.value + 1)) + 2f) / 100f
   return primary.copy(alpha = alpha).compositeOver(surface)
 }

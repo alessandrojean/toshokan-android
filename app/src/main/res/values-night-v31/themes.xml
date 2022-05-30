@@ -1,0 +1,13 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <!-- Base application theme. -->
+  <style name="Theme.Toshokan" parent="Theme.Material3.Dark.NoActionBar">
+    <!-- Primary brand color. -->
+    <item name="colorPrimary">@color/m3_sys_color_dynamic_dark_primary</item>
+    <item name="colorOnPrimary">@color/m3_sys_color_dynamic_dark_on_primary</item>
+    <!-- Secondary brand color. -->
+    <item name="colorSecondary">@color/m3_sys_color_dynamic_dark_secondary</item>
+    <item name="colorOnSecondary">@color/m3_sys_color_dynamic_dark_on_secondary</item>
+    <!-- Status bar color. -->
+    <item name="android:statusBarColor" >@color/m3_sys_color_dynamic_dark_surface</item>
+  </style>
+</resources>

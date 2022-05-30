@@ -1,5 +1,5 @@
 CREATE TABLE Person(
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   description TEXT,
   country TEXT,
@@ -18,9 +18,14 @@ SELECT *
 FROM Person
 ORDER BY name ASC;
 
+findByName:
+SELECT *
+FROM Person
+WHERE name = ?
+LIMIT 1;
+
 insert:
 INSERT INTO Person(
-  id,
   name,
   description,
   country,
@@ -30,7 +35,7 @@ INSERT INTO Person(
   created_at,
   updated_at
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE Person

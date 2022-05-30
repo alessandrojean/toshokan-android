@@ -25,6 +25,8 @@ data class MercadoEditorialBook(
   @SerialName("medidas") val dimensions: MercadoEditorialDimension? = null,
   @SerialName("imagens") val pictures: MercadoEditorialPictures? = null,
   @SerialName("editora") val publisher: MercadoEditorialPublisher? = null,
+  @SerialName("moeda") val currency: String? = null,
+  @SerialName("preco") val price: String? = null,
 )
 
 @Serializable

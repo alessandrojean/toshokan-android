@@ -18,6 +18,8 @@ class GroupsRepository @Inject constructor(
 
   val groups = database.groupQueries.selectAll().asFlow().mapToList()
 
+  val groupsSorted = database.groupQueries.selectSorted().asFlow().mapToList()
+
   private fun nextSortValue(): Long {
     return database.groupQueries.nextSortValue().executeAsOne().expr ?: 0L
   }

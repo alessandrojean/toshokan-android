@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -49,7 +50,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -58,10 +59,11 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
+import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherMode
-import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherDialog
+import io.github.alessandrojean.toshokan.presentation.ui.publishers.manage.ManagePublisherScreen
 
-class PublishersScreen : Screen {
+class PublishersScreen : AndroidScreen() {
 
   @Composable
   override fun Content() {
@@ -71,17 +73,13 @@ class PublishersScreen : Screen {
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
     val listState = rememberLazyListState()
     val expandedFab by remember {
-      derivedStateOf {
-        listState.firstVisibleItemIndex == 0
-      }
+      derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
     val selectionMode by remember {
-      derivedStateOf {
-        uiState.selected.isNotEmpty()
-      }
+      derivedStateOf { uiState.selected.isNotEmpty() }
     }
 
-    val publishers by uiState.publishers.collectAsState(emptyList())
+    val publishers by publishersViewModel.publishers.collectAsState(emptyList())
 
     val systemUiController = rememberSystemUiController()
     val statusBarColor = when {
@@ -103,14 +101,13 @@ class PublishersScreen : Screen {
       publishersViewModel.clearSelection()
     }
 
-    if (uiState.showManageDialog) {
-      ManagePublisherDialog(
-        mode = uiState.manageDialogMode,
-        publisher = publishers.firstOrNull { it.id == uiState.selected.firstOrNull() },
-        onClose = { publishersViewModel.hideManageDialog() },
-        managePublisherViewModel = getViewModel()
-      )
-    } else if (uiState.showDeleteWarning) {
+    LaunchedEffect(navigator.lastItem) {
+      if (navigator.lastItem is PeopleScreen) {
+        publishersViewModel.clearSelection()
+      }
+    }
+
+    if (uiState.showDeleteWarning) {
       DeletePublishersWarningDialog(
         selectedCount = uiState.selected.size,
         onClose = { publishersViewModel.hideDeleteWarning() },
@@ -132,8 +129,12 @@ class PublishersScreen : Screen {
               selectionCount = uiState.selected.size,
               onClearSelectionClick = { publishersViewModel.clearSelection() },
               onEditClick = {
-                publishersViewModel.changeManageDialogMode(ManagePublisherMode.EDIT)
-                publishersViewModel.showManageDialog()
+                navigator.push(
+                  ManagePublisherScreen(
+                    mode = ManagePublisherMode.EDIT,
+                    publisher = publishers.firstOrNull { it.id == uiState.selected.firstOrNull() }
+                  )
+                )
               },
               onDeleteClick = { publishersViewModel.showDeleteWarning() },
               scrollBehavior = scrollBehavior
@@ -162,7 +163,7 @@ class PublishersScreen : Screen {
           exit = fadeOut()
         ) {
           ExtendedFloatingActionButton(
-            onClick = { publishersViewModel.showManageDialog() },
+            onClick = { navigator.push(ManagePublisherScreen()) },
             expanded = expandedFab,
             icon = {
               Icon(

@@ -1,11 +1,15 @@
 package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -14,15 +18,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
@@ -32,10 +37,10 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -48,29 +53,37 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.IsbnLookupResultList
+import io.github.alessandrojean.toshokan.util.isValidIsbn
+import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.launch
 
-class IsbnLookupScreen : Screen {
+data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
 
   @Composable
   override fun Content() {
-    val createBookViewModel = getViewModel<IsbnLookupViewModel>()
-    val uiState by createBookViewModel.uiState.collectAsState()
+    val isbnLookupViewModel = getViewModel<IsbnLookupViewModel>()
+    val uiState by isbnLookupViewModel.uiState.collectAsState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
 
-    val expandedFab by remember {
-      derivedStateOf {
-        listState.firstVisibleItemIndex == 0
-      }
+    if (
+      !isbn.isNullOrBlank() &&
+      isbn.isValidIsbn() &&
+      uiState.searchQuery != isbn &&
+      isbnLookupViewModel.results.isEmpty()
+    ) {
+      isbnLookupViewModel.onSearchQueryChange(isbn)
+      isbnLookupViewModel.search()
     }
 
     Scaffold(
@@ -78,55 +91,71 @@ class IsbnLookupScreen : Screen {
       topBar = {
         CreateBookTopBar(
           modifier = Modifier.statusBarsPadding(),
+          progress = if (uiState.progress > 0f && uiState.progress < 1f) uiState.progress else null,
           searchText = uiState.searchQuery,
           placeholderText = stringResource(R.string.isbn_search_placeholder),
           scrollBehavior = scrollBehavior,
+          shouldRequestFocus = isbn.isNullOrBlank() || !isbn.isValidIsbn(),
           onNavigationClick = { navigator.pop() },
-          onClearClick = { createBookViewModel.onSearchQueryChange("") },
-          onSearchTextChanged = { createBookViewModel.onSearchQueryChange(it) },
-          onSearchAction = { createBookViewModel.search() }
+          onClearClick = { isbnLookupViewModel.onSearchQueryChange("") },
+          onSearchTextChanged = { isbnLookupViewModel.onSearchQueryChange(it) },
+          onSearchAction = {
+            isbnLookupViewModel.search()
+          }
         )
       },
-      floatingActionButton = {
-        AnimatedVisibility(
-          visible = uiState.selected != null,
-          enter = fadeIn(),
-          exit = fadeOut()
-        ) {
-          ExtendedFloatingActionButton(
-            onClick = { /* TODO */ },
-            expanded = expandedFab,
-            icon = {
-              Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = stringResource(R.string.action_select)
-              )
-            },
-            text = { Text(stringResource(R.string.action_select)) }
-          )
-        }
-      },
       content = { innerPadding ->
-        when {
-          uiState.loading -> BoxedCircularProgressIndicator(Modifier.padding(innerPadding))
-          uiState.results.isEmpty() && uiState.searchedOnce -> NoItemsFound(
-            text = stringResource(R.string.no_results_found),
-            icon = Icons.Outlined.SearchOff,
-            modifier = Modifier.padding(innerPadding)
-          )
+        IsbnLookupResultList(
+          results = isbnLookupViewModel.results,
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .imePadding(),
+          contentPadding = PaddingValues(12.dp),
+          listState = listState,
+          onResultClick = { result ->
+            navigator.push(ManageBookScreen(result))
+          }
+        )
+        /*when {
+          uiState.loading && isbnLookupViewModel.results.isEmpty() -> {
+            BoxedCircularProgressIndicator(
+              modifier = Modifier
+                .padding(innerPadding)
+                .imePadding()
+            )
+          }
+          isbnLookupViewModel.results.isEmpty() && uiState.searchedOnce && !uiState.loading -> {
+            NoItemsFound(
+              text = stringResource(R.string.no_results_found),
+              icon = Icons.Outlined.SearchOff,
+              modifier = Modifier
+                .padding(innerPadding)
+                .imePadding()
+            )
+          }
+          isbnLookupViewModel.results.isEmpty() && !uiState.searchedOnce && !uiState.loading -> {
+            NoItemsFound(
+              text = stringResource(R.string.search_by_isbn_tip),
+              icon = Icons.Outlined.Search,
+              modifier = Modifier
+                .padding()
+                .imePadding()
+            )
+          }
           else -> IsbnLookupResultList(
-            results = uiState.results,
-            selected = uiState.selected,
+            results = isbnLookupViewModel.results,
             modifier = Modifier
               .fillMaxSize()
-              .padding(8.dp),
+              .padding(8.dp)
+              .imePadding(),
             contentPadding = innerPadding,
             listState = listState,
             onResultClick = { result ->
-              createBookViewModel.onSelectedChange(result)
+              navigator.push(ManageBookScreen(result))
             }
           )
-        }
+        }*/
       },
       bottomBar = {
         Spacer(modifier = Modifier.navigationBarsPadding())
@@ -138,8 +167,10 @@ class IsbnLookupScreen : Screen {
   fun CreateBookTopBar(
     modifier: Modifier = Modifier,
     searchText: String = "",
+    progress: Float? = null,
     placeholderText: String = "",
     scrollBehavior: TopAppBarScrollBehavior,
+    shouldRequestFocus: Boolean = true,
     onNavigationClick: () -> Unit,
     onClearClick: () -> Unit = {},
     onSearchTextChanged: (String) -> Unit = {},
@@ -149,71 +180,99 @@ class IsbnLookupScreen : Screen {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
 
-    SmallTopAppBar(
-      modifier = modifier,
-      scrollBehavior = scrollBehavior,
-      navigationIcon = {
-        IconButton(onClick = onNavigationClick) {
-          Icon(
-            Icons.Default.ArrowBack,
-            contentDescription = stringResource(R.string.action_back)
-          )
-        }
-      },
-      title = {
-        OutlinedTextField(
-          modifier = Modifier
-            .fillMaxWidth()
-            .onFocusChanged { focusState ->
-              showClearButton = (focusState.isFocused)
-            }
-            .focusRequester(focusRequester),
-          value = searchText,
-          onValueChange = onSearchTextChanged,
-          placeholder = { Text(placeholderText) },
-          colors = TextFieldDefaults.textFieldColors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            containerColor = Color.Transparent,
-            cursorColor = LocalContentColor.current
-          ),
-          textStyle = MaterialTheme.typography.titleLarge.copy(
-            color = MaterialTheme.colorScheme.onSurface
-          ),
-          maxLines = 1,
-          singleLine = true,
-          keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Search,
-            keyboardType = KeyboardType.Number
-          ),
-          keyboardActions = KeyboardActions(
-            onSearch = {
-              keyboardController?.hide()
-              focusRequester.freeFocus()
-              onSearchAction()
-            }
-          )
-        )
-      },
-      actions = {
-        AnimatedVisibility(
-          visible = showClearButton,
-          enter = fadeIn(),
-          exit = fadeOut()
-        ) {
-          IconButton(onClick = { onClearClick() }) {
-            Icon(
-              imageVector = Icons.Filled.Close,
-              contentDescription = stringResource(R.string.action_clear),
-              tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          }
-        }
-      }
+    val animatedProgress by animateFloatAsState(
+      targetValue = progress ?: 0f,
+      animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
 
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .then(modifier)
+    ) {
+      SmallTopAppBar(
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+          IconButton(onClick = onNavigationClick) {
+            Icon(
+              Icons.Default.ArrowBack,
+              contentDescription = stringResource(R.string.action_back)
+            )
+          }
+        },
+        title = {
+          OutlinedTextField(
+            modifier = Modifier
+              .fillMaxWidth()
+              .focusRequester(focusRequester)
+              .onFocusChanged { focusState ->
+                showClearButton = (focusState.isFocused)
+                if (focusState.isFocused) {
+                  keyboardController?.show()
+                }
+              },
+            value = searchText,
+            onValueChange = onSearchTextChanged,
+            placeholder = {
+              Text(
+                text = placeholderText,
+                style = MaterialTheme.typography.titleLarge
+              )
+            },
+            colors = TextFieldDefaults.textFieldColors(
+              focusedIndicatorColor = Color.Transparent,
+              unfocusedIndicatorColor = Color.Transparent,
+              containerColor = Color.Transparent,
+              cursorColor = LocalContentColor.current
+            ),
+            textStyle = MaterialTheme.typography.titleLarge.copy(
+              color = MaterialTheme.colorScheme.onSurface
+            ),
+            maxLines = 1,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+              imeAction = ImeAction.Search,
+              keyboardType = KeyboardType.Number
+            ),
+            keyboardActions = KeyboardActions(
+              onSearch = {
+                keyboardController?.hide()
+                focusRequester.freeFocus()
+                onSearchAction()
+              }
+            )
+          )
+        },
+        actions = {
+          AnimatedVisibility(
+            visible = showClearButton,
+            enter = fadeIn(),
+            exit = fadeOut()
+          ) {
+            IconButton(onClick = { onClearClick() }) {
+              Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(R.string.action_clear),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
+        }
+      )
+
+      if (progress != null) {
+        LinearProgressIndicator(
+          modifier = Modifier.fillMaxWidth(),
+          progress = animatedProgress
+        )
+      }
+    }
+
     LaunchedEffect(Unit) {
-      focusRequester.requestFocus()
+      if (shouldRequestFocus) {
+        awaitFrame()
+        focusRequester.requestFocus()
+      }
     }
   }
 

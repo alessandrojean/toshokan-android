@@ -1,40 +1,56 @@
 package io.github.alessandrojean.toshokan.service.lookup.mercadoeditorial
 
-import io.github.alessandrojean.toshokan.network.GET
-import io.github.alessandrojean.toshokan.network.parseAs
+import android.icu.util.Currency
+import io.github.alessandrojean.toshokan.domain.CreditRole
+import io.github.alessandrojean.toshokan.domain.Price
+import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
-import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import io.github.alessandrojean.toshokan.util.getIsbnInformation
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HeadersBuilder
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import javax.inject.Inject
 
 class MercadoEditorialLookup @Inject constructor (
-  override val client: OkHttpClient
+  override val client: HttpClient
 ) : LookupProvider() {
-  override val name = "Mercado Editorial"
 
   override val baseUrl = "https://api.mercadoeditorial.org/api/v1.2"
 
   override val provider = Provider.MERCADO_EDITORIAL
 
-  override fun headersBuilder(): Headers.Builder = Headers.Builder()
-    .add("Accept", "application/json")
-    .add("User-Agent", "Toshokan " + System.getProperty("http.agent"))
-
-  override fun searchRequest(isbn: String): Request {
-    val requestUrl = "$baseUrl/book".toHttpUrl().newBuilder()
-      .addQueryParameter("isbn", isbn.replace("-", ""))
-      .build()
-
-    return GET(requestUrl.toString(), headers)
+  override fun headersBuilder(): HeadersBuilder = HeadersBuilder().apply {
+    append(HttpHeaders.Accept, ContentType.Application.Json.toString())
+    append(HttpHeaders.UserAgent, "Toshokan " + System.getProperty("http.agent"))
   }
 
-  override fun searchParse(response: Response): List<LookupBookResult> {
-    val result = response.parseAs<MercadoEditorialResult>()
+  override suspend fun searchByIsbn(isbn: String): List<LookupBookResult> {
+    if (isbn.getIsbnInformation()?.country != "BR") {
+      return emptyList()
+    }
+
+    return super.searchByIsbn(isbn)
+  }
+
+  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
+    method = HttpMethod.Get
+    url("$baseUrl/book")
+
+    url {
+      parameters.append("isbn", isbn.replace("-", ""))
+    }
+  }
+
+  override suspend fun searchParse(response: HttpResponse): List<LookupBookResult> {
+    val result = response.body<MercadoEditorialResult>()
 
     if (result.books.isNullOrEmpty()) {
       return emptyList()
@@ -46,12 +62,15 @@ class MercadoEditorialLookup @Inject constructor (
   private fun MercadoEditorialBook.toLookupBookResult(): LookupBookResult = LookupBookResult(
     isbn = this.isbn,
     title = this.title,
-    authors = contributions.orEmpty()
-      .filter { it.code in VALID_CONTRIBUTION_CODES }
+    contributors = contributions.orEmpty()
+      .filter { it.code in CONTRIBUTION_CODES_MAPPING.keys }
       .map {
-        arrayOf(it.firstName, it.lastName)
-          .filterNot(String::isNullOrEmpty)
-          .joinToString(" ")
+        LookupBookContributor(
+          name = arrayOf(it.firstName, it.lastName)
+            .filterNot(String::isNullOrEmpty)
+            .joinToString(" "),
+          role = CONTRIBUTION_CODES_MAPPING[it.code]!!
+        )
       },
     publisher = publisher?.name.orEmpty(),
     synopsis = this.synopsis.orEmpty(),
@@ -59,6 +78,11 @@ class MercadoEditorialLookup @Inject constructor (
       listOf(dimensions!!.width.toFloat(), dimensions.height.toFloat())
     } else {
       emptyList()
+    },
+    labelPrice = if (price?.toFloatOrNull() != null && !currency.isNullOrBlank()) {
+      Price(currency = Currency.getInstance(currency), value = price.toFloat())
+    } else {
+      null
     },
     providerId = isbn,
   )
@@ -68,6 +92,12 @@ class MercadoEditorialLookup @Inject constructor (
       width.toFloatOrNull() != null && height.toFloatOrNull() != null
 
   companion object {
-    private val VALID_CONTRIBUTION_CODES = arrayOf(1, 8, 24)
+    private val CONTRIBUTION_CODES_MAPPING = mapOf(
+      1 to CreditRole.AUTHOR,
+      5 to CreditRole.EDITOR,
+      8 to CreditRole.ILLUSTRATOR,
+      9 to CreditRole.TRANSLATOR,
+      15 to CreditRole.COVER_DESIGN
+    )
   }
 }

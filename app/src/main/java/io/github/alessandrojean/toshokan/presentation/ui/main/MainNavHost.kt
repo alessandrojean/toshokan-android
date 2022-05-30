@@ -41,6 +41,8 @@ import cafe.adriel.voyager.transitions.FadeTransition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
+import io.github.alessandrojean.toshokan.presentation.ui.core.provider.LocalNavigationBarControl
+import io.github.alessandrojean.toshokan.presentation.ui.core.provider.NavigationBarControl
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
@@ -53,11 +55,11 @@ fun MainNavHost() {
     .value.toInt()
 
   Navigator(TopLevelRoutes.Library.screen) { navigator ->
-    val (requestedHideBottomNav, requestHideBottomNav) = remember { mutableStateOf(false) }
+    var hideBottomNavigation by remember { mutableStateOf(false) }
 
     val isBottomBarVisible by remember {
       derivedStateOf {
-        TopLevelRoutes.isTopLevelRoute(navigator) && !requestedHideBottomNav
+        TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
       }
     }
 
@@ -70,7 +72,7 @@ fun MainNavHost() {
 
     DisposableEffect(navigator.lastItem) {
       onDispose {
-        requestHideBottomNav(false)
+        hideBottomNavigation = false
       }
     }
 
@@ -80,14 +82,21 @@ fun MainNavHost() {
       )
     }
 
+    val navigationBarControl = NavigationBarControl(
+      show = { hideBottomNavigation = false },
+      hide = { hideBottomNavigation = true }
+    )
+
     Scaffold(
       modifier = Modifier.windowInsetsPadding(
         WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
       ),
       content = { innerPadding ->
-        FadeTransition(navigator) { screen ->
-          Box(modifier = Modifier.padding(innerPadding)) {
-            screen.Content()
+        CompositionLocalProvider(LocalNavigationBarControl provides navigationBarControl) {
+          FadeTransition(navigator) { screen ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+              screen.Content()
+            }
           }
         }
       },

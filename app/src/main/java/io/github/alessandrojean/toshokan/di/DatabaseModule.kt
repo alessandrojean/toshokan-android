@@ -8,6 +8,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.database.adapter.BookCreditRoleAdapter
+import io.github.alessandrojean.toshokan.database.adapter.CurrencyAdapter
+import io.github.alessandrojean.toshokan.database.data.Book
+import io.github.alessandrojean.toshokan.database.data.BookCredit
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import javax.inject.Singleton
@@ -29,7 +33,16 @@ object DatabaseModule {
   @Singleton
   @Provides
   fun provideDatabase(sqlDriver: SqlDriver): ToshokanDatabase {
-    return ToshokanDatabase(sqlDriver)
+    return ToshokanDatabase(
+      driver = sqlDriver,
+      BookAdapter = Book.Adapter(
+        paid_price_currencyAdapter = CurrencyAdapter(),
+        label_price_currencyAdapter = CurrencyAdapter()
+      ),
+      BookCreditAdapter = BookCredit.Adapter(
+        roleAdapter = BookCreditRoleAdapter()
+      )
+    )
   }
 
 }

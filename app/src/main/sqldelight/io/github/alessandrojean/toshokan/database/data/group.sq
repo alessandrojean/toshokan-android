@@ -1,5 +1,5 @@
 CREATE TABLE BookGroup(
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   sort INTEGER NOT NULL DEFAULT 0,
 
@@ -13,6 +13,11 @@ selectAll:
 SELECT *
 FROM BookGroup
 ORDER BY sort ASC;
+
+selectSorted:
+SELECT *
+FROM BookGroup
+ORDER BY name ASC;
 
 nextSortValue:
 SELECT max(sort) + 1

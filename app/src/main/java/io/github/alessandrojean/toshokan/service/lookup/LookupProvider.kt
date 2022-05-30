@@ -1,18 +1,15 @@
 package io.github.alessandrojean.toshokan.service.lookup
 
-import io.github.alessandrojean.toshokan.network.awaitSuccess
 import io.github.alessandrojean.toshokan.util.isValidIsbn
-import okhttp3.Headers
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import io.github.alessandrojean.toshokan.util.removeDashes
+import io.ktor.client.HttpClient
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.request
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.Headers
+import io.ktor.http.HeadersBuilder
 
 abstract class LookupProvider {
-
-  /**
-   * Provider name.
-   */
-  abstract val name: String
 
   /**
    * Base URL of the provider API.
@@ -27,12 +24,12 @@ abstract class LookupProvider {
   /**
    * Client used to do the HTTP calls.
    */
-  protected abstract val client: OkHttpClient
+  protected abstract val client: HttpClient
 
   /**
    * Create the headers to be used in the requests.
    */
-  protected open fun headersBuilder(): Headers.Builder = Headers.Builder()
+  protected open fun headersBuilder(): HeadersBuilder = HeadersBuilder()
 
   /**
    * Headers to be used in the HTTP requests.
@@ -48,8 +45,8 @@ abstract class LookupProvider {
     }
 
     val result = runCatching {
-      val request = searchRequest(isbn.replace("-", ""))
-      val response = client.newCall(request).awaitSuccess()
+      val request = searchRequest(isbn.removeDashes())
+      val response = client.request(request)
 
       searchParse(response)
         .map { it.copy(provider = provider) }
@@ -61,10 +58,10 @@ abstract class LookupProvider {
   /**
    * Create the search request to be used in the API call.
    */
-  protected abstract fun searchRequest(isbn: String): Request
+  protected abstract fun searchRequest(isbn: String): HttpRequestBuilder
 
   /**
    * Parse the response and convert it to the proper class.
    */
-  protected abstract fun searchParse(response: Response): List<LookupBookResult>
+  protected abstract suspend fun searchParse(response: HttpResponse): List<LookupBookResult>
 }

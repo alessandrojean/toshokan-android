@@ -1,0 +1,26 @@
+import io.github.alessandrojean.toshokan.domain.CreditRole;
+
+CREATE TABLE BookCredit(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  person_id INTEGER NOT NULL,
+  role INTEGER AS CreditRole NOT NULL DEFAULT 0,
+
+  FOREIGN KEY (book_id) REFERENCES Book (id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (person_id) REFERENCES Person (id)
+    ON DELETE CASCADE
+);
+
+insert:
+INSERT INTO BookCredit(book_id, person_id, role)
+VALUES (?, ?, ?);
+
+update:
+UPDATE BookCredit
+SET role = ?
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM BookCredit
+WHERE id IN ?;

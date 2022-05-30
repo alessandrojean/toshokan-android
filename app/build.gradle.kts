@@ -44,9 +44,12 @@ android {
       "-opt-in=kotlin.RequiresOptIn",
       "-opt-in=kotlin.Experimental",
       "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
+      "-opt-in=androidx.compose.material.ExperimentalMaterialApi",
       "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
       "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-      "-opt-in=androidx.compose.animation.ExperimentalAnimationApi"
+      "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
+      "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
+      "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi"
     )
   }
 
@@ -101,19 +104,40 @@ dependencies {
   implementation("cafe.adriel.voyager:voyager-hilt:$voyagerVersion")
 
   // Material Design
-  implementation("com.google.android.material:material:1.7.0-alpha01")
+  implementation("com.google.android.material:material:1.7.0-alpha02")
   implementation("com.google.android.material:compose-theme-adapter-3:1.0.10")
 
   // Accompanist
-  implementation("com.google.accompanist:accompanist-systemuicontroller:0.24.9-beta")
+  val accompanistVersion = "0.24.9-beta"
+  implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
+  implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
+  implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
+  implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
+  implementation("com.google.accompanist:accompanist-swiperefresh:$accompanistVersion")
 
-  // OkHttp
-  val okhttpVersion = "4.9.3"
-  implementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
-  implementation("com.squareup.okhttp3:logging-interceptor:$okhttpVersion")
+  // Androidx CameraX
+  val cameraxVersion = "1.1.0-rc01"
+  implementation("androidx.camera:camera-core:$cameraxVersion")
+  implementation("androidx.camera:camera-camera2:$cameraxVersion")
+  implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+  implementation("androidx.camera:camera-view:$cameraxVersion")
+
+  // Google ML Kit
+  implementation("com.google.mlkit:barcode-scanning:17.0.2")
+
+  // Ktor
+  val ktorVersion = "2.0.1"
+  implementation("io.ktor:ktor-client-core:$ktorVersion")
+  implementation("io.ktor:ktor-client-android:$ktorVersion")
+  implementation("io.ktor:ktor-client-logging:$ktorVersion")
+  implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+  implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
   // Kotlinx.serialization
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+
+  // Jsoup
+  implementation("org.jsoup:jsoup:1.15.1")
 
   // Lifecycle
   implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.1")
@@ -135,6 +159,9 @@ dependencies {
 
   // Compose Reorderable
   implementation("org.burnoutcrew.composereorderable:reorderable:0.8.1")
+
+  // Logcat
+  implementation("com.squareup.logcat:logcat:0.1")
 }
 
 kapt {

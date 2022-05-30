@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -49,7 +50,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -58,10 +59,11 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
+import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.stores.manage.ManageStoreMode
-import io.github.alessandrojean.toshokan.presentation.ui.stores.manage.ManageStoreDialog
+import io.github.alessandrojean.toshokan.presentation.ui.stores.manage.ManageStoreScreen
 
-class StoresScreen : Screen {
+class StoresScreen : AndroidScreen() {
 
   @Composable
   override fun Content() {
@@ -71,17 +73,13 @@ class StoresScreen : Screen {
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
     val listState = rememberLazyListState()
     val expandedFab by remember {
-      derivedStateOf {
-        listState.firstVisibleItemIndex == 0
-      }
+      derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
     val selectionMode by remember {
-      derivedStateOf {
-        uiState.selected.isNotEmpty()
-      }
+      derivedStateOf { uiState.selected.isNotEmpty() }
     }
 
-    val stores by uiState.stores.collectAsState(emptyList())
+    val stores by storesViewModel.stores.collectAsState(emptyList())
 
     val systemUiController = rememberSystemUiController()
     val statusBarColor = when {
@@ -103,14 +101,13 @@ class StoresScreen : Screen {
       storesViewModel.clearSelection()
     }
 
-    if (uiState.showManageDialog) {
-      ManageStoreDialog(
-        mode = uiState.manageDialogMode,
-        store = stores.firstOrNull { it.id == uiState.selected.firstOrNull() },
-        onClose = { storesViewModel.hideManageDialog() },
-        manageStoreViewModel = getViewModel()
-      )
-    } else if (uiState.showDeleteWarning) {
+    LaunchedEffect(navigator.lastItem) {
+      if (navigator.lastItem is PeopleScreen) {
+        storesViewModel.clearSelection()
+      }
+    }
+
+    if (uiState.showDeleteWarning) {
       DeleteStoresWarningDialog(
         selectedCount = uiState.selected.size,
         onClose = { storesViewModel.hideDeleteWarning() },
@@ -132,8 +129,12 @@ class StoresScreen : Screen {
               selectionCount = uiState.selected.size,
               onClearSelectionClick = { storesViewModel.clearSelection() },
               onEditClick = {
-                storesViewModel.changeManageDialogMode(ManageStoreMode.EDIT)
-                storesViewModel.showManageDialog()
+                navigator.push(
+                  ManageStoreScreen(
+                    mode = ManageStoreMode.EDIT,
+                    store = stores.firstOrNull { it.id == uiState.selected.firstOrNull() }
+                  )
+                )
               },
               onDeleteClick = { storesViewModel.showDeleteWarning() },
               scrollBehavior = scrollBehavior
@@ -162,7 +163,7 @@ class StoresScreen : Screen {
           exit = fadeOut()
         ) {
           ExtendedFloatingActionButton(
-            onClick = { storesViewModel.showManageDialog() },
+            onClick = { navigator.push(ManageStoreScreen()) },
             expanded = expandedFab,
             icon = {
               Icon(

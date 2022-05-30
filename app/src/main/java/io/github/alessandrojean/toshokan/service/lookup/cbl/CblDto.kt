@@ -4,6 +4,21 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class CblSearchRequest(
+  val count: Boolean,
+  val facets: List<String>,
+  val filter: String,
+  @SerialName("orderby") val orderBy: String?,
+  val queryType: String,
+  val search: String,
+  val searchFields: String,
+  val searchMode: String,
+  val select: String,
+  val skip: Int,
+  val top: Int
+)
+
+@Serializable
 data class CblSearchResult(
   @SerialName("@odata.count") val count: Int = 0,
   val value: List<CblRecord> = emptyList()

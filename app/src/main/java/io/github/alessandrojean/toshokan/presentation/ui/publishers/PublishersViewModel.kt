@@ -15,41 +15,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class PublishersState(
-  val publishers: Flow<List<Publisher>>,
-  val showManageDialog: Boolean = false,
   val showDeleteWarning: Boolean = false,
   val selected: List<Long> = emptyList(),
-  val manageDialogMode: ManagePublisherMode = ManagePublisherMode.CREATE
 )
 
 @HiltViewModel
 class PublishersViewModel @Inject constructor(
   private val publishersRepository: PublishersRepository
 ) : ViewModel() {
-  private val _uiState = MutableStateFlow(
-    PublishersState(
-      publishers = publishersRepository.publishers
-    )
-  )
+  private val _uiState = MutableStateFlow(PublishersState())
   val uiState: StateFlow<PublishersState> = _uiState.asStateFlow()
 
-  fun changeManageDialogMode(newMode: ManagePublisherMode) = viewModelScope.launch {
-    _uiState.update { it.copy(manageDialogMode = newMode) }
-  }
-
-  fun showManageDialog() = viewModelScope.launch {
-    _uiState.update { it.copy(showManageDialog = true) }
-  }
-
-  fun hideManageDialog() = viewModelScope.launch {
-    _uiState.update {
-      it.copy(
-        showManageDialog = false,
-        selected = emptyList(),
-        manageDialogMode = ManagePublisherMode.CREATE
-      )
-    }
-  }
+  val publishers = publishersRepository.publishers
 
   fun showDeleteWarning() = viewModelScope.launch {
     _uiState.update { it.copy(showDeleteWarning = true) }

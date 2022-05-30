@@ -34,6 +34,8 @@ private val LightColorPalette = lightColorScheme(
   */
 )
 
+val DividerOpacity = 0.12f
+
 @Composable
 fun ToshokanTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
   val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S

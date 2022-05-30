@@ -1,40 +1,45 @@
 package io.github.alessandrojean.toshokan.service.lookup.googlebooks
 
-import io.github.alessandrojean.toshokan.network.GET
-import io.github.alessandrojean.toshokan.network.parseAs
+import io.github.alessandrojean.toshokan.domain.CreditRole
+import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
-import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HeadersBuilder
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import javax.inject.Inject
 
 class GoogleBooksLookup @Inject constructor (
-  override val client: OkHttpClient
+  override val client: HttpClient
 ) : LookupProvider() {
-  override val name = "Google Books"
 
   override val baseUrl = "https://www.googleapis.com/books/v1"
 
   override val provider = Provider.GOOGLE_BOOKS
 
-  override fun headersBuilder(): Headers.Builder = Headers.Builder()
-    .add("Accept", "application/json")
-    .add("User-Agent", "Toshokan " + System.getProperty("http.agent"))
-
-  override fun searchRequest(isbn: String): Request {
-    val requestUrl = "$baseUrl/volumes".toHttpUrl().newBuilder()
-      .addQueryParameter("q", "isbn:" + isbn.replace("-", ""))
-      .build()
-
-    return GET(requestUrl.toString(), headers)
+  override fun headersBuilder(): HeadersBuilder = HeadersBuilder().apply {
+    append(HttpHeaders.Accept, ContentType.Application.Json.toString())
+    append(HttpHeaders.UserAgent, "Toshokan " + System.getProperty("http.agent"))
   }
 
-  override fun searchParse(response: Response): List<LookupBookResult> {
-    val result = response.parseAs<GoogleBooksResult>()
+  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
+    method = HttpMethod.Get
+    url("$baseUrl/volumes")
+
+    url {
+      parameters.append("q", "isbn:" + isbn.replace("-", ""))
+    }
+  }
+
+  override suspend fun searchParse(response: HttpResponse): List<LookupBookResult> {
+    val result = response.body<GoogleBooksResult>()
 
     if (result.items.isNullOrEmpty()) {
       return emptyList()
@@ -49,7 +54,8 @@ class GoogleBooksLookup @Inject constructor (
       .minByOrNull { it.type }!!
       .identifier,
     title = volumeInfo.title,
-    authors = volumeInfo.authors.orEmpty(),
+    contributors = volumeInfo.authors.orEmpty()
+      .map { LookupBookContributor(it, CreditRole.AUTHOR) },
     publisher = volumeInfo.publisher.orEmpty(),
     synopsis = volumeInfo.description.orEmpty(),
     dimensions = if (volumeInfo.dimensions.isValid) {

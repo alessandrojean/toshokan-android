@@ -1,5 +1,7 @@
+import android.icu.util.Currency;
+
 CREATE TABLE Book(
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   code TEXT,
   title TEXT NOT NULL,
   volume TEXT,
@@ -7,14 +9,16 @@ CREATE TABLE Book(
   notes TEXT,
   publisher_id INTEGER NOT NULL,
   group_id INTEGER NOT NULL,
-  paid_price_currency TEXT NOT NULL,
+  paid_price_currency TEXT AS Currency NOT NULL,
   paid_price_value REAL AS Float NOT NULL,
-  label_price_currency TEXT NOT NULL,
+  label_price_currency TEXT AS Currency NOT NULL,
   label_price_value REAL AS Float NOT NULL,
   store_id INTEGER,
   bought_at INTEGER AS Long,
   is_future INTEGER AS Boolean DEFAULT 0,
   cover_url TEXT,
+  dimension_width REAL AS Float NOT NULL,
+  dimension_height REAL AS Float NOT NULL,
 
   created_at INTEGER AS Long NOT NULL,
   updated_at INTEGER AS Long NOT NULL,
@@ -27,6 +31,36 @@ CREATE TABLE Book(
     ON DELETE SET NULL
 );
 
+selectByCode:
+SELECT *
+FROM Book
+WHERE code = ?
+LIMIT 1;
+
+lastInsertedId:
+SELECT max(id)
+FROM Book;
+
 insert:
-INSERT INTO Book(id, code, title, volume, synopsis, notes, publisher_id, group_id, paid_price_currency, paid_price_value, label_price_currency, label_price_value, store_id, bought_at, is_future, cover_url, created_at, updated_at)
-VALUES ?;
+INSERT INTO Book(
+  code,
+  title,
+  volume,
+  synopsis,
+  notes,
+  publisher_id,
+  group_id,
+  paid_price_currency,
+  paid_price_value,
+  label_price_currency,
+  label_price_value,
+  store_id,
+  bought_at,
+  is_future,
+  cover_url,
+  dimension_width,
+  dimension_height,
+  created_at,
+  updated_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?);

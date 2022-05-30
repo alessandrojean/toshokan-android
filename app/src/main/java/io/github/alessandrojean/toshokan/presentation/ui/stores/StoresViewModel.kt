@@ -15,41 +15,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class StoresState(
-  val stores: Flow<List<Store>>,
-  val showManageDialog: Boolean = false,
   val showDeleteWarning: Boolean = false,
   val selected: List<Long> = emptyList(),
-  val manageDialogMode: ManageStoreMode = ManageStoreMode.CREATE
 )
 
 @HiltViewModel
 class StoresViewModel @Inject constructor(
   private val storesRepository: StoresRepository
 ) : ViewModel() {
-  private val _uiState = MutableStateFlow(
-    StoresState(
-      stores = storesRepository.stores
-    )
-  )
+  private val _uiState = MutableStateFlow(StoresState())
   val uiState: StateFlow<StoresState> = _uiState.asStateFlow()
 
-  fun changeManageDialogMode(newMode: ManageStoreMode) = viewModelScope.launch {
-    _uiState.update { it.copy(manageDialogMode = newMode) }
-  }
-
-  fun showManageDialog() = viewModelScope.launch {
-    _uiState.update { it.copy(showManageDialog = true) }
-  }
-
-  fun hideManageDialog() = viewModelScope.launch {
-    _uiState.update {
-      it.copy(
-        showManageDialog = false,
-        selected = emptyList(),
-        manageDialogMode = ManageStoreMode.CREATE
-      )
-    }
-  }
+  val stores = storesRepository.stores
 
   fun showDeleteWarning() = viewModelScope.launch {
     _uiState.update { it.copy(showDeleteWarning = true) }

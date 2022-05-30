@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.github.alessandrojean.toshokan.service.cover.CoverRepository
+import io.github.alessandrojean.toshokan.service.cover.CoverRepositoryImpl
 import io.github.alessandrojean.toshokan.service.lookup.LookupRepository
 import io.github.alessandrojean.toshokan.service.lookup.LookupRepositoryImpl
 import javax.inject.Singleton
@@ -17,5 +19,11 @@ abstract class RepositoryModule {
   abstract fun bindLookupRepository(
     lookupRepositoryImpl: LookupRepositoryImpl
   ): LookupRepository
+
+  @Binds
+  @Singleton
+  abstract fun bindCoverRepository(
+    coverRepositoryImpl: CoverRepositoryImpl
+  ): CoverRepository
 
 }
