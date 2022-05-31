@@ -9,7 +9,7 @@ data class TitleParts(
 
 private val TITLE_REGEX = "\\s+#(\\d+(?:[.,]\\d+)?)(?::\\s+)?".toRegex()
 
-fun String.getTitleParts(): TitleParts {
+fun String.toTitleParts(): TitleParts {
   val parts = split(TITLE_REGEX)
   val main = parts.getOrNull(2).let {
     if (it == null) {

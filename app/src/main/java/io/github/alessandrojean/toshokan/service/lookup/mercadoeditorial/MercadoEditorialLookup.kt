@@ -84,7 +84,7 @@ class MercadoEditorialLookup @Inject constructor (
     } else {
       null
     },
-    providerId = isbn,
+    providerId = "ME_$isbn",
   )
 
   private val MercadoEditorialDimension?.isValid

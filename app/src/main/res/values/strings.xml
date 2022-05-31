@@ -18,6 +18,11 @@
   <string name="action_previous_step">Go to previous step</string>
   <string name="action_next_step">Go to next step</string>
 
+  <!-- Common states -->
+  <string name="error_happened">An error happened</string>
+  <string name="search_tip">Type a name to search</string>
+  <string name="currency_search_tip">Type a name or code to search</string>
+
   <!-- Websites -->
   <string name="website">Website</string>
   <string name="instagram" translatable="false">Instagram</string>
@@ -57,6 +62,8 @@
   <string name="bought_at">Bought at</string>
   <string name="person">Person</string>
   <string name="role">Role</string>
+  <string name="width_cm">Width</string>
+  <string name="height_cm">Height</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Unknown</string>
@@ -69,6 +76,9 @@
   <string name="role_cover_design">Cover design</string>
   <string name="role_colorist">Colorist</string>
   <string name="role_letterer">Letterer</string>
+  <string name="role_graphic_design">Graphic design</string>
+  <string name="role_reviewer">Reviewer</string>
+  <string name="role_printing_company">Printing company</string>
   <string name="role_others">Others</string>
 
   <!-- Library -->

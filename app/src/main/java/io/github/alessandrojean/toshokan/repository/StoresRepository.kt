@@ -18,11 +18,11 @@ class StoresRepository @Inject constructor(
 
   suspend fun insert(
     name: String,
-    description: String,
-    website: String,
-    instagramProfile: String,
-    twitterProfile: String
-  ) = withContext(Dispatchers.IO) {
+    description: String = "",
+    website: String = "",
+    instagramProfile: String = "",
+    twitterProfile: String = ""
+  ): Long? = withContext(Dispatchers.IO) {
     val now = Date().time
 
     database.storeQueries.insert(
@@ -35,6 +35,8 @@ class StoresRepository @Inject constructor(
       created_at = now,
       updated_at = now
     )
+
+    database.storeQueries.lastInsertedId().executeAsOne().max
   }
 
   suspend fun update(

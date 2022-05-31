@@ -5,7 +5,7 @@ import io.github.alessandrojean.toshokan.service.cover.contentstuff.ContentStuff
 import io.github.alessandrojean.toshokan.service.cover.oembed.OembedCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.urlreplacer.UrlReplacerCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.wordpress.WordPressCoverProvider
-import io.github.alessandrojean.toshokan.util.extension.getTitleParts
+import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toSlug
 import io.github.alessandrojean.toshokan.util.getIsbnInformation
 import io.github.alessandrojean.toshokan.util.isValidIsbn
@@ -41,7 +41,7 @@ class CoverRepositoryImpl @Inject constructor(
       },
       baseUrl = "https://editorajbc.com.br",
       createPath = { book ->
-        val series = book.title.getTitleParts().title
+        val series = book.title.toTitleParts().title
           .toSlug(Locale("pt", "BR"))
           .replace("especial", "esp")
         val title = book.title.toSlug(Locale("pt", "BR"))

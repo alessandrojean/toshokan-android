@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,11 +9,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -90,10 +95,12 @@ import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.ContributorsTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.InformationTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.OrganizationTab
+import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
@@ -177,6 +184,9 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
       )
     }
 
+    // Disable the back handling when writing to the database.
+    BackHandler(manageBookViewModel.writing) {}
+
     ModalBottomSheetLayout(
       sheetState = modalBottomSheetState,
       sheetShape = ModalBottomSheetShape,
@@ -198,14 +208,15 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
       Scaffold(
         modifier = Modifier
           .nestedScroll(scrollBehavior.nestedScrollConnection)
-          .windowInsetsPadding(
-            WindowInsets.systemBars.union(WindowInsets.ime)
-          ),
+          .statusBarsPadding(),
         topBar = {
           SmallTopAppBar(
             scrollBehavior = scrollBehavior,
             navigationIcon = {
-              IconButton(onClick = { navigator.pop() }) {
+              IconButton(
+                enabled = !manageBookViewModel.writing,
+                onClick = { navigator.pop() }
+              ) {
                 Icon(
                   imageVector = Icons.Outlined.ArrowBack,
                   contentDescription = stringResource(R.string.action_back)
@@ -214,7 +225,20 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
             },
             title = { Text(stringResource(R.string.create_book)) },
             actions = {
-              TextButton(onClick = { /*TODO*/ }) {
+              TextButton(
+                enabled = !manageBookViewModel.informationTabInvalid &&
+                  !manageBookViewModel.contributorsTabInvalid &&
+                  !manageBookViewModel.informationTabInvalid &&
+                  !manageBookViewModel.writing,
+                onClick = {
+                  manageBookViewModel.create { bookId ->
+                    if (bookId != null) {
+                      navigator.popUntil { it is LibraryScreen }
+                      navigator.push(BookScreen(bookId))
+                    }
+                  }
+                }
+              ) {
                 Text(stringResource(R.string.action_finish))
               }
             }
@@ -262,7 +286,7 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
             HorizontalPager(
               state = pagerState,
               count = tabs.size,
-              verticalAlignment = Alignment.Top
+              verticalAlignment = Alignment.Top,
             ) { page ->
               when (tabs[page]) {
                 is ManageBookTab.Information -> {
@@ -270,28 +294,31 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                     code = manageBookViewModel.code,
                     title = manageBookViewModel.title,
                     synopsis = manageBookViewModel.synopsis,
+                    publisher = manageBookViewModel.publisher,
                     publisherText = manageBookViewModel.publisherText,
                     allPublishers = allPublishers,
                     labelPriceCurrency = manageBookViewModel.labelPriceCurrency,
                     labelPriceValue = manageBookViewModel.labelPriceValue,
                     paidPriceCurrency = manageBookViewModel.paidPriceCurrency,
                     paidPriceValue = manageBookViewModel.paidPriceValue,
+                    dimensionWidth = manageBookViewModel.dimensionWidth,
+                    dimensionHeight = manageBookViewModel.dimensionHeight,
                     onCodeChange = { manageBookViewModel.code = it },
                     onTitleChange = { manageBookViewModel.title = it },
                     onSynopsisChange = { manageBookViewModel.synopsis = it },
-                    onPublisherTextChange = {
-                      manageBookViewModel.publisherText = it
-                      manageBookViewModel.publisher = null
-                    },
+                    onPublisherTextChange = { manageBookViewModel.publisherText = it },
                     onPublisherChange = { manageBookViewModel.publisher = it },
                     onLabelPriceValueChange = { manageBookViewModel.labelPriceValue = it },
                     onLabelPriceCurrencyChange = { manageBookViewModel.labelPriceCurrency = it },
                     onPaidPriceValueChange = { manageBookViewModel.paidPriceValue = it },
-                    onPaidPriceCurrencyChange = { manageBookViewModel.paidPriceCurrency = it }
+                    onPaidPriceCurrencyChange = { manageBookViewModel.paidPriceCurrency = it },
+                    onDimensionWidthChange = { manageBookViewModel.dimensionWidth = it },
+                    onDimensionHeightChange = { manageBookViewModel.dimensionHeight = it }
                   )
                 }
                 is ManageBookTab.Contributors -> {
                   ContributorsTab(
+                    writing = manageBookViewModel.writing,
                     contributors = manageBookViewModel.contributors,
                     onAddContributorClick = { showContributorPickerDialog = true },
                     onContributorLongClick = { contributor ->
@@ -302,9 +329,11 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                 }
                 is ManageBookTab.Organization -> {
                   OrganizationTab(
+                    store = manageBookViewModel.store,
                     storeText = manageBookViewModel.storeText,
                     allStores = allStores,
                     boughtAt = manageBookViewModel.boughtAt,
+                    group = manageBookViewModel.group,
                     groupText = manageBookViewModel.groupText,
                     allGroups = allGroups,
                     notes = manageBookViewModel.notes,
@@ -376,7 +405,7 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
         Divider(
           modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
+            .padding(top = 16.dp, bottom = 8.dp),
           color = LocalContentColor.current.copy(alpha = DividerOpacity)
         )
         ModalBottomSheetItem(
@@ -391,6 +420,9 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
           icon = Icons.Outlined.Delete,
           onClick = onRemoveClick
         )
+        Spacer(modifier = Modifier
+          .fillMaxWidth()
+          .height(8.dp))
       }
     }
   }
@@ -436,20 +468,14 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
 
-
     Dialog(
       onDismissRequest = onDismiss,
       properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
       Scaffold(
-        modifier = Modifier.clip(ModalBottomSheetShape),
-        containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
         topBar = {
           Column(modifier = Modifier.fillMaxWidth()) {
             SmallTopAppBar(
-              colors = TopAppBarDefaults.smallTopAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
-              ),
               navigationIcon = {
                 IconButton(onClick = onDismiss) {
                   Icon(
@@ -467,23 +493,6 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                   }
                 )
               },
-              actions = {
-                TextButton(
-                  enabled = selectedPersonText.isNotBlank() &&
-                    pagerState.currentPage == pagerState.pageCount - 1,
-                  onClick = {
-                    onFinish(
-                      Contributor(
-                        person = selectedPerson,
-                        personText = selectedPersonText,
-                        role = selectedRole
-                      )
-                    )
-                  }
-                ) {
-                  Text(stringResource(R.string.action_finish))
-                }
-              }
             )
             Divider(
               modifier = Modifier.fillMaxWidth(),
@@ -508,7 +517,15 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                   person = selectedPerson,
                   personText = selectedPersonText,
                   onPersonTextChange = { selectedPersonText = it },
-                  onPersonChange = { selectedPerson = it },
+                  onPersonChange = {
+                    selectedPerson = it
+
+                    if (it != null) {
+                      scope.launch {
+                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                      }
+                    }
+                  },
                   allPeople = allPeople
                 )
               }
@@ -516,7 +533,17 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                 StepPickRole(
                   modifier = Modifier.fillMaxSize(),
                   role = selectedRole,
-                  onRoleChange = { selectedRole = it }
+                  onRoleChange = {
+                    selectedRole = it
+
+                    onFinish(
+                      Contributor(
+                        person = selectedPerson,
+                        personText = selectedPersonText,
+                        role = selectedRole
+                      )
+                    )
+                  }
                 )
               }
             }
@@ -530,7 +557,7 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
             )
             BottomAppBar(
               contentPadding = PaddingValues(horizontal = 16.dp),
-              containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
+              containerColor = MaterialTheme.colorScheme.surface,
               tonalElevation = 0.dp
             ) {
               Text(
@@ -660,12 +687,13 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
     onRoleChange: (CreditRole) -> Unit
   ) {
     val listState = rememberLazyListState()
+    val allRoles = remember { CreditRole.values() }
 
     LazyColumn(
       state = listState,
       modifier = modifier
     ) {
-      items(CreditRole.values(), key = { it.code }) { roleOption ->
+      items(allRoles, key = { it.code }) { roleOption ->
         PickContributorOption(
           modifier = Modifier.fillMaxWidth(),
           text = stringResource(roleOption.title),

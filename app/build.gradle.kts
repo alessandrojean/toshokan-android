@@ -43,6 +43,7 @@ android {
     freeCompilerArgs += listOf(
       "-opt-in=kotlin.RequiresOptIn",
       "-opt-in=kotlin.Experimental",
+      "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
       "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
       "-opt-in=androidx.compose.material.ExperimentalMaterialApi",
       "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
@@ -121,6 +122,10 @@ dependencies {
   implementation("androidx.camera:camera-camera2:$cameraxVersion")
   implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
   implementation("androidx.camera:camera-view:$cameraxVersion")
+
+  // Preferences
+  implementation("androidx.preference:preference-ktx:1.2.0")
+  implementation("com.fredporciuncula:flow-preferences:1.7.0")
 
   // Google ML Kit
   implementation("com.google.mlkit:barcode-scanning:17.0.2")

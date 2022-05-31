@@ -27,12 +27,12 @@ class PeopleRepository @Inject constructor(
 
   suspend fun insert(
     name: String,
-    description: String,
-    country: String,
-    website: String,
-    instagramProfile: String,
-    twitterProfile: String
-  ) = withContext(Dispatchers.IO) {
+    description: String = "",
+    country: String = "",
+    website: String = "",
+    instagramProfile: String = "",
+    twitterProfile: String = ""
+  ): Long? = withContext(Dispatchers.IO) {
     val now = Date().time
 
     database.personQueries.insert(
@@ -45,6 +45,8 @@ class PeopleRepository @Inject constructor(
       created_at = now,
       updated_at = now
     )
+
+    database.personQueries.lastInsertedId().executeAsOne().max
   }
 
   suspend fun update(

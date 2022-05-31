@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,7 +23,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Icon
@@ -67,10 +71,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
+import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.HistoryList
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.IsbnLookupResultList
+import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
@@ -80,29 +87,23 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
   @Composable
   override fun Content() {
     val isbnLookupViewModel = getViewModel<IsbnLookupViewModel>()
-    val uiState by isbnLookupViewModel.uiState.collectAsState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
+    val history by isbnLookupViewModel.history.collectAsState(emptySet())
 
-    if (
-      !isbn.isNullOrBlank() &&
-      isbn.isValidIsbn() &&
-      uiState.searchQuery != isbn &&
-      isbnLookupViewModel.results.isEmpty()
-    ) {
-      isbnLookupViewModel.onSearchQueryChange(isbn)
-      isbnLookupViewModel.search()
-    }
+//    if (
+//      !isbn.isNullOrBlank() &&
+//      isbn.isValidIsbn() &&
+//      uiState.searchQuery != isbn &&
+//      isbnLookupViewModel.results.isEmpty()
+//    ) {
+//      isbnLookupViewModel.onSearchQueryChange(isbn)
+//      isbnLookupViewModel.search()
+//    }
 
     val systemUiController = rememberSystemUiController()
-    val statusBarColor = when {
-      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-        .smallTopAppBarColors()
-        .containerColor(scrollBehavior.scrollFraction)
-        .value
-      else -> MaterialTheme.colorScheme.surface
-    }
+    val statusBarColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
 
     SideEffect {
       systemUiController.setStatusBarColor(
@@ -117,57 +118,104 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
       topBar = {
         CreateBookTopBar(
           backgroundColor = statusBarColor,
-          progress = if (uiState.progress > 0f && uiState.progress < 1f) uiState.progress else null,
-          searchText = uiState.searchQuery,
+          progress = when (isbnLookupViewModel.state) {
+            IsbnLookupState.RESULTS -> {
+              isbnLookupViewModel.progress.takeIf { it != 1f }
+            }
+            else -> null
+          },
+          searchText = isbnLookupViewModel.searchQuery,
           placeholderText = stringResource(R.string.isbn_search_placeholder),
           scrollBehavior = scrollBehavior,
           shouldRequestFocus = isbn.isNullOrBlank() || !isbn.isValidIsbn(),
           onNavigationClick = { navigator.pop() },
-          onClearClick = { isbnLookupViewModel.onSearchQueryChange("") },
-          onSearchTextChanged = { isbnLookupViewModel.onSearchQueryChange(it) },
+          onClearClick = {
+            isbnLookupViewModel.searchQuery = ""
+            isbnLookupViewModel.state = if (history.isNotEmpty()) {
+              IsbnLookupState.HISTORY
+            } else {
+              IsbnLookupState.EMPTY
+            }
+          },
+          onSearchTextChanged = { isbnLookupViewModel.searchQuery = it },
           onSearchAction = {
             isbnLookupViewModel.search()
           }
         )
       },
       content = { innerPadding ->
-        when {
-          uiState.loading && isbnLookupViewModel.results.isEmpty() -> {
-            BoxedCircularProgressIndicator(
-              modifier = Modifier
-                .padding(innerPadding)
-                .imePadding()
-            )
-          }
-          isbnLookupViewModel.results.isEmpty() && uiState.searchedOnce && !uiState.loading -> {
-            NoItemsFound(
-              text = stringResource(R.string.no_results_found),
-              icon = Icons.Outlined.SearchOff,
-              modifier = Modifier
-                .padding(innerPadding)
-                .imePadding()
-            )
-          }
-          isbnLookupViewModel.results.isEmpty() && !uiState.searchedOnce && !uiState.loading -> {
-            NoItemsFound(
-              icon = Icons.Outlined.Search,
-              modifier = Modifier
-                .padding(innerPadding)
-                .imePadding()
-            )
-          }
-          else -> IsbnLookupResultList(
-            results = isbnLookupViewModel.results,
-            modifier = Modifier
-              .fillMaxSize()
-              .padding(innerPadding)
-              .imePadding(),
-            contentPadding = PaddingValues(12.dp),
-            listState = listState,
-            onResultClick = { result ->
-              navigator.push(ManageBookScreen(result))
+        Crossfade(
+          targetState = isbnLookupViewModel.state,
+          modifier = Modifier.fillMaxSize()
+        ) { state ->
+          when (state) {
+            IsbnLookupState.EMPTY -> {
+              NoItemsFound(
+                icon = Icons.Outlined.Search,
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+                  .imePadding()
+              )
             }
-          )
+            IsbnLookupState.HISTORY -> {
+              HistoryList(
+                modifier = Modifier.fillMaxSize(),
+                history = history.toList(),
+                contentPadding = innerPadding,
+                onClick = {
+                  isbnLookupViewModel.searchQuery = it
+                  isbnLookupViewModel.search()
+                },
+                onRemoveClick = {
+                  isbnLookupViewModel.removeHistoryItem(it)
+                }
+              )
+            }
+            IsbnLookupState.LOADING -> {
+              BoxedCircularProgressIndicator(
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+                  .imePadding()
+              )
+            }
+            IsbnLookupState.NO_RESULTS -> {
+              NoItemsFound(
+                text = stringResource(R.string.no_results_found),
+                icon = Icons.Outlined.SearchOff,
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+                  .imePadding()
+              )
+            }
+            IsbnLookupState.ERROR -> {
+              NoItemsFound(
+                text = isbnLookupViewModel.error?.localizedMessage
+                  ?: stringResource(R.string.error_happened),
+                icon = Icons.Outlined.Error,
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+                  .imePadding()
+              )
+            }
+            IsbnLookupState.RESULTS -> {
+              IsbnLookupResultList(
+                results = isbnLookupViewModel.results,
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+                  .imePadding(),
+                contentPadding = PaddingValues(12.dp),
+                listState = listState,
+                onResultClick = { result ->
+                  navigator.push(ManageBookScreen(result))
+                }
+              )
+            }
+          }
         }
       }
     )
@@ -192,10 +240,9 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
     val focusRequester = remember { FocusRequester() }
 
     val animatedProgress by animateFloatAsState(
-      targetValue = progress ?: 0f,
+      targetValue = if (progress != null && progress < 1f) progress else 0f,
       animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
-    val progressOpacity by animateFloatAsState(if (progress != null) 1f else 0f)
 
     Column(
       modifier = Modifier
@@ -204,6 +251,10 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         .then(modifier)
     ) {
       SmallTopAppBar(
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+          containerColor = backgroundColor,
+          scrolledContainerColor = backgroundColor
+        ),
         scrollBehavior = scrollBehavior,
         navigationIcon = {
           IconButton(onClick = onNavigationClick) {
@@ -239,7 +290,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
               cursorColor = LocalContentColor.current
             ),
             textStyle = MaterialTheme.typography.titleLarge.copy(
-              color = MaterialTheme.colorScheme.onSurface
+              color = LocalContentColor.current
             ),
             maxLines = 1,
             singleLine = true,
@@ -258,15 +309,15 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         },
         actions = {
           AnimatedVisibility(
-            visible = showClearButton,
+            visible = showClearButton && searchText.isNotEmpty(),
             enter = fadeIn(),
             exit = fadeOut()
           ) {
             IconButton(onClick = { onClearClick() }) {
               Icon(
-                imageVector = Icons.Filled.Close,
+                imageVector = Icons.Outlined.Cancel,
                 contentDescription = stringResource(R.string.action_clear),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = LocalContentColor.current
               )
             }
           }
@@ -276,8 +327,9 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
       LinearProgressIndicator(
         modifier = Modifier
           .fillMaxWidth()
-          .graphicsLayer(alpha = progressOpacity),
-        progress = animatedProgress
+          .height(2.dp),
+        progress = animatedProgress,
+        trackColor = LocalContentColor.current.copy(alpha = DividerOpacity)
       )
     }
 

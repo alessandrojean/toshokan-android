@@ -16,6 +16,11 @@
   <string name="action_previous_step">Etapa anterior</string>
   <string name="action_next_step">Próxima etapa</string>
 
+  <!-- Common states -->
+  <string name="error_happened">Um erro aconteceu</string>
+  <string name="search_tip">Digite um nome para buscar</string>
+  <string name="currency_search_tip">Digite um nome ou código para buscar</string>
+
   <!-- Websites -->
   <string name="website">Site</string>
 
@@ -38,6 +43,8 @@
   <string name="bought_at">Data da compra</string>
   <string name="person">Pessoa</string>
   <string name="role">Função/cargo</string>
+  <string name="width_cm">Largura</string>
+  <string name="height_cm">Altura</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Desconhecido</string>
@@ -50,6 +57,9 @@
   <string name="role_cover_design">Capista</string>
   <string name="role_colorist">Colorista</string>
   <string name="role_letterer">Letrista</string>
+  <string name="role_graphic_design">Designer gráfico</string>
+  <string name="role_reviewer">Revisor(a)</string>
+  <string name="role_printing_company">Gráfica</string>
   <string name="role_others">Outros</string>
 
   <!-- Library -->

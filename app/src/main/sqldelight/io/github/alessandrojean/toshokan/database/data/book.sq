@@ -31,11 +31,16 @@ CREATE TABLE Book(
     ON DELETE SET NULL
 );
 
-selectByCode:
+findByCode:
 SELECT *
 FROM Book
 WHERE code = ?
 LIMIT 1;
+
+findById:
+SELECT *
+FROM Book
+WHERE id = ?;
 
 lastInsertedId:
 SELECT max(id)

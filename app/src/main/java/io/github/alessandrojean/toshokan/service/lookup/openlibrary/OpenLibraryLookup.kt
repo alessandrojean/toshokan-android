@@ -128,7 +128,11 @@ class OpenLibraryLookup @Inject constructor (
       "Cover Design" to CreditRole.COVER_DESIGN,
       "Editor" to CreditRole.EDITOR,
       "Illustrator" to CreditRole.ILLUSTRATOR,
-      "Translator" to CreditRole.TRANSLATOR
+      "Translator" to CreditRole.TRANSLATOR,
+      "Lettering" to CreditRole.LETTERER,
+      "Graphic Design" to CreditRole.GRAPHIC_DESIGN,
+      "Reviewer" to CreditRole.REVIEWER,
+      "Printer" to CreditRole.PRINTING_COMPANY
     )
   }
 }

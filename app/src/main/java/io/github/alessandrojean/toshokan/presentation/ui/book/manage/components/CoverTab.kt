@@ -6,9 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -29,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,7 +53,7 @@ import io.github.alessandrojean.toshokan.service.cover.CoverResult
 @Composable
 fun CoverTab(
   coverUrl: String,
-  allCovers: List<CoverResult>,
+  allCovers: SnapshotStateList<CoverResult>,
   state: CoverTabState = CoverTabState.Display,
   canRefresh: Boolean = true,
   onChange: (CoverResult) -> Unit,
@@ -70,7 +75,9 @@ fun CoverTab(
     when (coverState) {
       is CoverTabState.Loading -> {
         Box(
-          modifier = Modifier.fillMaxSize(),
+          modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding(),
           contentAlignment = Alignment.Center
         ) {
           CircularProgressIndicator()
@@ -96,7 +103,14 @@ fun CoverTab(
               modifier = Modifier.selectableGroup(),
               state = gridState,
               columns = GridCells.Adaptive(minSize = 128.dp),
-              contentPadding = PaddingValues(12.dp),
+              contentPadding = PaddingValues(
+                top = 12.dp,
+                start = 12.dp,
+                end = 12.dp,
+                bottom = 12.dp + WindowInsets.navigationBars
+                  .asPaddingValues()
+                  .calculateBottomPadding()
+              ),
               verticalArrangement = Arrangement.spacedBy(12.dp),
               horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {

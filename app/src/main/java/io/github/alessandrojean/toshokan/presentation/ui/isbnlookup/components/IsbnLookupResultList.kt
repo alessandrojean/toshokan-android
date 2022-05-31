@@ -55,7 +55,7 @@ fun IsbnLookupResultList(
       .spacedBy(8.dp, Alignment.Top),
     horizontalAlignment = Alignment.Start
   ) {
-    items(results) { result ->
+    items(results, key = { it.providerId }) { result ->
       IsbnLookupResultRow(
         result = result,
         onClick = onResultClick

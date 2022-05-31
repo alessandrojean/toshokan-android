@@ -16,13 +16,17 @@ CREATE INDEX person_name ON Person (name);
 selectAll:
 SELECT *
 FROM Person
-ORDER BY name ASC;
+ORDER BY name COLLATE UNICODE ASC;
 
 findByName:
 SELECT *
 FROM Person
 WHERE name = ?
 LIMIT 1;
+
+lastInsertedId:
+SELECT max(id)
+FROM Person;
 
 insert:
 INSERT INTO Person(

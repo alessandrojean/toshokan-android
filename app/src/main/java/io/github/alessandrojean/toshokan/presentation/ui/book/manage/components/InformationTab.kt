@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -19,10 +20,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.ManageSearch
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,12 +44,15 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.OutlinedMonetaryField
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
+import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -55,26 +63,46 @@ fun InformationTab(
   code: String,
   title: String,
   synopsis: String,
+  publisher: Publisher?,
   publisherText: String,
   allPublishers: List<Publisher>,
   labelPriceCurrency: Currency,
   labelPriceValue: String,
   paidPriceCurrency: Currency,
   paidPriceValue: String,
+  dimensionWidth: String,
+  dimensionHeight: String,
   onCodeChange: (String) -> Unit,
   onTitleChange: (String) -> Unit,
   onSynopsisChange: (String) -> Unit,
   onPublisherTextChange: (String) -> Unit,
-  onPublisherChange: (Publisher) -> Unit,
+  onPublisherChange: (Publisher?) -> Unit,
   onLabelPriceValueChange: (String) -> Unit,
   onLabelPriceCurrencyChange: (Currency) -> Unit,
   onPaidPriceValueChange: (String) -> Unit,
-  onPaidPriceCurrencyChange: (Currency) -> Unit
+  onPaidPriceCurrencyChange: (Currency) -> Unit,
+  onDimensionWidthChange: (String) -> Unit,
+  onDimensionHeightChange: (String) -> Unit,
 ) {
   val scrollState = rememberScrollState()
-  var publisherExpanded by remember { mutableStateOf(false) }
+  var showPublisherPickerDialog by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
   val keyboardController = LocalSoftwareKeyboardController.current
+
+  FullScreenItemPickerDialog(
+    visible = showPublisherPickerDialog,
+    title = stringResource(R.string.publishers),
+    selected = publisher,
+    initialSearch = publisherText,
+    items = allPublishers,
+    itemKey = { it.id },
+    itemText = { it.name },
+    onChoose = {
+      onPublisherChange.invoke(it)
+      onPublisherTextChange.invoke(it.name)
+    },
+    onDismiss = { showPublisherPickerDialog = false }
+  )
 
   // TODO: Change to LazyColumn when the focus issue gets fixed.
   // Ref: https://issuetracker.google.com/issues/179203700
@@ -83,7 +111,9 @@ fun InformationTab(
     modifier = Modifier
       .fillMaxSize()
       .verticalScroll(scrollState)
-      .padding(12.dp),
+      .padding(12.dp)
+      .navigationBarsPadding()
+      .imePadding(),
     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)
   ) {
     OutlinedTextField(
@@ -116,54 +146,32 @@ fun InformationTab(
       )
     )
 
-    ExposedDropdownMenuBox(
-      expanded = publisherExpanded,
-      onExpandedChange = { publisherExpanded = it }
-    ) {
-      val filteringOptions = allPublishers.filter { it.name.contains(publisherText, true) }
-
-      OutlinedTextField(
-        modifier = Modifier
-          .fillMaxWidth()
-          .onFocusChanged { publisherExpanded = it.isFocused },
-        value = publisherText,
-        onValueChange = onPublisherTextChange,
-        singleLine = true,
-        label = { Text(stringResource(R.string.publisher)) },
-        isError = publisherText.isBlank(),
-        trailingIcon = {
-          if (filteringOptions.isNotEmpty()) {
-            ExposedDropdownMenuDefaults.TrailingIcon(publisherExpanded)
-          }
-        },
-        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-        keyboardActions = KeyboardActions(
-          onNext = {
-            focusManager.moveFocus(FocusDirection.Down)
-          }
-        )
-      )
-
-      if (filteringOptions.isNotEmpty()) {
-        ExposedDropdownMenu(
-          modifier = Modifier.exposedDropdownSize(),
-          expanded = publisherExpanded,
-          onDismissRequest = { publisherExpanded = false }
-        ) {
-          filteringOptions.forEach { selectionOption ->
-            DropdownMenuItem(
-              text = { Text(selectionOption.name) },
-              onClick = {
-                onPublisherTextChange(selectionOption.name)
-                onPublisherChange(selectionOption)
-                publisherExpanded = false
-              }
-            )
-          }
+    OutlinedTextField(
+      modifier = Modifier.fillMaxWidth(),
+      value = publisherText,
+      onValueChange = {
+        onPublisherTextChange.invoke(it)
+        onPublisherChange.invoke(null)
+      },
+      singleLine = true,
+      label = { Text(stringResource(R.string.publisher)) },
+      isError = publisherText.isBlank(),
+      trailingIcon = {
+        IconButton(onClick = { showPublisherPickerDialog = true }) {
+          Icon(
+            imageVector = Icons.Outlined.ManageSearch,
+            contentDescription = stringResource(R.string.action_search)
+          )
         }
-      }
-    }
+      },
+      colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+      keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+      keyboardActions = KeyboardActions(
+        onNext = {
+          focusManager.moveFocus(FocusDirection.Down)
+        }
+      )
+    )
 
     OutlinedTextField(
       modifier = Modifier.fillMaxWidth(),
@@ -172,6 +180,48 @@ fun InformationTab(
       maxLines = 10,
       label = { Text(stringResource(R.string.synopsis)) }
     )
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      OutlinedTextField(
+        modifier = Modifier.weight(1f),
+        value = dimensionWidth,
+        isError = dimensionWidth.isEmpty() || dimensionWidth.parseLocaleValueOrNull() == null,
+        label = { Text(stringResource(R.string.width_cm)) },
+        trailingIcon = { Text("cm", style = MaterialTheme.typography.bodySmall) },
+        onValueChange = onDimensionWidthChange,
+        keyboardOptions = KeyboardOptions.Default.copy(
+          keyboardType = KeyboardType.Decimal,
+          imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+          onNext = {
+            focusManager.moveFocus(FocusDirection.Right)
+          }
+        )
+      )
+      Text("×", modifier = Modifier.padding(top = 4.dp))
+      OutlinedTextField(
+        modifier = Modifier.weight(1f),
+        value = dimensionHeight,
+        isError = dimensionHeight.isEmpty() || dimensionHeight.parseLocaleValueOrNull() == null,
+        label = { Text(stringResource(R.string.height_cm)) },
+        trailingIcon = { Text("cm", style = MaterialTheme.typography.bodySmall) },
+        onValueChange = onDimensionHeightChange,
+        keyboardOptions = KeyboardOptions.Default.copy(
+          keyboardType = KeyboardType.Decimal,
+          imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+          onNext = {
+            focusManager.moveFocus(FocusDirection.Next)
+          }
+        )
+      )
+    }
 
     Row(
       modifier = Modifier.fillMaxWidth(),

@@ -5,17 +5,18 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.Contributor
+import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTabState
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.repository.GroupsRepository
@@ -26,11 +27,9 @@ import io.github.alessandrojean.toshokan.service.cover.CoverRepository
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
+import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 import logcat.logcat
 import java.util.*
@@ -64,11 +63,15 @@ class ManageBookViewModel @Inject constructor(
   var boughtAt by mutableStateOf<Long?>(Date().time)
   var isFuture by mutableStateOf(false)
   var coverUrl by mutableStateOf("")
+  var dimensionWidth by mutableStateOf("")
+  var dimensionHeight by mutableStateOf("")
 
   val informationTabInvalid by derivedStateOf {
     code.isEmpty() || title.isEmpty() || publisherText.isEmpty() ||
       labelPriceValue.isEmpty() || labelPriceValue.parseLocaleValueOrNull() == null ||
-      paidPriceValue.isEmpty() || paidPriceValue.parseLocaleValueOrNull() == null
+      paidPriceValue.isEmpty() || paidPriceValue.parseLocaleValueOrNull() == null ||
+      dimensionWidth.isEmpty() || dimensionWidth.parseLocaleValueOrNull() == null ||
+      dimensionHeight.isEmpty() || dimensionHeight.parseLocaleValueOrNull() == null
   }
 
   val contributorsTabInvalid by derivedStateOf { contributors.isEmpty() }
@@ -92,6 +95,9 @@ class ManageBookViewModel @Inject constructor(
 
   var selectedContributor by mutableStateOf<Contributor?>(null)
 
+  var writing by mutableStateOf(false)
+    private set
+
   // TODO: Make the view model use AssistedInject when Dagger adds support to it.
   fun setFieldValues(lookupBook: LookupBookResult) = viewModelScope.launch {
     if (lookupBook == this@ManageBookViewModel.lookupBook) {
@@ -107,6 +113,12 @@ class ManageBookViewModel @Inject constructor(
     lookupBook.labelPrice?.let {
       labelPriceCurrency = it.currency
       labelPriceValue = it.value.toLocaleString()
+    }
+
+    if (lookupBook.dimensions.size == 2) {
+      val (width, height) = lookupBook.dimensions
+      dimensionWidth = width.toLocaleString()
+      dimensionHeight = height.toLocaleString()
     }
 
     val allPeople = peopleRepository.selectAll()
@@ -209,11 +221,66 @@ class ManageBookViewModel @Inject constructor(
     if (selectedContributor != null) {
       val currentIndex = contributors.indexOf(selectedContributor)
       contributors[currentIndex] = contributor
-    } else {
+    } else if (contributors.find { it.personText == contributor.personText && it.role == contributor.role } == null) {
       contributors.add(contributor)
     }
 
     selectedContributor = null
+  }
+
+  fun create(onFinish: (Long?) -> Unit = {}) {
+    if (informationTabInvalid || contributorsTabInvalid || organizationTabInvalid) {
+      return
+    }
+
+    viewModelScope.launch {
+      writing = true
+
+      // First step: create the relationships if needed.
+      val publisherId = publisher?.id ?: publishersRepository.insert(publisherText)!!
+      val storeId = store?.id ?: storesRepository.insert(storeText)!!
+      val groupId = group?.id ?: groupsRepository.insert(groupText)!!
+
+      // Second step: create the people that doesn't exist on the database.
+      val insertedContributors = contributors.map { contributor ->
+        if (contributor.person != null) {
+          return@map contributor
+        }
+
+        contributor.copy(
+          personId = peopleRepository.insert(contributor.personText)
+        )
+      }
+
+      // Third step: Create the book.
+      val bookId = booksRepository.insert(
+        code = code,
+        title = title,
+        volume = title.toTitleParts().number,
+        synopsis = synopsis,
+        notes = notes,
+        publisherId = publisherId,
+        groupId = groupId,
+        paidPrice = Price(
+          currency = paidPriceCurrency,
+          value = paidPriceValue.parseLocaleValueOrNull() ?: 0f
+        ),
+        labelPrice = Price(
+          currency = labelPriceCurrency,
+          value = labelPriceValue.parseLocaleValueOrNull() ?: 0f
+        ),
+        storeId = storeId,
+        boughtAt = boughtAt,
+        isFuture = isFuture,
+        coverUrl = coverUrl.ifEmpty { null },
+        dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
+        dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
+        contributors = insertedContributors
+      )
+
+      onFinish.invoke(bookId)
+      writing = false
+    }
   }
 
 }

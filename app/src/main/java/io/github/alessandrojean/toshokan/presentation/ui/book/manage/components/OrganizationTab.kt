@@ -1,24 +1,24 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,9 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -41,12 +39,15 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.OutlinedDateField
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
 
 @Composable
 fun OrganizationTab(
+  store: Store?,
   storeText: String,
   allStores: List<Store>,
   boughtAt: Long?,
+  group: BookGroup?,
   groupText: String,
   allGroups: List<BookGroup>,
   notes: String,
@@ -60,9 +61,39 @@ fun OrganizationTab(
   onIsFutureChange: (Boolean) -> Unit
 ) {
   val scrollState = rememberScrollState()
-  var storeExpanded by remember { mutableStateOf(false) }
-  var groupExpanded by remember { mutableStateOf(false) }
+  var showStorePickerDialog by remember { mutableStateOf(false) }
+  var showGroupPickerDialog by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
+
+  FullScreenItemPickerDialog(
+    visible = showGroupPickerDialog,
+    title = stringResource(R.string.groups),
+    selected = group,
+    initialSearch = groupText,
+    items = allGroups,
+    itemKey = { it.id },
+    itemText = { it.name },
+    onChoose = {
+      onGroupChange.invoke(it)
+      onGroupTextChange.invoke(it.name)
+    },
+    onDismiss = { showGroupPickerDialog = false }
+  )
+
+  FullScreenItemPickerDialog(
+    visible = showStorePickerDialog,
+    title = stringResource(R.string.stores),
+    selected = store,
+    initialSearch = storeText,
+    items = allStores,
+    itemKey = { it.id },
+    itemText = { it.name },
+    onChoose = {
+      onStoreChange.invoke(it)
+      onStoreTextChange.invoke(it.name)
+    },
+    onDismiss = { showStorePickerDialog = false }
+  )
 
   // TODO: Change to LazyColumn when the focus issue gets fixed.
   // Ref: https://issuetracker.google.com/issues/179203700
@@ -70,60 +101,36 @@ fun OrganizationTab(
   Column(
     modifier = Modifier
       .fillMaxSize()
-      .verticalScroll(scrollState),
+      .verticalScroll(scrollState)
+      .navigationBarsPadding()
+      .imePadding(),
     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)
   ) {
-    ExposedDropdownMenuBox(
+    OutlinedTextField(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(top = 8.dp, start = 12.dp, end = 12.dp),
-      expanded = storeExpanded,
-      onExpandedChange = { storeExpanded = it }
-    ) {
-      val filteringOptions = allStores.filter { it.name.contains(storeText, true) }
-
-      OutlinedTextField(
-        modifier = Modifier
-          .fillMaxWidth()
-          .onFocusChanged { storeExpanded = it.isFocused },
-        value = storeText,
-        onValueChange = onStoreTextChange,
-        singleLine = true,
-        label = { Text(stringResource(R.string.store)) },
-        isError = storeText.isEmpty(),
-        trailingIcon = {
-          if (filteringOptions.isNotEmpty()) {
-            ExposedDropdownMenuDefaults.TrailingIcon(storeExpanded)
-          }
-        },
-        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-        keyboardActions = KeyboardActions(
-          onNext = {
-            focusManager.moveFocus(FocusDirection.Down)
-          }
-        )
-      )
-
-      if (filteringOptions.isNotEmpty()) {
-        ExposedDropdownMenu(
-          modifier = Modifier.exposedDropdownSize(),
-          expanded = storeExpanded,
-          onDismissRequest = { storeExpanded = false }
-        ) {
-          filteringOptions.forEach { selectionOption ->
-            DropdownMenuItem(
-              text = { Text(selectionOption.name) },
-              onClick = {
-                onStoreTextChange(selectionOption.name)
-                onStoreChange(selectionOption)
-                storeExpanded = false
-              }
-            )
-          }
+        .padding(top = 12.dp, start = 12.dp, end = 12.dp),
+      value = storeText,
+      onValueChange = onStoreTextChange,
+      singleLine = true,
+      label = { Text(stringResource(R.string.store)) },
+      isError = storeText.isEmpty(),
+      trailingIcon = {
+        IconButton(onClick = { showStorePickerDialog = true }) {
+          Icon(
+            imageVector = Icons.Outlined.ManageSearch,
+            contentDescription = stringResource(R.string.action_search)
+          )
         }
-      }
-    }
+      },
+      colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+      keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+      keyboardActions = KeyboardActions(
+        onNext = {
+          focusManager.moveFocus(FocusDirection.Down)
+        }
+      )
+    )
 
     OutlinedDateField(
       modifier = Modifier
@@ -135,57 +142,31 @@ fun OrganizationTab(
       onValueChange = onBoughtAtChange
     )
 
-    ExposedDropdownMenuBox(
+    OutlinedTextField(
       modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 12.dp),
-      expanded = groupExpanded,
-      onExpandedChange = { groupExpanded = it }
-    ) {
-      val filteringOptions = allGroups.filter { it.name.contains(groupText, true) }
-
-      OutlinedTextField(
-        modifier = Modifier
-          .fillMaxWidth()
-          .onFocusChanged { groupExpanded = it.isFocused },
-        value = groupText,
-        onValueChange = onGroupTextChange,
-        singleLine = true,
-        label = { Text(stringResource(R.string.group)) },
-        isError = groupText.isEmpty(),
-        trailingIcon = {
-          if (filteringOptions.isNotEmpty()) {
-            ExposedDropdownMenuDefaults.TrailingIcon(groupExpanded)
-          }
-        },
-        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-        keyboardActions = KeyboardActions(
-          onNext = {
-            focusManager.moveFocus(FocusDirection.Down)
-          }
-        )
-      )
-
-      if (filteringOptions.isNotEmpty()) {
-        ExposedDropdownMenu(
-          modifier = Modifier.exposedDropdownSize(),
-          expanded = groupExpanded,
-          onDismissRequest = { groupExpanded = false }
-        ) {
-          filteringOptions.forEach { selectionOption ->
-            DropdownMenuItem(
-              text = { Text(selectionOption.name) },
-              onClick = {
-                onGroupTextChange(selectionOption.name)
-                onGroupChange(selectionOption)
-                groupExpanded = false
-              }
-            )
-          }
+      value = groupText,
+      onValueChange = onGroupTextChange,
+      singleLine = true,
+      label = { Text(stringResource(R.string.group)) },
+      isError = groupText.isEmpty(),
+      trailingIcon = {
+        IconButton(onClick = { showGroupPickerDialog = true }) {
+          Icon(
+            imageVector = Icons.Outlined.ManageSearch,
+            contentDescription = stringResource(R.string.action_search)
+          )
         }
-      }
-    }
+      },
+      colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+      keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+      keyboardActions = KeyboardActions(
+        onNext = {
+          focusManager.moveFocus(FocusDirection.Down)
+        }
+      )
+    )
 
     OutlinedTextField(
       modifier = Modifier

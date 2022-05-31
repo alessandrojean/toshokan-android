@@ -32,15 +32,6 @@ class ManagePublisherViewModel @Inject constructor(
 
   private val formInvalid by derivedStateOf { name.isEmpty() }
 
-  fun clearFields() = viewModelScope.launch {
-    id = null
-    name = ""
-    description = ""
-    website = ""
-    instagramProfile = ""
-    twitterProfile = ""
-  }
-
   fun setFieldValues(publisher: Publisher) = viewModelScope.launch {
     id = publisher.id
     name = publisher.name
@@ -50,7 +41,7 @@ class ManagePublisherViewModel @Inject constructor(
     twitterProfile = publisher.twitter_user.orEmpty()
   }
 
-  fun create() = viewModelScope.launch {
+  fun create(onFinish: () -> Unit = {}) = viewModelScope.launch {
     if (formInvalid) {
       return@launch
     }
@@ -65,11 +56,11 @@ class ManagePublisherViewModel @Inject constructor(
       twitterProfile = twitterProfile.trim()
     )
 
-    clearFields()
     writing = false
+    onFinish.invoke()
   }
 
-  fun edit() = viewModelScope.launch {
+  fun edit(onFinish: () -> Unit = {}) = viewModelScope.launch {
     if (formInvalid) {
       return@launch
     }
@@ -85,7 +76,7 @@ class ManagePublisherViewModel @Inject constructor(
       twitterProfile = twitterProfile.trim(),
     )
 
-    clearFields()
     writing = false
+    onFinish.invoke()
   }
 }

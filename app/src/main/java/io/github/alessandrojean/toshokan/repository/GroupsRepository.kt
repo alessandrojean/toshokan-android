@@ -24,7 +24,7 @@ class GroupsRepository @Inject constructor(
     return database.groupQueries.nextSortValue().executeAsOne().expr ?: 0L
   }
 
-  suspend fun insert(name: String) = withContext(Dispatchers.IO) {
+  suspend fun insert(name: String): Long? = withContext(Dispatchers.IO) {
     val now = Date().time
 
     database.groupQueries.insert(
@@ -34,6 +34,8 @@ class GroupsRepository @Inject constructor(
       created_at = now,
       updated_at = now
     )
+
+    database.groupQueries.lastInsertedId().executeAsOne().max
   }
 
   suspend fun update(id: Long, name: String) = withContext(Dispatchers.IO) {

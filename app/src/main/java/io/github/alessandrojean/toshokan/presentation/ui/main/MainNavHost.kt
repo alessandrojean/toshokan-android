@@ -67,7 +67,7 @@ fun MainNavHost() {
     val navigationBarColor = if (isBottomBarVisible || navigator.isEmpty) {
       MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation()
     } else {
-      Color.Transparent
+      MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
     }
 
     DisposableEffect(navigator.lastItem) {
@@ -131,7 +131,13 @@ fun MainNavHost() {
                 selected = isSelected,
                 onClick = {
                   if (!isSelected) {
-                    navigator.replace(it.screen)
+                    if (navigator.lastItem is LibraryScreen) {
+                      navigator.push(it.screen)
+                    } else if (it.screen !is LibraryScreen) {
+                      navigator.replace(it.screen)
+                    } else {
+                      navigator.replaceAll(it.screen)
+                    }
                   }
                 }
               )

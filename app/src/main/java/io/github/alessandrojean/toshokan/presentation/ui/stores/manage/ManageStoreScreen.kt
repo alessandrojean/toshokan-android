@@ -67,7 +67,7 @@ class ManageStoreScreen(
     val websiteInvalid by remember {
       derivedStateOf {
         manageStoreViewModel.website.isNotBlank() &&
-          Patterns.WEB_URL.matcher(manageStoreViewModel.website).matches()
+          !Patterns.WEB_URL.matcher(manageStoreViewModel.website).matches()
       }
     }
 
@@ -124,12 +124,10 @@ class ManageStoreScreen(
               enabled = !manageStoreViewModel.writing,
               onClick = {
                 if (mode == ManageStoreMode.CREATE) {
-                  manageStoreViewModel.create()
+                  manageStoreViewModel.create { navigator.pop() }
                 } else {
-                  manageStoreViewModel.edit()
+                  manageStoreViewModel.edit { navigator.pop() }
                 }
-
-                navigator.pop()
               },
               content = { Text(stringResource(R.string.action_finish)) }
             )
@@ -154,7 +152,6 @@ class ManageStoreScreen(
           ) {
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !manageStoreViewModel.writing,
               value = manageStoreViewModel.name,
               isError = manageStoreViewModel.name.isBlank(),
               onValueChange = { manageStoreViewModel.name = it },
@@ -168,7 +165,6 @@ class ManageStoreScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !manageStoreViewModel.writing,
               value = manageStoreViewModel.description,
               maxLines = 10,
               onValueChange = { manageStoreViewModel.description = it },
@@ -177,7 +173,6 @@ class ManageStoreScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !manageStoreViewModel.writing,
               value = manageStoreViewModel.website,
               isError = websiteInvalid,
               onValueChange = { manageStoreViewModel.website = it },
@@ -194,7 +189,6 @@ class ManageStoreScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !manageStoreViewModel.writing,
               value = manageStoreViewModel.instagramProfile,
               onValueChange = { manageStoreViewModel.instagramProfile = it },
               singleLine = true,
@@ -207,7 +201,6 @@ class ManageStoreScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !manageStoreViewModel.writing,
               value = manageStoreViewModel.twitterProfile,
               onValueChange = { manageStoreViewModel.twitterProfile = it },
               singleLine = true,

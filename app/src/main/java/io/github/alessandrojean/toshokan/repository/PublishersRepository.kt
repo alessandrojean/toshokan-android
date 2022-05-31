@@ -27,15 +27,14 @@ class PublishersRepository @Inject constructor(
 
   suspend fun insert(
     name: String,
-    description: String,
-    website: String,
-    instagramProfile: String,
-    twitterProfile: String
-  ) = withContext(Dispatchers.IO) {
+    description: String = "",
+    website: String = "",
+    instagramProfile: String = "",
+    twitterProfile: String = ""
+  ): Long? = withContext(Dispatchers.IO) {
     val now = Date().time
 
     database.publisherQueries.insert(
-      id = null,
       name = name,
       description = description,
       website = website,
@@ -44,6 +43,8 @@ class PublishersRepository @Inject constructor(
       created_at = now,
       updated_at = now
     )
+
+    database.publisherQueries.lastInsertedId().executeAsOne().max
   }
 
   suspend fun update(

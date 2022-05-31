@@ -15,7 +15,7 @@ CREATE INDEX publisher_name ON Publisher (name);
 selectAll:
 SELECT *
 FROM Publisher
-ORDER BY name ASC;
+ORDER BY name COLLATE UNICODE ASC;
 
 findByName:
 SELECT *
@@ -23,9 +23,12 @@ FROM Publisher
 WHERE name = ?
 LIMIT 1;
 
+lastInsertedId:
+SELECT max(id)
+FROM Publisher;
+
 insert:
 INSERT OR IGNORE INTO Publisher(
-  id,
   name,
   description,
   website,
@@ -34,7 +37,7 @@ INSERT OR IGNORE INTO Publisher(
   created_at,
   updated_at
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE Publisher

@@ -32,15 +32,6 @@ class ManageStoreViewModel @Inject constructor(
 
   private val formInvalid by derivedStateOf { name.isEmpty() }
 
-  fun clearFields() = viewModelScope.launch {
-    id = null
-    name = ""
-    description = ""
-    website = ""
-    instagramProfile = ""
-    twitterProfile = ""
-  }
-
   fun setFieldValues(store: Store) = viewModelScope.launch {
     id = store.id
     name = store.name
@@ -50,7 +41,7 @@ class ManageStoreViewModel @Inject constructor(
     twitterProfile = store.twitter_profile.orEmpty()
   }
 
-  fun create() = viewModelScope.launch {
+  fun create(onFinish: () -> Unit = {}) = viewModelScope.launch {
     if (formInvalid) {
       return@launch
     }
@@ -65,11 +56,11 @@ class ManageStoreViewModel @Inject constructor(
       twitterProfile = twitterProfile.trim()
     )
 
-    clearFields()
     writing = false
+    onFinish.invoke()
   }
 
-  fun edit() = viewModelScope.launch {
+  fun edit(onFinish: () -> Unit = {}) = viewModelScope.launch {
     if (formInvalid) {
       return@launch
     }
@@ -85,7 +76,7 @@ class ManageStoreViewModel @Inject constructor(
       twitterProfile = twitterProfile.trim(),
     )
 
-    clearFields()
     writing = false
+    onFinish.invoke()
   }
 }

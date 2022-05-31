@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,11 +42,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -62,7 +66,12 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
+import io.github.alessandrojean.toshokan.util.extension.getCountryDisplayName
+import io.github.alessandrojean.toshokan.util.extension.toFlagEmoji
 import kotlinx.coroutines.launch
+import java.text.Collator
+import java.util.Locale
 
 class ManagePeopleScreen(
   private val mode: ManagePeopleMode = ManagePeopleMode.CREATE,
@@ -76,11 +85,20 @@ class ManagePeopleScreen(
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val currentLocale = Locale.getDefault()
+    val collator = Collator.getInstance(currentLocale)
+    var showCountryPickerDialog by remember { mutableStateOf(false) }
+
+    val countries = remember {
+      Locale.getISOCountries()
+        .map { it to it.getCountryDisplayName(currentLocale) }
+        .sortedWith(compareBy(collator) { it.second })
+    }
 
     val websiteInvalid by remember {
       derivedStateOf {
         managePeopleViewModel.website.isNotBlank() &&
-          Patterns.WEB_URL.matcher(managePeopleViewModel.website).matches()
+          !Patterns.WEB_URL.matcher(managePeopleViewModel.website).matches()
       }
     }
 
@@ -104,6 +122,21 @@ class ManagePeopleScreen(
         color = statusBarColor
       )
     }
+
+    FullScreenItemPickerDialog<Pair<String, String>>(
+      visible = showCountryPickerDialog,
+      title = stringResource(R.string.country),
+      selected = countries.firstOrNull { it.first == managePeopleViewModel.country },
+      items = countries,
+      initialSearch = managePeopleViewModel.country.getCountryDisplayName(currentLocale),
+      itemKey = { it.first },
+      itemText = { it.second },
+      itemTrailingIcon = { Text(it.first.toFlagEmoji()) },
+      onChoose = { managePeopleViewModel.country = it.first },
+      onDismiss = { showCountryPickerDialog = false },
+      nullable = true,
+      onClear = { managePeopleViewModel.country = "" }
+    )
 
     Scaffold(
       modifier = Modifier
@@ -137,12 +170,10 @@ class ManagePeopleScreen(
               enabled = !managePeopleViewModel.writing,
               onClick = {
                 if (mode == ManagePeopleMode.CREATE) {
-                  managePeopleViewModel.create()
+                  managePeopleViewModel.create { navigator.pop() }
                 } else {
-                  managePeopleViewModel.edit()
+                  managePeopleViewModel.edit { navigator.pop() }
                 }
-
-                navigator.pop()
               },
               content = { Text(stringResource(R.string.action_finish)) }
             )
@@ -167,7 +198,6 @@ class ManagePeopleScreen(
           ) {
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePeopleViewModel.writing,
               value = managePeopleViewModel.name,
               onValueChange = { managePeopleViewModel.name = it },
               singleLine = true,
@@ -181,7 +211,6 @@ class ManagePeopleScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePeopleViewModel.writing,
               value = managePeopleViewModel.description,
               maxLines = 10,
               onValueChange = { managePeopleViewModel.description = it },
@@ -189,12 +218,26 @@ class ManagePeopleScreen(
             )
 
             OutlinedTextField(
-              modifier = Modifier.fillMaxWidth(),
-              enabled = !managePeopleViewModel.writing,
-              value = managePeopleViewModel.country,
-              onValueChange = { managePeopleViewModel.country = it },
+              modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged {
+                  if (it.isFocused) {
+                    showCountryPickerDialog = true
+                  }
+                },
+              readOnly = true,
+              value = managePeopleViewModel.country.getCountryDisplayName(currentLocale),
+              onValueChange = {},
               singleLine = true,
               label = { Text(stringResource(R.string.country)) },
+              trailingIcon = {
+                IconButton(onClick = { showCountryPickerDialog = true }) {
+                  Icon(
+                    imageVector = Icons.Outlined.ManageSearch,
+                    contentDescription = stringResource(R.string.action_search)
+                  )
+                }
+              },
               keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
               keyboardActions = KeyboardActions(
                 onNext = { focusManager.moveFocus(FocusDirection.Down) }
@@ -203,7 +246,6 @@ class ManagePeopleScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePeopleViewModel.writing,
               value = managePeopleViewModel.website,
               onValueChange = { managePeopleViewModel.website = it },
               singleLine = true,
@@ -220,7 +262,6 @@ class ManagePeopleScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePeopleViewModel.writing,
               value = managePeopleViewModel.instagramProfile,
               onValueChange = { managePeopleViewModel.instagramProfile = it },
               singleLine = true,
@@ -233,7 +274,6 @@ class ManagePeopleScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePeopleViewModel.writing,
               value = managePeopleViewModel.twitterProfile,
               onValueChange = { managePeopleViewModel.twitterProfile = it },
               singleLine = true,

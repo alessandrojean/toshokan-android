@@ -1,11 +1,24 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -30,6 +43,7 @@ import java.util.Locale
 
 @Composable
 fun ContributorsTab(
+  writing: Boolean,
   contributors: List<Contributor>,
   onAddContributorClick: () -> Unit,
   onContributorLongClick: (Contributor) -> Unit
@@ -39,44 +53,65 @@ fun ContributorsTab(
   Scaffold(
     modifier = Modifier.fillMaxSize(),
     floatingActionButton = {
-      ExtendedFloatingActionButton(
-        text = { Text(stringResource(R.string.action_add)) },
-        icon = {
-          Icon(
-            imageVector = Icons.Outlined.Add,
-            contentDescription = stringResource(R.string.action_add)
-          )
-        },
-        expanded = listState.firstVisibleItemIndex == 0,
-        onClick = onAddContributorClick
-      )
+      AnimatedVisibility(
+        visible = !writing,
+        enter = fadeIn(),
+        exit = fadeOut()
+      ) {
+        ExtendedFloatingActionButton(
+          text = { Text(stringResource(R.string.action_add)) },
+          icon = {
+            Icon(
+              imageVector = Icons.Outlined.Add,
+              contentDescription = stringResource(R.string.action_add)
+            )
+          },
+          expanded = listState.firstVisibleItemIndex == 0,
+          onClick = onAddContributorClick
+        )
+      }
     },
     content = { innerPadding ->
       Crossfade(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(innerPadding),
+        modifier = Modifier.fillMaxSize(),
         targetState = contributors.isEmpty()
       ) { isEmpty ->
         if (isEmpty) {
           NoItemsFound(
+            modifier = Modifier.padding(innerPadding),
             text = stringResource(R.string.no_contributors),
             icon = Icons.Outlined.Group
           )
         } else {
-          LazyColumn(state = listState) {
-            items(contributors, key = { it.hashCode() }) { contributor ->
+          LazyColumn(
+            contentPadding = innerPadding,
+            state = listState
+          ) {
+            items(contributors) { contributor ->
               ContributorRow(
                 modifier = Modifier
                   .fillMaxWidth()
                   .animateItemPlacement(),
                 contributor = contributor,
-                onLongClick = { onContributorLongClick(contributor) }
+                onLongClick = {
+                  if (!writing) {
+                    onContributorLongClick(contributor)
+                  }
+                }
               )
             }
           }
         }
       }
+    },
+    bottomBar = {
+      Spacer(
+        modifier = Modifier.windowInsetsPadding(
+          WindowInsets.systemBars.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+          )
+        )
+      )
     }
   )
 }

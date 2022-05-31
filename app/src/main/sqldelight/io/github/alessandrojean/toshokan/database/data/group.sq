@@ -17,10 +17,14 @@ ORDER BY sort ASC;
 selectSorted:
 SELECT *
 FROM BookGroup
-ORDER BY name ASC;
+ORDER BY name COLLATE UNICODE ASC;
 
 nextSortValue:
 SELECT max(sort) + 1
+FROM BookGroup;
+
+lastInsertedId:
+SELECT max(id)
 FROM BookGroup;
 
 insert:

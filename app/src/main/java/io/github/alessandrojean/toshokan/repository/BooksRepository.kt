@@ -1,9 +1,13 @@
 package io.github.alessandrojean.toshokan.repository
 
+import com.squareup.sqldelight.runtime.coroutines.asFlow
+import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Price
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
@@ -13,6 +17,10 @@ import javax.inject.Singleton
 class BooksRepository @Inject constructor(
   private val database: ToshokanDatabase
 ) {
+
+  fun findById(id: Long): Flow<Book> {
+    return database.bookQueries.findById(id).asFlow().mapToOne()
+  }
 
   suspend fun insert(
     code: String?,
@@ -31,8 +39,9 @@ class BooksRepository @Inject constructor(
     dimensionWidth: Float,
     dimensionHeight: Float,
     contributors: List<Contributor>
-  ) = withContext(Dispatchers.IO) {
+  ): Long? = withContext(Dispatchers.IO) {
     val now = Date().time
+    var bookId: Long? = null
 
     database.transaction {
       database.bookQueries.insert(
@@ -57,16 +66,18 @@ class BooksRepository @Inject constructor(
         updated_at = now
       )
 
-      val bookId = database.bookQueries.lastInsertedId().executeAsOne().max!!
+      bookId = database.bookQueries.lastInsertedId().executeAsOne().max!!
 
       contributors.forEach { contributor ->
         database.bookCreditQueries.insert(
-          book_id = bookId,
-          person_id = contributor.person!!.id,
+          book_id = bookId!!,
+          person_id = contributor.person?.id ?: contributor.personId!!,
           role = contributor.role
         )
       }
     }
+
+    bookId
   }
 
 }

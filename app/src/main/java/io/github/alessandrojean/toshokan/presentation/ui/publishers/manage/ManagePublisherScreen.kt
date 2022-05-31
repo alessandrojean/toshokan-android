@@ -72,7 +72,7 @@ class ManagePublisherScreen(
     val websiteInvalid by remember {
       derivedStateOf {
         managePublisherViewModel.website.isNotBlank() &&
-          Patterns.WEB_URL.matcher(managePublisherViewModel.website).matches()
+          !Patterns.WEB_URL.matcher(managePublisherViewModel.website).matches()
       }
     }
 
@@ -129,12 +129,10 @@ class ManagePublisherScreen(
               enabled = !managePublisherViewModel.writing,
               onClick = {
                 if (mode == ManagePublisherMode.CREATE) {
-                  managePublisherViewModel.create()
+                  managePublisherViewModel.create { navigator.pop() }
                 } else {
-                  managePublisherViewModel.edit()
+                  managePublisherViewModel.edit { navigator.pop() }
                 }
-
-                navigator.pop()
               },
               content = { Text(stringResource(R.string.action_finish)) }
             )
@@ -159,7 +157,6 @@ class ManagePublisherScreen(
           ) {
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePublisherViewModel.writing,
               value = managePublisherViewModel.name,
               isError = managePublisherViewModel.name.isBlank(),
               onValueChange = { managePublisherViewModel.name = it },
@@ -173,7 +170,6 @@ class ManagePublisherScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePublisherViewModel.writing,
               value = managePublisherViewModel.description,
               maxLines = 10,
               onValueChange = { managePublisherViewModel.description = it },
@@ -182,7 +178,6 @@ class ManagePublisherScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePublisherViewModel.writing,
               value = managePublisherViewModel.website,
               isError = websiteInvalid,
               onValueChange = { managePublisherViewModel.website = it },
@@ -199,7 +194,6 @@ class ManagePublisherScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePublisherViewModel.writing,
               value = managePublisherViewModel.instagramProfile,
               onValueChange = { managePublisherViewModel.instagramProfile = it },
               singleLine = true,
@@ -212,7 +206,6 @@ class ManagePublisherScreen(
 
             OutlinedTextField(
               modifier = Modifier.fillMaxWidth(),
-              enabled = !managePublisherViewModel.writing,
               value = managePublisherViewModel.twitterProfile,
               onValueChange = { managePublisherViewModel.twitterProfile = it },
               singleLine = true,

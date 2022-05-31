@@ -15,7 +15,11 @@ CREATE INDEX store_name ON Store (name);
 selectAll:
 SELECT *
 FROM Store
-ORDER BY name ASC;
+ORDER BY name COLLATE UNICODE ASC;
+
+lastInsertedId:
+SELECT max(id)
+FROM Store;
 
 insert:
 INSERT OR IGNORE INTO Store(
