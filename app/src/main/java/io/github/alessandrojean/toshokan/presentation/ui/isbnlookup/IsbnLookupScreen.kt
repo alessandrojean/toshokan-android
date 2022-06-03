@@ -66,6 +66,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -92,15 +93,19 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
     val navigator = LocalNavigator.currentOrThrow
     val history by isbnLookupViewModel.history.collectAsState(emptySet())
 
-//    if (
-//      !isbn.isNullOrBlank() &&
-//      isbn.isValidIsbn() &&
-//      uiState.searchQuery != isbn &&
-//      isbnLookupViewModel.results.isEmpty()
-//    ) {
-//      isbnLookupViewModel.onSearchQueryChange(isbn)
-//      isbnLookupViewModel.search()
-//    }
+    LifecycleEffect(
+      onStarted = {
+        if (
+          !isbn.isNullOrBlank() &&
+          isbn.isValidIsbn() &&
+          isbnLookupViewModel.searchQuery != isbn &&
+          isbnLookupViewModel.results.isEmpty()
+        ) {
+          isbnLookupViewModel.searchQuery = isbn
+          isbnLookupViewModel.search()
+        }
+      }
+    )
 
     val systemUiController = rememberSystemUiController()
     val statusBarColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
@@ -211,6 +216,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 contentPadding = PaddingValues(12.dp),
                 listState = listState,
                 onResultClick = { result ->
+                  isbnLookupViewModel.cancelSearch()
                   navigator.push(ManageBookScreen(result))
                 }
               )

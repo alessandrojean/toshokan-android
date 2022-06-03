@@ -17,5 +17,9 @@ enum class CreditRole(val code: Long, @StringRes val title: Int) {
   GRAPHIC_DESIGN(10, R.string.role_graphic_design),
   REVIEWER(11, R.string.role_reviewer),
   PRINTING_COMPANY(12, R.string.role_printing_company),
-  OTHERS(13, R.string.role_others)
+  OTHERS(13, R.string.role_others);
+
+  companion object {
+    val AUTHOR_ROLES = arrayOf(AUTHOR, ARTIST, ILLUSTRATOR, SCRIPT)
+  }
 }

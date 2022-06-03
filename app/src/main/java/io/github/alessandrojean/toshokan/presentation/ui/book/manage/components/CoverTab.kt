@@ -1,7 +1,11 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -23,30 +28,39 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.ImageSearch
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
 
@@ -102,17 +116,17 @@ fun CoverTab(
             LazyVerticalGrid(
               modifier = Modifier.selectableGroup(),
               state = gridState,
-              columns = GridCells.Adaptive(minSize = 128.dp),
+              columns = GridCells.Adaptive(minSize = 96.dp),
               contentPadding = PaddingValues(
-                top = 12.dp,
-                start = 12.dp,
-                end = 12.dp,
-                bottom = 12.dp + WindowInsets.navigationBars
+                top = 4.dp,
+                start = 4.dp,
+                end = 4.dp,
+                bottom = 4.dp + WindowInsets.navigationBars
                   .asPaddingValues()
                   .calculateBottomPadding()
               ),
-              verticalArrangement = Arrangement.spacedBy(12.dp),
-              horizontalArrangement = Arrangement.spacedBy(12.dp)
+              verticalArrangement = Arrangement.spacedBy(4.dp),
+              horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
               items(allCovers, key = { it.imageUrl }) { cover ->
                 CoverCard(
@@ -145,6 +159,8 @@ fun CoverCard(
   selected: Boolean,
   onClick: () -> Unit
 ) {
+  var imageLoaded by remember { mutableStateOf(false) }
+
   val coverPainter = rememberAsyncImagePainter(
     model = cover.imageUrl,
     contentScale = ContentScale.Crop
@@ -171,25 +187,53 @@ fun CoverCard(
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(12.dp)
+        .padding(4.dp)
     ) {
-      // TODO: Handle broken images and loading state.
-      Image(
-        painter = coverPainter,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
+      Box(
         modifier = Modifier
-          .aspectRatio(2f / 3f)
-          .clip(MaterialTheme.shapes.large)
-      )
+          .fillMaxWidth()
+          .aspectRatio(2f / 3f),
+        contentAlignment = Alignment.Center
+      ) {
+        androidx.compose.animation.AnimatedVisibility(
+          visible = !imageLoaded,
+          enter = fadeIn(),
+          exit = fadeOut()
+        ) {
+          Box(
+            modifier = Modifier
+              .fillMaxSize()
+              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.Book,
+              contentDescription = null,
+              tint = LocalContentColor.current.copy(alpha = 0.5f)
+            )
+          }
+        }
+
+        AsyncImage(
+          model = ImageRequest.Builder(LocalContext.current)
+            .data(cover.imageUrl)
+            .crossfade(true)
+            .build(),
+          contentDescription = null,
+          contentScale = ContentScale.Inside,
+          modifier = Modifier.clip(MaterialTheme.shapes.large),
+          onSuccess = { imageLoaded = true }
+        )
+      }
 
       Text(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(top = 8.dp),
+          .padding(top = 4.dp),
         text = stringResource(cover.source!!),
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
+        style = MaterialTheme.typography.bodyMedium
       )
     }
   }

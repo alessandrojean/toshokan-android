@@ -52,7 +52,9 @@ class SkoobLookup @Inject constructor(
       return emptyList()
     }
 
-    return result.response.orEmpty().map { book -> book.toLookupBookResult() }
+    return result.response.orEmpty()
+      .distinctBy(SkoobBook::bookId)
+      .map { book -> book.toLookupBookResult() }
   }
 
   private fun SkoobBook.toLookupBookResult(): LookupBookResult = LookupBookResult(

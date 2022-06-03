@@ -1,5 +1,8 @@
 package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,20 +23,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import io.github.alessandrojean.toshokan.domain.CreditRole
+import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
 
@@ -55,7 +68,7 @@ fun IsbnLookupResultList(
       .spacedBy(8.dp, Alignment.Top),
     horizontalAlignment = Alignment.Start
   ) {
-    items(results, key = { it.providerId }) { result ->
+    items(results) { result ->
       IsbnLookupResultRow(
         result = result,
         onClick = onResultClick
@@ -69,6 +82,8 @@ fun IsbnLookupResultRow(
   result: LookupBookResult,
   onClick: (LookupBookResult) -> Unit
 ) {
+  var imageLoaded by remember { mutableStateOf(false) }
+
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -80,38 +95,41 @@ fun IsbnLookupResultRow(
         .fillMaxSize()
         .padding(8.dp)
     ) {
-      SubcomposeAsyncImage(
-        model = result.coverUrl.ifEmpty {
-          result.isbn.toAmazonCoverUrl()
-        },
-        contentDescription = result.title,
-        contentScale = ContentScale.FillBounds,
-        loading = {
-          Box(contentAlignment = Alignment.Center) {
-            Icon(
-              imageVector = Icons.Filled.Image,
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.size(24.dp)
-            )
-          }
-        },
-        error = {
-          Box(contentAlignment = Alignment.Center) {
-            Icon(
-              imageVector = Icons.Filled.BrokenImage,
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.size(24.dp)
-            )
-          }
-        },
+      Box(
         modifier = Modifier
           .width(64.dp)
-          .height(96.dp)
-          .clip(MaterialTheme.shapes.large)
-          .background(MaterialTheme.colorScheme.background)
-      )
+          .height(96.dp),
+        contentAlignment = Alignment.Center
+      ) {
+        androidx.compose.animation.AnimatedVisibility(
+          visible = !imageLoaded,
+          enter = fadeIn(),
+          exit = fadeOut()
+        ) {
+          Box(
+            modifier = Modifier
+              .fillMaxSize()
+              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.Book,
+              contentDescription = null,
+              tint = LocalContentColor.current.copy(alpha = 0.5f)
+            )
+          }
+        }
+        AsyncImage(
+          model = ImageRequest.Builder(LocalContext.current)
+            .data(result.coverUrl.ifEmpty { result.isbn.toAmazonCoverUrl() })
+            .crossfade(true)
+            .build(),
+          modifier = Modifier.clip(MaterialTheme.shapes.large),
+          contentDescription = null,
+          contentScale = ContentScale.Inside,
+          onSuccess = { imageLoaded = true }
+        )
+      }
 
       Column(
         modifier = Modifier

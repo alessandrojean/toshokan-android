@@ -95,7 +95,7 @@ class GroupsViewModel @Inject constructor(
 
   fun reorderItems(reorderedItemsIds: List<Long>) = viewModelScope.launch {
     reorderedItemsIds.forEachIndexed { sort, id ->
-      groupsRepository.updateSort(id, sort.toLong())
+      groupsRepository.updateSort(id, sort)
     }
   }
 }

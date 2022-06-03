@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.repository
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.database.data.Store
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -15,6 +16,10 @@ class StoresRepository @Inject constructor(
 ) {
 
   val stores = database.storeQueries.selectAll().asFlow().mapToList()
+
+  fun findById(storeId: Long): Store? {
+    return database.storeQueries.findById(storeId).executeAsOneOrNull()
+  }
 
   suspend fun insert(
     name: String,

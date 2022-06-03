@@ -7,7 +7,7 @@ import io.github.alessandrojean.toshokan.service.cover.urlreplacer.UrlReplacerCo
 import io.github.alessandrojean.toshokan.service.cover.wordpress.WordPressCoverProvider
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toSlug
-import io.github.alessandrojean.toshokan.util.getIsbnInformation
+import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import io.github.alessandrojean.toshokan.util.removeDashes
 import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
@@ -36,7 +36,7 @@ class CoverRepositoryImpl @Inject constructor(
     oembedCoverProviderFactory.create(
       website = CoverProviderWebsite.JBC,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "BR" &&
+        book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("jbc", ignoreCase = true)
       },
       baseUrl = "https://editorajbc.com.br",
@@ -53,7 +53,7 @@ class CoverRepositoryImpl @Inject constructor(
     contentStuffCoverProvider.create(
       website = CoverProviderWebsite.LOJA_PANINI,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "BR" &&
+        book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("panini", ignoreCase = true)
       },
       baseUrl = "https://loja.panini.com.br/panini/solucoes"
@@ -61,7 +61,7 @@ class CoverRepositoryImpl @Inject constructor(
     wordPressCoverProviderFactory.create(
       website = CoverProviderWebsite.NEWPOP,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "BR" &&
+        book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("newpop", ignoreCase = true)
       },
       baseUrl = "https://www.newpop.com.br"
@@ -69,7 +69,7 @@ class CoverRepositoryImpl @Inject constructor(
     wordPressCoverProviderFactory.create(
       website = CoverProviderWebsite.PIPOCA_E_NANQUIM,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "BR" &&
+        book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("pipoca & nanquim", ignoreCase = true)
       },
       baseUrl = "https://pipocaenanquim.com.br",
@@ -79,7 +79,7 @@ class CoverRepositoryImpl @Inject constructor(
     urlReplacerCoverProviderFactory.create(
       website = CoverProviderWebsite.SHUEISHA,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "JP" &&
+        book.code.toIsbnInformation()?.country == "JP" &&
           (book.publisher.contains("shueisha", ignoreCase = true) ||
             book.publisher.contains("集英社"))
       },
@@ -90,7 +90,7 @@ class CoverRepositoryImpl @Inject constructor(
     wordPressCoverProviderFactory.create(
       website = CoverProviderWebsite.VENETA,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "BR" &&
+        book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("veneta", ignoreCase = true)
       },
       baseUrl = "https://veneta.com.br",
@@ -100,7 +100,7 @@ class CoverRepositoryImpl @Inject constructor(
     urlReplacerCoverProviderFactory.create(
       website = CoverProviderWebsite.VIZ_MEDIA,
       condition = { book ->
-        book.code.getIsbnInformation()?.country == "US" &&
+        book.code.toIsbnInformation()?.country == "US" &&
           book.publisher.contains("viz media", ignoreCase = true)
       },
       baseUrl = "https://dw9to29mmj727.cloudfront.net/products/" +

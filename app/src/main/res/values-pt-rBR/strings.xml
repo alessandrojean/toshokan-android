@@ -15,6 +15,7 @@
   <string name="action_pick_date">Escolher data</string>
   <string name="action_previous_step">Etapa anterior</string>
   <string name="action_next_step">Próxima etapa</string>
+  <string name="action_read_more">Mostrar mais</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>
@@ -29,6 +30,7 @@
   <string name="name">Nome</string>
   <string name="description">Descrição</string>
   <string name="country">País</string>
+  <string name="language">Idioma</string>
   <string name="title">Título</string>
   <string name="volume">Volume</string>
   <string name="synopsis">Sinopse</string>
@@ -45,6 +47,8 @@
   <string name="role">Função/cargo</string>
   <string name="width_cm">Largura</string>
   <string name="height_cm">Altura</string>
+  <string name="created_at">Data de criação</string>
+  <string name="updated_at">Data de modificação</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Desconhecido</string>
@@ -88,6 +92,20 @@
   <string name="new_contributor">Novo contribuidor</string>
   <string name="editing_contributor">Editando contribuidor</string>
   <string name="steps">Etapa %d de %d</string>
+  <string name="no_synopsis">Sem sinopse fornecida</string>
+  <string name="book_read">Lido</string>
+  <string name="book_unread">Não lido</string>
+  <string name="book_in_collection">Na coleção</string>
+  <string name="book_future">Futuro</string>
+  <string name="book_delete_title">Deleção de livros</string>
+  <plurals name="book_delete_warning">
+    <item quantity="one" tools:ignore="ImpliedQuantity">
+      Ao deletar um livro, todos os créditos e histórico de leitura relacionados também serão deletados.
+    </item>
+    <item quantity="other">
+      Ao deletar livros, todos os créditos e histórico de leitura relacionados também serão deletados.
+    </item>
+  </plurals>
 
   <!-- Statistics -->
   <string name="statistics">Estatísticas</string>

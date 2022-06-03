@@ -4,6 +4,7 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.database.data.BookGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.withContext
@@ -20,8 +21,12 @@ class GroupsRepository @Inject constructor(
 
   val groupsSorted = database.groupQueries.selectSorted().asFlow().mapToList()
 
-  private fun nextSortValue(): Long {
-    return database.groupQueries.nextSortValue().executeAsOne().expr ?: 0L
+  private fun nextSortValue(): Int {
+    return database.groupQueries.nextSortValue().executeAsOne().expr?.toInt() ?: 0
+  }
+
+  fun findById(id: Long): BookGroup? {
+    return database.groupQueries.findById(id).executeAsOneOrNull()
   }
 
   suspend fun insert(name: String): Long? = withContext(Dispatchers.IO) {
@@ -46,7 +51,7 @@ class GroupsRepository @Inject constructor(
     )
   }
 
-  suspend fun updateSort(id: Long, sort: Long) = withContext(Dispatchers.IO) {
+  suspend fun updateSort(id: Long, sort: Int) = withContext(Dispatchers.IO) {
     database.groupQueries.updateSort(
       id = id,
       sort = sort,

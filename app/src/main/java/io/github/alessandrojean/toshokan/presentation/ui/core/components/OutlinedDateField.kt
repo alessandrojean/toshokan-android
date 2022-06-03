@@ -15,9 +15,8 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
-import java.text.DateFormat
-import java.util.*
 
 @Composable
 fun OutlinedDateField(
@@ -30,8 +29,6 @@ fun OutlinedDateField(
   onValueChange: (Long?) -> Unit,
 ) {
   val activity = LocalContext.current as AppCompatActivity
-  val currentLocale = Locale.getDefault()
-  val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, currentLocale)
 
   OutlinedTextField(
     modifier = modifier
@@ -46,7 +43,7 @@ fun OutlinedDateField(
         }
       },
     readOnly = true,
-    value = value?.let { dateFormat.format(Date(it)) }.orEmpty(),
+    value = value?.formatToLocaleDate().orEmpty(),
     isError = isError,
     label = label,
     placeholder = placeholder,

@@ -15,7 +15,7 @@ CREATE TABLE Book(
   label_price_value REAL AS Float NOT NULL,
   store_id INTEGER,
   bought_at INTEGER AS Long,
-  is_future INTEGER AS Boolean DEFAULT 0,
+  is_future INTEGER AS Boolean DEFAULT 0 NOT NULL,
   cover_url TEXT,
   dimension_width REAL AS Float NOT NULL,
   dimension_height REAL AS Float NOT NULL,
@@ -37,10 +37,24 @@ FROM Book
 WHERE code = ?
 LIMIT 1;
 
-findById:
-SELECT *
+completeBook:
+SELECT Book.*,
+  BookGroup.name AS group_name,
+  Publisher.name AS publisher_name,
+  Store.name AS store_name
 FROM Book
-WHERE id = ?;
+INNER JOIN BookGroup ON BookGroup.id = Book.group_id
+INNER JOIN Publisher ON Publisher.id = Book.publisher_id
+INNER JOIN Store ON Store.id = Book.store_id
+WHERE Book.id = ?;
+
+libraryItems:
+SELECT Book.id, title, volume, is_future, cover_url, group_id,
+  name AS group_name, sort AS group_sort
+FROM Book
+INNER JOIN BookGroup ON BookGroup.id = Book.group_id
+WHERE is_future = :is_future
+ORDER BY BookGroup.sort ASC, Book.title COLLATE UNICODE ASC;
 
 lastInsertedId:
 SELECT max(id)
@@ -69,3 +83,20 @@ INSERT INTO Book(
   updated_at
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE Book
+SET code = ?, title = ?, volume = ?, synopsis = ?, notes = ?, publisher_id = ?,
+  group_id = ?, paid_price_currency = ?, paid_price_value = ?,
+  label_price_currency = ?, label_price_value = ?, store_id = ?,
+  bought_at = ?, is_future = ?, cover_url = ?, dimension_width = ?,
+  dimension_height = ?, updated_at = ?
+WHERE id = ?;
+
+delete:
+DELETE FROM Book
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM Book
+WHERE id IN ?;

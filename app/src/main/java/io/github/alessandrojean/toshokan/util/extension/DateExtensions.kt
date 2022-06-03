@@ -1,6 +1,8 @@
 package io.github.alessandrojean.toshokan.util.extension
 
+import java.text.DateFormat
 import java.util.Calendar
+import java.util.Locale
 import java.util.TimeZone
 
 fun Long.toLocalCalendar(): Calendar? {
@@ -23,4 +25,17 @@ fun Long.toLocalCalendar(): Calendar? {
       rawCalendar.get(Calendar.SECOND)
     )
   }
+}
+
+fun Long.formatToLocaleDate(
+  locale: Locale = Locale.getDefault(),
+  format: Int = DateFormat.SHORT
+): String {
+  if (this == 0L) {
+    return ""
+  }
+
+  val dateFormat = DateFormat.getDateInstance(format, locale)
+  return runCatching { dateFormat.format(this) }
+    .getOrNull() ?: ""
 }

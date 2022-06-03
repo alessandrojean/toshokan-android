@@ -17,6 +17,11 @@ SELECT *
 FROM Publisher
 ORDER BY name COLLATE UNICODE ASC;
 
+findById:
+SELECT *
+FROM Publisher
+WHERE id = ?;
+
 findByName:
 SELECT *
 FROM Publisher

@@ -13,6 +13,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookGroup
+import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.Contributor
@@ -44,6 +46,11 @@ class ManageBookViewModel @Inject constructor(
   private val storesRepository: StoresRepository,
   private val coverRepository: CoverRepository
 ) : ViewModel() {
+
+  enum class Mode {
+    CREATING,
+    EDITING
+  }
 
   var id by mutableStateOf<Long?>(null)
   var code by mutableStateOf("")
@@ -83,9 +90,13 @@ class ManageBookViewModel @Inject constructor(
   val contributors = mutableStateListOf<Contributor>()
 
   private var lookupBook by mutableStateOf<LookupBookResult?>(null)
+  private var existingBook by mutableStateOf<CompleteBook?>(null)
   var allCovers = mutableStateListOf<CoverResult>()
     private set
   var coverState by mutableStateOf<CoverTabState>(CoverTabState.Display)
+    private set
+
+  var mode by mutableStateOf(Mode.CREATING)
     private set
 
   val publishers = publishersRepository.publishers
@@ -150,6 +161,62 @@ class ManageBookViewModel @Inject constructor(
         )
       )
     }
+
+    mode = Mode.CREATING
+  }
+
+  fun setFieldValues(existingBook: CompleteBook) = viewModelScope.launch {
+    if (existingBook == this@ManageBookViewModel.existingBook) {
+      return@launch
+    }
+
+    code = existingBook.code.orEmpty()
+    title = existingBook.title
+    synopsis = existingBook.synopsis.orEmpty()
+    publisher = publishersRepository.findById(existingBook.publisher_id)
+    publisherText = existingBook.publisher_name
+    store = existingBook.store_id?.let { storesRepository.findById(it) }
+    storeText = existingBook.store_name
+    group = groupsRepository.findById(existingBook.group_id)
+    groupText = existingBook.group_name
+    coverUrl = existingBook.cover_url.orEmpty()
+    notes = existingBook.notes.orEmpty()
+    isFuture = existingBook.is_future
+
+    labelPriceCurrency = existingBook.label_price_currency
+    labelPriceValue = existingBook.label_price_value.toLocaleString()
+
+    paidPriceCurrency = existingBook.paid_price_currency
+    paidPriceValue = existingBook.paid_price_value.toLocaleString()
+
+    dimensionWidth = existingBook.dimension_width.toLocaleString()
+    dimensionHeight = existingBook.dimension_height.toLocaleString()
+
+    this@ManageBookViewModel.existingBook = existingBook
+
+    val allPeople = peopleRepository.selectAll()
+
+    booksRepository.findBookContributors(existingBook.id)
+      .map { bookContributor ->
+        Contributor(
+          person = allPeople.firstOrNull { it.id == bookContributor.person_id },
+          personId = bookContributor.person_id,
+          personText = bookContributor.person_name,
+          role = bookContributor.role
+        )
+      }
+      .let(contributors::addAll)
+
+    if (existingBook.cover_url.orEmpty().isNotBlank()) {
+      allCovers.add(
+        CoverResult(
+          source = R.string.current_cover,
+          imageUrl = existingBook.cover_url!!
+        )
+      )
+    }
+
+    mode = Mode.EDITING
   }
 
   fun coverRefreshEnabled(): Boolean {
@@ -279,6 +346,62 @@ class ManageBookViewModel @Inject constructor(
       )
 
       onFinish.invoke(bookId)
+      writing = false
+    }
+  }
+
+  fun edit(onFinish: () -> Unit = {}) {
+    if (informationTabInvalid || contributorsTabInvalid || organizationTabInvalid) {
+      return
+    }
+
+    viewModelScope.launch {
+      writing = true
+
+      // First step: create the relationships if needed.
+      val publisherId = publisher?.id ?: publishersRepository.insert(publisherText)!!
+      val storeId = store?.id ?: storesRepository.insert(storeText)!!
+      val groupId = group?.id ?: groupsRepository.insert(groupText)!!
+
+      // Second step: create the people that doesn't exist on the database.
+      val insertedContributors = contributors.map { contributor ->
+        if (contributor.person != null) {
+          return@map contributor
+        }
+
+        contributor.copy(
+          personId = peopleRepository.insert(contributor.personText)
+        )
+      }
+
+      // Third step: Update the book.
+      booksRepository.update(
+        id = existingBook!!.id,
+        code = code,
+        title = title,
+        volume = title.toTitleParts().number,
+        synopsis = synopsis,
+        notes = notes,
+        publisherId = publisherId,
+        groupId = groupId,
+        paidPrice = Price(
+          currency = paidPriceCurrency,
+          value = paidPriceValue.parseLocaleValueOrNull() ?: 0f
+        ),
+        labelPrice = Price(
+          currency = labelPriceCurrency,
+          value = labelPriceValue.parseLocaleValueOrNull() ?: 0f
+        ),
+        storeId = storeId,
+        boughtAt = boughtAt,
+        isFuture = isFuture,
+        coverUrl = coverUrl.ifEmpty { null },
+        dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
+        dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
+        contributors = insertedContributors
+      )
+
+      onFinish.invoke()
       writing = false
     }
   }

@@ -91,6 +91,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole
@@ -107,7 +108,10 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidScreen() {
+data class ManageBookScreen(
+  val lookupBook: LookupBookResult? = null,
+  val completeBook: CompleteBook? = null
+) : AndroidScreen() {
   
   @Composable
   override fun Content() {
@@ -134,9 +138,11 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
     val allStores by manageBookViewModel.stores.collectAsState(emptyList())
     val allGroups by manageBookViewModel.groups.collectAsState(emptyList())
 
-    LaunchedEffect(lookupBook) {
+    LaunchedEffect(lookupBook, completeBook) {
       if (lookupBook != null) {
         scope.launch { manageBookViewModel.setFieldValues(lookupBook) }
+      } else if (completeBook != null) {
+        scope.launch { manageBookViewModel.setFieldValues(completeBook) }
       }
     }
 
@@ -223,7 +229,11 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                 )
               }
             },
-            title = { Text(stringResource(R.string.create_book)) },
+            title = {
+              Text(
+                text = completeBook?.title ?: stringResource(R.string.create_book)
+              )
+            },
             actions = {
               TextButton(
                 enabled = !manageBookViewModel.informationTabInvalid &&
@@ -231,10 +241,16 @@ data class ManageBookScreen(val lookupBook: LookupBookResult? = null) : AndroidS
                   !manageBookViewModel.informationTabInvalid &&
                   !manageBookViewModel.writing,
                 onClick = {
-                  manageBookViewModel.create { bookId ->
-                    if (bookId != null) {
-                      navigator.popUntil { it is LibraryScreen }
-                      navigator.push(BookScreen(bookId))
+                  if (manageBookViewModel.mode == ManageBookViewModel.Mode.CREATING) {
+                    manageBookViewModel.create { bookId ->
+                      if (bookId != null) {
+                        navigator.popUntil { it is LibraryScreen }
+                        navigator.push(BookScreen(bookId))
+                      }
+                    }
+                  } else {
+                    manageBookViewModel.edit {
+                      navigator.pop()
                     }
                   }
                 }

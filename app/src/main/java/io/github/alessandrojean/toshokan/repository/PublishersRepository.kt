@@ -25,6 +25,10 @@ class PublishersRepository @Inject constructor(
     return database.publisherQueries.findByName(name).executeAsOneOrNull()
   }
 
+  fun findById(id: Long): Publisher? {
+    return database.publisherQueries.findById(id).executeAsOneOrNull()
+  }
+
   suspend fun insert(
     name: String,
     description: String = "",

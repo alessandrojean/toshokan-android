@@ -115,6 +115,7 @@ dependencies {
   implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-swiperefresh:$accompanistVersion")
+  implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
 
   // Androidx CameraX
   val cameraxVersion = "1.1.0-rc01"

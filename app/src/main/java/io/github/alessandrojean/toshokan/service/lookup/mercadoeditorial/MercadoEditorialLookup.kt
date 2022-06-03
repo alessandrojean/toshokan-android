@@ -7,7 +7,7 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
-import io.github.alessandrojean.toshokan.util.getIsbnInformation
+import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
@@ -33,7 +33,7 @@ class MercadoEditorialLookup @Inject constructor (
   }
 
   override suspend fun searchByIsbn(isbn: String): List<LookupBookResult> {
-    if (isbn.getIsbnInformation()?.country != "BR") {
+    if (isbn.toIsbnInformation()?.country != "BR") {
       return emptyList()
     }
 

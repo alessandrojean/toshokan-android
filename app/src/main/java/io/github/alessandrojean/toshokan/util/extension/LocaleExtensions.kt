@@ -2,12 +2,23 @@ package io.github.alessandrojean.toshokan.util.extension
 
 import java.util.Locale
 
-fun String.getCountryDisplayName(locale: Locale = Locale.getDefault()): String {
+fun String.toCountryDisplayName(locale: Locale = Locale.getDefault()): String {
   if (isBlank()) {
     return ""
   }
 
   return Locale("", this).getDisplayName(locale)
+}
+
+fun String.toLanguageDisplayName(locale: Locale = Locale.getDefault()): String {
+  if (isBlank()) {
+    return ""
+  }
+
+  return Locale
+    .forLanguageTag(this)
+    .getDisplayName(locale)
+    .replaceFirstChar { it.uppercase(locale) }
 }
 
 /**

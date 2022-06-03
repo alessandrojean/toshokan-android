@@ -51,10 +51,15 @@ class IsbnLookupViewModel @Inject constructor(
 
   private var searchJob: Job? = null
 
-  fun search() {
+  fun cancelSearch() {
     if (searchJob?.isActive == true) {
       searchJob?.cancel()
+      progress = 1f
     }
+  }
+
+  fun search() {
+    cancelSearch()
 
     state = IsbnLookupState.LOADING
     updateHistory()

@@ -130,7 +130,7 @@ val RegistrationGroups = arrayOf(
   IsbnInformation(99974, "BO", "es")
 )
 
-fun String.getIsbnInformation(): IsbnInformation? {
+fun String.toIsbnInformation(): IsbnInformation? {
   val onlyDigits = removeDashes()
 
   if (!onlyDigits.isValidIsbn()) {

@@ -4,28 +4,17 @@ import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -44,7 +32,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,8 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -67,9 +52,8 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
-import io.github.alessandrojean.toshokan.util.extension.getCountryDisplayName
+import io.github.alessandrojean.toshokan.util.extension.toCountryDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toFlagEmoji
-import kotlinx.coroutines.launch
 import java.text.Collator
 import java.util.Locale
 
@@ -91,7 +75,7 @@ class ManagePeopleScreen(
 
     val countries = remember {
       Locale.getISOCountries()
-        .map { it to it.getCountryDisplayName(currentLocale) }
+        .map { it to it.toCountryDisplayName(currentLocale) }
         .sortedWith(compareBy(collator) { it.second })
     }
 
@@ -128,7 +112,7 @@ class ManagePeopleScreen(
       title = stringResource(R.string.country),
       selected = countries.firstOrNull { it.first == managePeopleViewModel.country },
       items = countries,
-      initialSearch = managePeopleViewModel.country.getCountryDisplayName(currentLocale),
+      initialSearch = managePeopleViewModel.country.toCountryDisplayName(currentLocale),
       itemKey = { it.first },
       itemText = { it.second },
       itemTrailingIcon = { Text(it.first.toFlagEmoji()) },
@@ -226,7 +210,7 @@ class ManagePeopleScreen(
                   }
                 },
               readOnly = true,
-              value = managePeopleViewModel.country.getCountryDisplayName(currentLocale),
+              value = managePeopleViewModel.country.toCountryDisplayName(currentLocale),
               onValueChange = {},
               singleLine = true,
               label = { Text(stringResource(R.string.country)) },

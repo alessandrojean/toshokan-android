@@ -1,17 +1,19 @@
 package io.github.alessandrojean.toshokan.presentation.ui.library
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Search
@@ -21,28 +23,46 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.presentation.ui.barcodescanner.BarcodeScannerScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
+import io.github.alessandrojean.toshokan.presentation.ui.library.components.LibraryGrid
+import kotlinx.coroutines.launch
 
 class LibraryScreen : AndroidScreen() {
 
@@ -50,6 +70,28 @@ class LibraryScreen : AndroidScreen() {
   override fun Content() {
     var showCreateBookSheet by remember { mutableStateOf(false) }
     val navigator = LocalNavigator.currentOrThrow
+    val scope = rememberCoroutineScope()
+
+    val libraryViewModel = getViewModel<LibraryViewModel>()
+    val library by libraryViewModel.library.collectAsState(Library(emptyMap()))
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+
+    val pagerState = rememberPagerState(initialPage = 0)
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = when {
+      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+        .smallTopAppBarColors()
+        .containerColor(scrollBehavior.scrollFraction)
+        .value
+      else -> MaterialTheme.colorScheme.surface
+    }
+
+    SideEffect {
+      systemUiController.setStatusBarColor(
+        color = statusBarColor
+      )
+    }
 
     if (showCreateBookSheet) {
       CreateBookSheet(
@@ -61,8 +103,10 @@ class LibraryScreen : AndroidScreen() {
     }
 
     Scaffold(
+      modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
         SmallTopAppBar(
+          scrollBehavior = scrollBehavior,
           modifier = Modifier.statusBarsPadding(),
           title = { Text(stringResource(R.string.library)) },
           actions = {
@@ -76,13 +120,65 @@ class LibraryScreen : AndroidScreen() {
         )
       },
       content = { innerPadding ->
-        Box(
+        Crossfade(
+          targetState = library.groups.isEmpty(),
           modifier = Modifier
+            .padding(innerPadding)
             .fillMaxSize()
-            .padding(innerPadding),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(stringResource(R.string.library), modifier = Modifier.padding(innerPadding))
+        ) { isEmpty ->
+          if (isEmpty) {
+            NoItemsFound(
+              modifier = Modifier.fillMaxSize(),
+              icon = Icons.Outlined.Book
+            )
+          } else {
+            Column(
+              modifier = Modifier.fillMaxSize(),
+              horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+              // TODO: Fix the tab row width when having a few items.
+              ScrollableTabRow(
+                modifier = Modifier.fillMaxWidth(),
+                selectedTabIndex = pagerState.currentPage,
+                edgePadding = 12.dp,
+                containerColor = statusBarColor,
+                indicator = { tabPositions ->
+                  TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
+                  )
+                }
+              ) {
+                library.groups.keys.forEachIndexed { index, group ->
+                  Tab(
+                    text = { Text(group.name) },
+                    selected = pagerState.currentPage == index,
+                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                    unselectedContentColor = MaterialTheme.colorScheme.onBackground,
+                    onClick = {
+                      scope.launch { pagerState.animateScrollToPage(index) }
+                    }
+                  )
+                }
+              }
+              // TODO: Remove it when Material3 fixes the scrollable tab row divider width issue.
+              TabRowDefaults.Divider(
+                modifier = Modifier.offset(y = (-1).dp)
+              )
+              HorizontalPager(
+                state = pagerState,
+                count = library.groups.keys.size,
+                verticalAlignment = Alignment.Top,
+              ) { page ->
+                LibraryGrid(
+                  modifier = Modifier.fillMaxSize(),
+                  books = library.groups.values.toList()[page],
+                  onBookClick = { book ->
+                    navigator.push(BookScreen(book.id))
+                  }
+                )
+              }
+            }
+          }
         }
       },
       floatingActionButtonPosition = FabPosition.End,

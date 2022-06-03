@@ -17,6 +17,11 @@ SELECT *
 FROM Store
 ORDER BY name COLLATE UNICODE ASC;
 
+findById:
+SELECT *
+FROM Store
+WHERE id = ?;
+
 lastInsertedId:
 SELECT max(id)
 FROM Store;

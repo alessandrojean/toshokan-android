@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +29,7 @@ fun NoItemsFound(
         text = text,
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.bodyMedium.copy(
-          color = MaterialTheme.colorScheme.onSurfaceVariant
+          color = LocalContentColor.current.copy(alpha = 0.8f)
         )
       )
     },
@@ -53,7 +54,7 @@ fun NoItemsFound(
       Icon(
         imageVector = icon,
         contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+        tint = LocalContentColor.current.copy(alpha = 0.15f),
         modifier = Modifier
           .size(96.dp)
           .padding(bottom = if (text != null) 16.dp else 0.dp)

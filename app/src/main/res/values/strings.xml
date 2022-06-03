@@ -17,6 +17,7 @@
   <string name="action_pick_date">Pick date</string>
   <string name="action_previous_step">Go to previous step</string>
   <string name="action_next_step">Go to next step</string>
+  <string name="action_read_more">Read more</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>
@@ -48,6 +49,7 @@
   <string name="name">Name</string>
   <string name="description">Description</string>
   <string name="country">Country</string>
+  <string name="language">Language</string>
   <string name="title">Title</string>
   <string name="volume">Volume</string>
   <string name="synopsis">Synopsis</string>
@@ -64,6 +66,8 @@
   <string name="role">Role</string>
   <string name="width_cm">Width</string>
   <string name="height_cm">Height</string>
+  <string name="created_at">Created at</string>
+  <string name="updated_at">Updated at</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Unknown</string>
@@ -107,6 +111,20 @@
   <string name="new_contributor">New contributor</string>
   <string name="editing_contributor">Editing contributor</string>
   <string name="steps">Step %d of %d</string>
+  <string name="no_synopsis">No synopsis provided</string>
+  <string name="book_read">Read</string>
+  <string name="book_unread">Unread</string>
+  <string name="book_in_collection">In collection</string>
+  <string name="book_future">Future</string>
+  <string name="book_delete_title">Book deletion</string>
+  <plurals name="book_delete_warning">
+    <item quantity="one">
+      By deleting a book, all credits and read history related will also be deleted.
+    </item>
+    <item quantity="other">
+      By deleting books, all credits and read history related will also be deleted.
+    </item>
+  </plurals>
 
   <!-- Statistics -->
   <string name="statistics">Statistics</string>
