@@ -16,6 +16,8 @@
   <string name="action_previous_step">Etapa anterior</string>
   <string name="action_next_step">Próxima etapa</string>
   <string name="action_read_more">Mostrar mais</string>
+  <string name="action_create_duplicate">Criar duplicado</string>
+  <string name="action_view_book">Ver o livro</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>
@@ -106,6 +108,10 @@
       Ao deletar livros, todos os créditos e histórico de leitura relacionados também serão deletados.
     </item>
   </plurals>
+  <string name="book_duplicate_title">Livro duplicado</string>
+  <string name="book_duplicate_warning">
+    Um livro com este mesmo código já foi adicionado em sua biblioteca.
+  </string>
 
   <!-- Statistics -->
   <string name="statistics">Estatísticas</string>

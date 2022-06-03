@@ -9,10 +9,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
+import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupRepository
 import io.github.alessandrojean.toshokan.service.lookup.LookupResult
 import io.github.alessandrojean.toshokan.util.isValidIsbn
+import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +34,7 @@ enum class IsbnLookupState {
 
 @HiltViewModel
 class IsbnLookupViewModel @Inject constructor(
+  private val booksRepository: BooksRepository,
   private val lookupRepository: LookupRepository,
   private val preferencesManager: PreferencesManager
 ) : ViewModel() {
@@ -130,5 +133,9 @@ class IsbnLookupViewModel @Inject constructor(
         state = IsbnLookupState.EMPTY
       }
     }
+  }
+
+  fun checkDuplicates(): Long? {
+    return booksRepository.findByCode(searchQuery.removeDashes())?.id
   }
 }

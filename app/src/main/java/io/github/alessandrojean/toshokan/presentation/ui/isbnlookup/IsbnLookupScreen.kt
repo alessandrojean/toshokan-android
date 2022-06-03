@@ -6,29 +6,24 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -39,6 +34,7 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -49,21 +45,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
@@ -73,6 +65,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
@@ -81,7 +74,6 @@ import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.I
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import kotlinx.coroutines.android.awaitFrame
-import kotlinx.coroutines.launch
 
 data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
 
@@ -116,6 +108,19 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
       )
     }
 
+    var showDuplicateDialog by remember { mutableStateOf(false) }
+    var duplicateId by remember { mutableStateOf<Long?>(null) }
+
+    DuplicateDialog(
+      visible = showDuplicateDialog,
+      onDismiss = { showDuplicateDialog = false },
+      onCreateDuplicate = { showDuplicateDialog = false },
+      onViewBook = {
+        navigator.replace(BookScreen(bookId = duplicateId!!))
+        showDuplicateDialog = false
+      }
+    )
+
     Scaffold(
       modifier = Modifier
         .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -145,6 +150,10 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
           onSearchTextChanged = { isbnLookupViewModel.searchQuery = it },
           onSearchAction = {
             isbnLookupViewModel.search()
+            isbnLookupViewModel.checkDuplicates()?.let {
+              duplicateId = it
+              showDuplicateDialog = true
+            }
           }
         )
       },
@@ -344,6 +353,42 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         awaitFrame()
         focusRequester.requestFocus()
       }
+    }
+  }
+
+  @Composable
+  fun DuplicateDialog(
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    onViewBook: () -> Unit,
+    onCreateDuplicate: () -> Unit
+  ) {
+    if (visible) {
+      AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.book_duplicate_title)) },
+        text = { Text(stringResource(R.string.book_duplicate_warning)) },
+        dismissButton = {
+          TextButton(
+            onClick = {
+              onCreateDuplicate.invoke()
+              onDismiss.invoke()
+            }
+          ) {
+            Text(stringResource(R.string.action_create_duplicate))
+          }
+        },
+        confirmButton = {
+          TextButton(
+            onClick = {
+              onViewBook.invoke()
+              onDismiss.invoke()
+            }
+          ) {
+            Text(stringResource(R.string.action_view_book))
+          }
+        }
+      )
     }
   }
 

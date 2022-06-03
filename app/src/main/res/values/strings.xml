@@ -18,6 +18,8 @@
   <string name="action_previous_step">Go to previous step</string>
   <string name="action_next_step">Go to next step</string>
   <string name="action_read_more">Read more</string>
+  <string name="action_create_duplicate">Create duplicate</string>
+  <string name="action_view_book">View book</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>
@@ -125,6 +127,10 @@
       By deleting books, all credits and read history related will also be deleted.
     </item>
   </plurals>
+  <string name="book_duplicate_title">Duplicate found</string>
+  <string name="book_duplicate_warning">
+    A book with this same code is already added to your library.
+  </string>
 
   <!-- Statistics -->
   <string name="statistics">Statistics</string>

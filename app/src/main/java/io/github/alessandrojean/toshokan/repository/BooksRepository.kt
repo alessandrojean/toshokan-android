@@ -5,6 +5,7 @@ import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.Contributor
@@ -27,6 +28,10 @@ class BooksRepository @Inject constructor(
 
   fun findById(id: Long): Flow<CompleteBook?> {
     return database.bookQueries.completeBook(id).asFlow().mapToOneOrNull()
+  }
+
+  fun findByCode(code: String): Book? {
+    return database.bookQueries.findByCode(code).executeAsOneOrNull()
   }
 
   fun findBookContributorsFlow(id: Long): Flow<List<BookContributor>> {
