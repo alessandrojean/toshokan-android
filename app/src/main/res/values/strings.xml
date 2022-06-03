@@ -66,6 +66,7 @@
   <string name="bought_at">Bought at</string>
   <string name="person">Person</string>
   <string name="role">Role</string>
+  <string name="dimensions">Dimensions</string>
   <string name="width_cm">Width</string>
   <string name="height_cm">Height</string>
   <string name="created_at">Created at</string>
@@ -131,6 +132,8 @@
   <string name="book_duplicate_warning">
     A book with this same code is already added to your library.
   </string>
+  <string name="metadata">Metadata</string>
+  <string name="dimensions_full">%s × %s cm</string>
 
   <!-- Statistics -->
   <string name="statistics">Statistics</string>

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -93,6 +94,9 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.Expande
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
+import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
+import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
+import io.github.alessandrojean.toshokan.util.extension.toLocaleString
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import java.lang.Float.min
 import java.text.DateFormat
@@ -239,7 +243,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     modifier: Modifier = Modifier,
     coverUrl: String,
     contentDescription: String?,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     topBarHeightDp: Float = 64f,
     bottomOffsetDp: Float = 18f
   ) {
@@ -307,7 +311,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     modifier: Modifier = Modifier,
     book: CompleteBook?,
     contributors: List<BookContributor>,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceWithTonalElevation(2.dp),
+    containerColor: Color = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
   ) {
@@ -344,7 +348,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       modifier = modifier
         .clip(ModalBottomSheetShape)
         .background(containerColor)
-        .padding(vertical = 24.dp)
+        .padding(top = 24.dp)
+        .navigationBarsPadding()
     ) {
       Text(
         modifier = Modifier.padding(horizontal = 24.dp),
@@ -450,54 +455,19 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         verticalArrangement = Arrangement.spacedBy(2.dp)
       ) {
         if (book?.code.orEmpty().isNotBlank()) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-          ) {
-            Text(
-              text = stringResource(R.string.code),
-              style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-              )
-            )
-            SelectionContainer {
-              Text(
-                text = book?.code.orEmpty(),
-                style = MaterialTheme.typography.bodyMedium
-              )
-            }
-          }
-        }
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(
-            text = stringResource(R.string.created_at),
-            style = MaterialTheme.typography.bodyMedium.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          )
-          Text(
-            text = book?.created_at?.formatToLocaleDate(format = DateFormat.LONG) ?: "",
-            style = MaterialTheme.typography.bodyMedium
+          InformationRow(
+            label = stringResource(R.string.code),
+            value = book?.code.orEmpty()
           )
         }
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(
-            text = stringResource(R.string.updated_at),
-            style = MaterialTheme.typography.bodyMedium.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          )
-          Text(
-            text = book?.updated_at?.formatToLocaleDate(format = DateFormat.LONG) ?: "",
-            style = MaterialTheme.typography.bodyMedium
-          )
-        }
+        InformationRow(
+          label = stringResource(R.string.created_at),
+          value = book?.created_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
+        )
+        InformationRow(
+          label = stringResource(R.string.updated_at),
+          value = book?.updated_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
+        )
       }
       Text(
         modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
@@ -508,6 +478,49 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         ContributorRow(
           contributor = contributor,
           onClick = { /* TODO */ }
+        )
+      }
+      Text(
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
+        text = stringResource(R.string.metadata),
+        style = MaterialTheme.typography.titleLarge
+      )
+      MetadataRow(
+        label = stringResource(R.string.publisher),
+        value = book?.publisher_name.orEmpty(),
+      )
+      MetadataRow(
+        label = stringResource(R.string.language),
+        value = isbnInformation?.language?.toLanguageDisplayName().orEmpty(),
+      )
+      MetadataRow(
+        label = stringResource(R.string.group),
+        value = book?.group_name.orEmpty(),
+      )
+      MetadataRow(
+        label = stringResource(R.string.dimensions),
+        value = stringResource(
+          R.string.dimensions_full,
+          book?.dimension_width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
+          book?.dimension_height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
+        ),
+      )
+      MetadataRow(
+        label = stringResource(R.string.label_price),
+        value = book?.label_price_value?.toLocaleCurrencyString(book.label_price_currency).orEmpty()
+      )
+      MetadataRow(
+        label = stringResource(R.string.paid_price),
+        value = book?.paid_price_value?.toLocaleCurrencyString(book.paid_price_currency).orEmpty()
+      )
+      MetadataRow(
+        label = stringResource(R.string.store),
+        value = book?.store_name.orEmpty(),
+      )
+      if (book?.bought_at != null) {
+        MetadataRow(
+          label = stringResource(R.string.bought_at),
+          value = book.bought_at.formatToLocaleDate(format = DateFormat.LONG),
         )
       }
       if (book?.notes.orEmpty().isNotBlank()) {
@@ -528,7 +541,6 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           )
         }
       }
-      Spacer(modifier = Modifier.height(500.dp))
     }
   }
 
@@ -542,7 +554,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       modifier = Modifier
         .fillMaxWidth()
         .clickable(onClick = onClick)
-        .padding(horizontal = 24.dp, vertical = 10.dp),
+        .padding(horizontal = 24.dp, vertical = 10.dp)
+        .then(modifier),
       verticalAlignment = Alignment.CenterVertically
     ) {
       Icon(
@@ -576,6 +589,60 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           overflow = TextOverflow.Ellipsis
         )
       }
+    }
+  }
+
+  @Composable
+  fun MetadataRow(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    onClick: () -> Unit = {}
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable(onClick = onClick)
+        .padding(horizontal = 24.dp, vertical = 10.dp)
+        .then(modifier)
+    ) {
+      Text(
+        modifier = Modifier.fillMaxWidth(),
+        text = label,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+      Text(
+        modifier = Modifier.fillMaxWidth(),
+        text = value,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+    }
+  }
+
+  @Composable
+  fun InformationRow(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+  ) {
+    Row(
+      modifier = modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Text(
+        text = label,
+        style = MaterialTheme.typography.bodyMedium.copy(
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      )
+      Text(
+        text = value,
+        style = MaterialTheme.typography.bodyMedium
+      )
     }
   }
 

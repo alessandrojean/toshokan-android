@@ -47,6 +47,7 @@
   <string name="bought_at">Data da compra</string>
   <string name="person">Pessoa</string>
   <string name="role">Função/cargo</string>
+  <string name="dimensions">Dimensions</string>
   <string name="width_cm">Largura</string>
   <string name="height_cm">Altura</string>
   <string name="created_at">Data de criação</string>
@@ -112,6 +113,8 @@
   <string name="book_duplicate_warning">
     Um livro com este mesmo código já foi adicionado em sua biblioteca.
   </string>
+  <string name="metadata">Metadados</string>
+  <string name="dimensions_full">%s × %s cm</string>
 
   <!-- Statistics -->
   <string name="statistics">Estatísticas</string>

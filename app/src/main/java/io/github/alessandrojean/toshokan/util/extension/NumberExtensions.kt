@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.util.extension
 
 import java.text.NumberFormat
+import java.util.Currency
 import java.util.Locale
 
 fun String.parseLocaleValueOrNull(locale: Locale = Locale.getDefault()): Float? {
@@ -9,8 +10,27 @@ fun String.parseLocaleValueOrNull(locale: Locale = Locale.getDefault()): Float? 
   return runCatching { numberFormat.parse(this)?.toFloat()  }.getOrNull()
 }
 
-fun Float.toLocaleString(locale: Locale = Locale.getDefault()): String {
+fun Float.toLocaleString(
+  locale: Locale = Locale.getDefault(),
+  options: NumberFormat.() -> Unit = {}
+): String {
   val numberFormat = NumberFormat.getNumberInstance(locale)
+  options.invoke(numberFormat)
+
+  return numberFormat.format(this.toDouble())
+}
+
+fun Float.toLocaleCurrencyString(
+  currency: android.icu.util.Currency,
+  locale: Locale = Locale.getDefault(),
+  options: android.icu.text.NumberFormat.() -> Unit = {}
+): String {
+  val numberFormat = android.icu.text.NumberFormat.getCurrencyInstance(locale).apply {
+    maximumFractionDigits = 2
+    this.currency = currency
+  }
+
+  options.invoke(numberFormat)
 
   return numberFormat.format(this.toDouble())
 }
