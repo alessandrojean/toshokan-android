@@ -40,9 +40,9 @@ import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -54,6 +54,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -63,22 +64,24 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
-import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupMode
 import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupDialog
+import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupMode
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.draggedItem
 import org.burnoutcrew.reorderable.move
 import org.burnoutcrew.reorderable.rememberReorderLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
-class GroupsScreen : Screen {
+class GroupsScreen : AndroidScreen() {
 
   @Composable
   override fun Content() {
     val navigator = LocalNavigator.currentOrThrow
     val groupsViewModel = getViewModel<GroupsViewModel>()
-    val uiState by groupsViewModel.uiState.collectAsState()
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val uiState by groupsViewModel.uiState.collectAsStateWithLifecycle()
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val expandedFab by remember {
       derivedStateOf {
@@ -91,7 +94,7 @@ class GroupsScreen : Screen {
       }
     }
 
-    val groups by uiState.groups.collectAsState(emptyList())
+    val groups by groupsViewModel.groups.collectAsStateWithLifecycle(emptyList())
     val reorderingItems = remember { mutableStateListOf<BookGroup>() }
     val reorderableState = rememberReorderLazyListState(
       listState = listState,

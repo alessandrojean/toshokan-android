@@ -1,6 +1,5 @@
 package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -15,14 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -43,7 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
@@ -109,7 +104,8 @@ fun IsbnLookupResultRow(
           Box(
             modifier = Modifier
               .fillMaxSize()
-              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)),
+              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp))
+              .clip(MaterialTheme.shapes.large),
             contentAlignment = Alignment.Center
           ) {
             Icon(

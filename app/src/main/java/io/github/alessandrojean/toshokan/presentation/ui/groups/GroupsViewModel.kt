@@ -1,16 +1,10 @@
 package io.github.alessandrojean.toshokan.presentation.ui.groups
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupMode
 import io.github.alessandrojean.toshokan.repository.GroupsRepository
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +13,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class GroupsState(
-  val groups: Flow<List<BookGroup>>,
   val showManageDialog: Boolean = false,
   val showDeleteWarning: Boolean = false,
   val selected: List<Long> = emptyList(),
@@ -31,12 +24,10 @@ data class GroupsState(
 class GroupsViewModel @Inject constructor(
   private val groupsRepository: GroupsRepository
 ) : ViewModel() {
-  private val _uiState = MutableStateFlow(
-    GroupsState(
-      groups = groupsRepository.groups
-    )
-  )
+  private val _uiState = MutableStateFlow(GroupsState())
   val uiState: StateFlow<GroupsState> = _uiState.asStateFlow()
+
+  val groups = groupsRepository.groups
 
   fun changeManageDialogMode(newMode: ManageGroupMode) = viewModelScope.launch {
     _uiState.update { it.copy(manageDialogMode = newMode) }

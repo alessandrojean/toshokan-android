@@ -15,12 +15,15 @@ import androidx.compose.material.icons.outlined.GroupWork
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocalMall
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -38,18 +42,21 @@ import io.github.alessandrojean.toshokan.presentation.ui.groups.GroupsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
 import io.github.alessandrojean.toshokan.presentation.ui.stores.StoresScreen
+import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 
-class MoreScreen : Screen {
+class MoreScreen : AndroidScreen() {
 
   private data class Destination(
     val title: String,
     val icon: ImageVector,
-    val onClick: () -> Unit
+    val onClick: () -> Unit,
+    val topDivider: Boolean = false
   )
 
   @Composable
   override fun Content() {
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
 
@@ -77,7 +84,8 @@ class MoreScreen : Screen {
       Destination(
         title = stringResource(R.string.settings),
         icon = Icons.Outlined.Settings,
-        onClick = {}
+        onClick = {},
+        topDivider = true
       ),
       Destination(
         title = stringResource(R.string.about),
@@ -116,6 +124,13 @@ class MoreScreen : Screen {
           contentPadding = innerPadding
         ) {
           items(destinations) { destination ->
+            if (destination.topDivider) {
+              Divider(
+                modifier = Modifier.fillMaxWidth(),
+                color = LocalContentColor.current.copy(alpha = DividerOpacity)
+              )
+            }
+
             NavigationItem(
               title = destination.title,
               icon = destination.icon,

@@ -3,27 +3,18 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 import android.icu.util.Currency
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.ManageSearch
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,29 +25,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
-import io.github.alessandrojean.toshokan.database.data.Store
-import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.OutlinedMonetaryField
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
 
 @Composable
 fun InformationTab(
@@ -232,7 +216,13 @@ fun InformationTab(
         value = labelPriceValue,
         currency = labelPriceCurrency,
         isError = labelPriceValue.isEmpty(),
-        label = { Text(stringResource(R.string.label_price)) },
+        label = {
+          Text(
+            text = stringResource(R.string.label_price),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+        },
         onValueChange = onLabelPriceValueChange,
         onCurrencyChange = onLabelPriceCurrencyChange,
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
@@ -247,7 +237,13 @@ fun InformationTab(
         value = paidPriceValue,
         currency = paidPriceCurrency,
         isError = paidPriceValue.isEmpty(),
-        label = { Text(stringResource(R.string.paid_price)) },
+        label = {
+          Text(
+            text = stringResource(R.string.paid_price),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+        },
         onValueChange = onPaidPriceValueChange,
         onCurrencyChange = onPaidPriceCurrencyChange,
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),

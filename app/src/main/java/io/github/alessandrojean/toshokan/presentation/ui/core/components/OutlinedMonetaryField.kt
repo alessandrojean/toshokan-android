@@ -3,7 +3,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.core.components
 import android.icu.util.Currency
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +20,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
-import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.ItemPickerDialog
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 import java.text.Collator
 import java.util.Locale

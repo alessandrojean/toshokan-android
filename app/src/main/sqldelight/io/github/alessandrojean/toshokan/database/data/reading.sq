@@ -1,0 +1,25 @@
+CREATE TABLE Reading (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  read_at INTEGER AS Long,
+
+  FOREIGN KEY (book_id) REFERENCES Book (id)
+    ON DELETE CASCADE
+);
+
+findByBook:
+SELECT *
+FROM Reading
+WHERE book_id = ?;
+
+insert:
+INSERT INTO Reading (book_id, read_at)
+VALUES (?, ?);
+
+delete:
+DELETE FROM Reading
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM Reading
+WHERE id IN ?;

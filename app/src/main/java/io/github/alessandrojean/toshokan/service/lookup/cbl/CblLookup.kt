@@ -2,9 +2,9 @@ package io.github.alessandrojean.toshokan.service.lookup.cbl
 
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
-import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
+import io.github.alessandrojean.toshokan.service.lookup.Provider
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

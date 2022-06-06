@@ -5,13 +5,13 @@ import io.github.alessandrojean.toshokan.service.cover.contentstuff.ContentStuff
 import io.github.alessandrojean.toshokan.service.cover.oembed.OembedCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.urlreplacer.UrlReplacerCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.wordpress.WordPressCoverProvider
-import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toSlug
-import io.github.alessandrojean.toshokan.util.toIsbnInformation
+import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import io.github.alessandrojean.toshokan.util.removeDashes
 import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
 import io.github.alessandrojean.toshokan.util.toIsbn10
+import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext

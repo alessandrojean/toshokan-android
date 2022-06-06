@@ -41,7 +41,8 @@ completeBook:
 SELECT Book.*,
   BookGroup.name AS group_name,
   Publisher.name AS publisher_name,
-  Store.name AS store_name
+  Store.name AS store_name,
+  (SELECT count(*) FROM Reading WHERE Reading.book_id = Book.id) AS reading_count
 FROM Book
 INNER JOIN BookGroup ON BookGroup.id = Book.group_id
 INNER JOIN Publisher ON Publisher.id = Book.publisher_id

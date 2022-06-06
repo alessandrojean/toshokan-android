@@ -36,10 +36,10 @@ import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -62,6 +62,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.Selecti
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.stores.manage.ManageStoreMode
 import io.github.alessandrojean.toshokan.presentation.ui.stores.manage.ManageStoreScreen
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 
 class StoresScreen : AndroidScreen() {
 
@@ -69,8 +70,9 @@ class StoresScreen : AndroidScreen() {
   override fun Content() {
     val storesViewModel = getViewModel<StoresViewModel>()
     val navigator = LocalNavigator.currentOrThrow
-    val uiState by storesViewModel.uiState.collectAsState()
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val uiState by storesViewModel.uiState.collectAsStateWithLifecycle()
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val expandedFab by remember {
       derivedStateOf { listState.firstVisibleItemIndex == 0 }
@@ -79,7 +81,7 @@ class StoresScreen : AndroidScreen() {
       derivedStateOf { uiState.selected.isNotEmpty() }
     }
 
-    val stores by storesViewModel.stores.collectAsState(emptyList())
+    val stores by storesViewModel.stores.collectAsStateWithLifecycle(emptyList())
 
     val systemUiController = rememberSystemUiController()
     val statusBarColor = when {

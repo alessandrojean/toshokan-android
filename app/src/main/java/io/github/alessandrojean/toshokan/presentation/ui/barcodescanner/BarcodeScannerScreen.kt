@@ -49,7 +49,6 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.service.barcode.BarcodeAnalyser
 import io.github.alessandrojean.toshokan.util.isValidBarcode
-import io.github.alessandrojean.toshokan.util.isValidIsbn
 import java.util.concurrent.Executors
 
 class BarcodeScannerScreen : AndroidScreen() {

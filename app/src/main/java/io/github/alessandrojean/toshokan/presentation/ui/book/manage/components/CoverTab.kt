@@ -1,10 +1,8 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -203,7 +200,8 @@ fun CoverCard(
           Box(
             modifier = Modifier
               .fillMaxSize()
-              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)),
+              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp))
+              .clip(MaterialTheme.shapes.large),
             contentAlignment = Alignment.Center
           ) {
             Icon(

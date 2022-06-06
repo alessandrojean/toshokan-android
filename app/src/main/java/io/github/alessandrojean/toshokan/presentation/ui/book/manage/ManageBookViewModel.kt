@@ -11,10 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
-import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.Contributor
@@ -29,12 +27,13 @@ import io.github.alessandrojean.toshokan.service.cover.CoverRepository
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
-import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
+import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.launch
 import logcat.logcat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel

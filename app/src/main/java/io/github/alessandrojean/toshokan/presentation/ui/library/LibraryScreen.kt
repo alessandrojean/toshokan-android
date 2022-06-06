@@ -31,9 +31,9 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -62,6 +63,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookS
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.presentation.ui.library.components.LibraryGrid
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
 class LibraryScreen : AndroidScreen() {
@@ -73,8 +75,9 @@ class LibraryScreen : AndroidScreen() {
     val scope = rememberCoroutineScope()
 
     val libraryViewModel = getViewModel<LibraryViewModel>()
-    val library by libraryViewModel.library.collectAsState(Library(emptyMap()))
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val library by libraryViewModel.library.collectAsStateWithLifecycle(Library(emptyMap()))
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
 
     val pagerState = rememberPagerState(initialPage = 0)
 
@@ -146,7 +149,7 @@ class LibraryScreen : AndroidScreen() {
                   TabRowDefaults.Indicator(
                     Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
                   )
-                }
+                },
               ) {
                 library.groups.keys.forEachIndexed { index, group ->
                   Tab(

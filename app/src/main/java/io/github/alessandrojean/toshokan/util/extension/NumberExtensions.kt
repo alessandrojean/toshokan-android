@@ -1,7 +1,6 @@
 package io.github.alessandrojean.toshokan.util.extension
 
 import java.text.NumberFormat
-import java.util.Currency
 import java.util.Locale
 
 fun String.parseLocaleValueOrNull(locale: Locale = Locale.getDefault()): Float? {

@@ -12,8 +12,6 @@ import io.github.alessandrojean.toshokan.database.adapter.BookCreditRoleAdapter
 import io.github.alessandrojean.toshokan.database.adapter.CurrencyAdapter
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookCredit
-import io.github.alessandrojean.toshokan.repository.PeopleRepository
-import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import javax.inject.Singleton
 
 @Module

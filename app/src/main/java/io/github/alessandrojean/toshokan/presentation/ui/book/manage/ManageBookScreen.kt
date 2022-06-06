@@ -8,19 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -58,10 +51,10 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +63,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -95,7 +87,6 @@ import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole
-import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.ContributorsTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTab
@@ -105,6 +96,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -119,7 +111,8 @@ data class ManageBookScreen(
     val navigator = LocalNavigator.currentOrThrow
     val pagerState = rememberPagerState(initialPage = 0)
     val scope = rememberCoroutineScope()
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
 
     val tabs = listOf(
       ManageBookTab.Information,
@@ -134,9 +127,12 @@ data class ManageBookScreen(
       manageBookViewModel.organizationTabInvalid
     )
 
-    val allPublishers by manageBookViewModel.publishers.collectAsState(emptyList())
-    val allStores by manageBookViewModel.stores.collectAsState(emptyList())
-    val allGroups by manageBookViewModel.groups.collectAsState(emptyList())
+    val allPublishers by manageBookViewModel.publishers
+      .collectAsStateWithLifecycle(emptyList())
+    val allStores by manageBookViewModel.stores
+      .collectAsStateWithLifecycle(emptyList())
+    val allGroups by manageBookViewModel.groups
+      .collectAsStateWithLifecycle(emptyList())
 
     LaunchedEffect(lookupBook, completeBook) {
       if (lookupBook != null) {
@@ -173,7 +169,7 @@ data class ManageBookScreen(
     )
 
     var showContributorPickerDialog by remember { mutableStateOf(false) }
-    val allPeople by manageBookViewModel.people.collectAsState(initial = emptyList())
+    val allPeople by manageBookViewModel.people.collectAsStateWithLifecycle(emptyList())
 
     if (showContributorPickerDialog) {
       ContributorPickerDialog(
@@ -231,7 +227,9 @@ data class ManageBookScreen(
             },
             title = {
               Text(
-                text = completeBook?.title ?: stringResource(R.string.create_book)
+                text = completeBook?.title ?: stringResource(R.string.create_book),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
             },
             actions = {

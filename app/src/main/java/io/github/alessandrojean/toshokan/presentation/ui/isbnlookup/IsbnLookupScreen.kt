@@ -38,10 +38,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +72,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItems
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.HistoryList
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.IsbnLookupResultList
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import kotlinx.coroutines.android.awaitFrame
 
@@ -80,10 +81,11 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
   @Composable
   override fun Content() {
     val isbnLookupViewModel = getViewModel<IsbnLookupViewModel>()
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
-    val history by isbnLookupViewModel.history.collectAsState(emptySet())
+    val history by isbnLookupViewModel.history.collectAsStateWithLifecycle(emptySet())
 
     LifecycleEffect(
       onStarted = {

@@ -2,6 +2,7 @@ package io.github.alessandrojean.toshokan.presentation.extensions
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalAbsoluteTonalElevation
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -20,10 +21,16 @@ fun ColorScheme.surfaceColorAtNavigationBarElevation(): Color {
 
 @Composable
 fun ColorScheme.surfaceWithTonalElevation(tonalElevation: Dp): Color {
+  return surface.withTonalElevation(tonalElevation)
+}
+
+
+@Composable
+fun Color.withTonalElevation(tonalElevation: Dp): Color {
   if (tonalElevation == 0.dp) {
-    return surface
+    return this
   }
 
   val alpha = ((4.5f * ln(tonalElevation.value + 1)) + 2f) / 100f
-  return primary.copy(alpha = alpha).compositeOver(surface)
+  return MaterialTheme.colorScheme.primary.copy(alpha = alpha).compositeOver(this)
 }

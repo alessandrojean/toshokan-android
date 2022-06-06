@@ -36,10 +36,10 @@ import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -61,15 +61,17 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItems
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleMode
 import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleScreen
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 
 class PeopleScreen : AndroidScreen() {
 
   @Composable
   override fun Content() {
     val peopleViewModel = getViewModel<PeopleViewModel>()
-    val uiState by peopleViewModel.uiState.collectAsState()
-    val people by peopleViewModel.people.collectAsState(initial = emptyList())
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val uiState by peopleViewModel.uiState.collectAsStateWithLifecycle()
+    val people by peopleViewModel.people.collectAsStateWithLifecycle(emptyList())
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
     val expandedFab by remember {

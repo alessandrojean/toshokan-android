@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.book
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,34 +11,43 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,10 +59,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,9 +74,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -76,6 +88,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
@@ -89,10 +102,12 @@ import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ExpandedIconButton
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
+import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
@@ -101,6 +116,7 @@ import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import java.lang.Float.min
 import java.text.DateFormat
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
@@ -108,28 +124,34 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
   @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
   override fun Content() {
     val bookViewModel = getViewModel<BookViewModel>()
-    val book by bookViewModel.findTheBook(bookId).collectAsState(initial = null)
-    val bookContributors by bookViewModel.findTheBookContributors(bookId).collectAsState(emptyList())
+    val book by bookViewModel.findTheBook(bookId).collectAsStateWithLifecycle(null)
+    val bookContributors by bookViewModel.findTheBookContributors(bookId)
+      .collectAsStateWithLifecycle(emptyList())
     val navigator = LocalNavigator.currentOrThrow
 
     val scrollState = rememberScrollState()
-    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
 
     val systemBarColor = Color.Transparent
     val systemBarDarkIcons = !isSystemInDarkTheme()
     val systemUiController = rememberSystemUiController()
+    val localConfiguration = LocalConfiguration.current
+    val localDensity = LocalDensity.current
 
     val scrolledTopBarContainerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
-    val maxPoint = with(LocalDensity.current) {
-      LocalConfiguration.current.screenWidthDp.dp.toPx() * 0.8f
+    val maxPoint = remember(localConfiguration, localDensity) {
+      with(localDensity) {
+        localConfiguration.screenWidthDp.dp.toPx() * 0.8f
+      }
     }
     val currentScrollBounded = min(scrollState.value.toFloat(), maxPoint)
-    val topBarTitleOpacity = currentScrollBounded / maxPoint
+    val scrollPercentage = currentScrollBounded / maxPoint
     val coverBottomOffsetDp = 18f
 
-    val topBarContainerColor by remember(topBarTitleOpacity) {
+    val topBarContainerColor by remember(scrollPercentage) {
       derivedStateOf {
-        scrolledTopBarContainerColor.copy(alpha = topBarTitleOpacity)
+        scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
       }
     }
 
@@ -153,6 +175,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
 
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+      containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
       topBar = {
         Surface(
           modifier = Modifier.fillMaxWidth(),
@@ -180,7 +203,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               },
               title = {
                 Text(
-                  modifier = Modifier.graphicsLayer(alpha = topBarTitleOpacity),
+                  modifier = Modifier.graphicsLayer(alpha = scrollPercentage),
                   text = book?.title.orEmpty(),
                   maxLines = 1,
                   overflow = TextOverflow.Ellipsis
@@ -189,15 +212,27 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               actions = {
                 IconButton(onClick = { }) {
                   Icon(
+                    imageVector = Icons.Outlined.StarOutline,
+                    contentDescription = null
+                  )
+                }
+                IconButton(onClick = { }) {
+                  Icon(
+                    imageVector = Icons.Outlined.Link,
+                    contentDescription = null
+                  )
+                }
+                IconButton(onClick = { }) {
+                  Icon(
                     imageVector = Icons.Outlined.MoreVert,
-                    contentDescription = stringResource(R.string.action_edit)
+                    contentDescription = null
                   )
                 }
               }
             )
             Divider(
               modifier = Modifier
-                .graphicsLayer(alpha = topBarTitleOpacity),
+                .graphicsLayer(alpha = scrollPercentage),
               color = LocalContentColor.current.copy(alpha = DividerOpacity)
             )
           }
@@ -212,7 +247,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           BookCoverBox(
             modifier = Modifier
               .fillMaxWidth()
-              .offset(y = (ceil(100f * topBarTitleOpacity)).dp),
+              .offset(y = (ceil(100f * scrollPercentage)).dp)
+              .graphicsLayer(alpha = 0.4f + 0.6f * (1f - scrollPercentage)),
             coverUrl = book?.cover_url.orEmpty(),
             contentDescription = book?.title,
             bottomOffsetDp = coverBottomOffsetDp,
@@ -243,7 +279,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     modifier: Modifier = Modifier,
     coverUrl: String,
     contentDescription: String?,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
+    containerColor: Color = MaterialTheme.colorScheme.background,
     topBarHeightDp: Float = 64f,
     bottomOffsetDp: Float = 18f
   ) {
@@ -256,7 +292,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       modifier = Modifier
         .fillMaxWidth()
         .aspectRatio(1f / 1.15f)
-        .background(MaterialTheme.colorScheme.surface)
+        .background(containerColor)
         .then(modifier),
       contentAlignment = Alignment.Center
     ) {
@@ -267,19 +303,9 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           .build(),
         modifier = Modifier
           .fillMaxSize()
-          .graphicsLayer(alpha = 0.3f),
+          .graphicsLayer(alpha = 0.15f),
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
-      )
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .background(
-            Brush.verticalGradient(
-              0.0f to containerColor,
-              1.0f to containerColor.copy(alpha = 0.2f)
-            )
-          )
       )
       Box(
         modifier = Modifier
@@ -311,16 +337,39 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     modifier: Modifier = Modifier,
     book: CompleteBook?,
     contributors: List<BookContributor>,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
+    color: Color = MaterialTheme.colorScheme.surface,
+    tonalElevation: Dp = 6.dp,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
   ) {
     var synopsisExpanded by remember { mutableStateOf(false) }
     var synopsisToggleable by remember { mutableStateOf(false) }
     var synopsisLayoutResultState by remember { mutableStateOf<TextLayoutResult?>(null) }
+    val synopsisBackground = color.withTonalElevation(tonalElevation)
+
+    val minContributors = 4
+    var contributorsExpanded by remember { mutableStateOf(false) }
+    val contributorsToggleable by remember(contributors) {
+      derivedStateOf { contributors.size > minContributors }
+    }
+    val visibleContributors by remember(contributors, contributorsExpanded) {
+      derivedStateOf {
+        if (contributorsExpanded) {
+          contributors
+        } else {
+          contributors.take(minContributors)
+        }
+      }
+    }
+    val contributorsButtonHeight = 58f
+    val contributorsIconRotation by animateFloatAsState(if (contributorsExpanded) 180f else 0f)
 
     val toggleButtonOffset by animateFloatAsState(if (synopsisExpanded) 0f else -18f)
     val toggleIconRotation by animateFloatAsState(if (synopsisExpanded) 180f else 0f)
+    val buttonRowCorner = 18.dp
+    val buttonRowContentPadding = PaddingValues(all = 12.dp)
+    val buttonRowContainerColor = MaterialTheme.colorScheme.surfaceVariant
+      .withTonalElevation(tonalElevation)
 
     val bookAuthors by remember(contributors) {
       derivedStateOf {
@@ -334,6 +383,10 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       }
     }
 
+    val bookRead by remember(book?.reading_count) {
+      derivedStateOf { (book?.reading_count ?: 0) > 0 }
+    }
+
     LaunchedEffect(synopsisLayoutResultState) {
       if (synopsisLayoutResultState == null) {
         return@LaunchedEffect
@@ -344,216 +397,302 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       }
     }
 
-    Column(
-      modifier = modifier
-        .clip(ModalBottomSheetShape)
-        .background(containerColor)
-        .padding(top = 24.dp)
-        .navigationBarsPadding()
+    Surface(
+      modifier = modifier,
+      shape = ModalBottomSheetShape,
+      color = color,
+      tonalElevation = tonalElevation
     ) {
-      Text(
-        modifier = Modifier.padding(horizontal = 24.dp),
-        text = book?.title.orEmpty(),
-        style = MaterialTheme.typography.titleLarge
-      )
-      Text(
-        modifier = Modifier.padding(horizontal = 24.dp),
-        text = bookAuthors.joinToString(", ") { it.person_name },
-        style = MaterialTheme.typography.bodyLarge.copy(
-          color = LocalContentColor.current.copy(alpha = 0.8f)
-        )
-      )
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(start = 24.dp, end = 24.dp, top = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        ExpandedIconButton(
-          modifier = Modifier.weight(1f),
-          icon = Icons.Filled.BookmarkAdd,
-          text = stringResource(R.string.book_read),
-          contentColor = MaterialTheme.colorScheme.primary,
-          onClick = { /*TODO*/ }
-        )
-        ExpandedIconButton(
-          modifier = Modifier.weight(1f),
-          icon = Icons.Outlined.Edit,
-          text = stringResource(R.string.action_edit),
-          onClick = onEditClick
-        )
-        ExpandedIconButton(
-          modifier = Modifier.weight(1f),
-          icon = Icons.Outlined.Delete,
-          text = stringResource(R.string.action_delete),
-          onClick = onDeleteClick
-        )
-      }
       Column(
         modifier = Modifier
-          .fillMaxWidth()
-          .toggleable(
-            value = synopsisExpanded,
-            onValueChange = { synopsisExpanded = it },
-            enabled = synopsisToggleable,
-            role = Role.Checkbox,
-            indication = null,
-            interactionSource = MutableInteractionSource()
-          )
-          .padding(
-            top = 12.dp,
-            bottom = if (synopsisToggleable) 4.dp else 12.dp,
-            start = 24.dp,
-            end = 24.dp
-          )
-          .animateContentSize()
+          .padding(top = 24.dp)
+          .navigationBarsPadding()
       ) {
         Text(
-          text = book?.synopsis.orEmpty().ifEmpty { stringResource(R.string.no_synopsis) },
-          maxLines = if (synopsisExpanded) Int.MAX_VALUE else 4,
-          onTextLayout = { synopsisLayoutResultState = it },
+          modifier = Modifier.padding(horizontal = 24.dp),
+          text = book?.title.orEmpty(),
+          style = MaterialTheme.typography.titleLarge
+        )
+        Text(
+          modifier = Modifier.padding(horizontal = 24.dp),
+          text = bookAuthors.joinToString(", ") { it.person_name },
+          maxLines = 1,
           overflow = TextOverflow.Ellipsis,
-          style = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontStyle = if (book?.synopsis.orEmpty().isEmpty()) FontStyle.Italic else FontStyle.Normal
+          style = MaterialTheme.typography.bodyLarge.copy(
+            color = LocalContentColor.current.copy(alpha = 0.8f)
           )
         )
-        if (synopsisToggleable) {
-          Box(
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 18.dp),
+          horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+          ExpandedIconButton(
+            modifier = Modifier.weight(1f),
+            icon = if (bookRead) {
+              Icons.Filled.Bookmarks
+            } else {
+              Icons.Outlined.Bookmarks
+            },
+            text = if (bookRead) {
+              stringResource(R.string.book_read)
+            } else {
+              stringResource(R.string.book_unread)
+            },
+            colors = ButtonDefaults.textButtonColors(
+              containerColor = buttonRowContainerColor,
+              contentColor = LocalContentColor.current,
+            ),
+            shape = RoundedCornerShape(
+              topStart = buttonRowCorner,
+              bottomStart = buttonRowCorner
+            ),
+            contentPadding = buttonRowContentPadding,
+            onClick = { /*TODO*/ }
+          )
+          ExpandedIconButton(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Outlined.Edit,
+            text = stringResource(R.string.action_edit),
+            colors = ButtonDefaults.textButtonColors(
+              containerColor = buttonRowContainerColor,
+              contentColor = LocalContentColor.current
+            ),
+            shape = RectangleShape,
+            contentPadding = buttonRowContentPadding,
+            onClick = onEditClick
+          )
+          ExpandedIconButton(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Outlined.Delete,
+            text = stringResource(R.string.action_delete),
+            colors = ButtonDefaults.textButtonColors(
+              containerColor = buttonRowContainerColor,
+              contentColor = LocalContentColor.current
+            ),
+            shape = RoundedCornerShape(
+              topEnd = buttonRowCorner,
+              bottomEnd = buttonRowCorner
+            ),
+            contentPadding = buttonRowContentPadding,
+            onClick = onDeleteClick,
+          )
+        }
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .toggleable(
+              value = synopsisExpanded,
+              onValueChange = { synopsisExpanded = it },
+              enabled = synopsisToggleable,
+              role = Role.Checkbox,
+              indication = null,
+              interactionSource = MutableInteractionSource()
+            )
+            .padding(
+              bottom = if (synopsisToggleable) 4.dp else 12.dp,
+              start = 24.dp,
+              end = 24.dp
+            )
+            .animateContentSize()
+        ) {
+          Text(
+            text = book?.synopsis.orEmpty().ifEmpty { stringResource(R.string.no_synopsis) },
+            maxLines = if (synopsisExpanded) Int.MAX_VALUE else 4,
+            onTextLayout = { synopsisLayoutResultState = it },
+            overflow = TextOverflow.Clip,
+            style = MaterialTheme.typography.bodyMedium.copy(
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              fontStyle = if (book?.synopsis.orEmpty().isEmpty()) FontStyle.Italic else FontStyle.Normal
+            )
+          )
+          if (synopsisToggleable) {
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .offset(y = toggleButtonOffset.dp)
+                .background(
+                  Brush.verticalGradient(
+                    0.0f to Color.Transparent,
+                    0.2f to synopsisBackground.copy(alpha = 0.5f),
+                    0.8f to synopsisBackground
+                  )
+                ),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(
+                modifier = Modifier.graphicsLayer(rotationX = toggleIconRotation),
+                imageVector = Icons.Outlined.ExpandMore,
+                contentDescription = null
+              )
+            }
+          }
+        }
+        Divider(
+          modifier = Modifier.padding(
+            bottom = 12.dp,
+            start = 24.dp,
+            end = 24.dp
+          ),
+          color = LocalContentColor.current.copy(alpha = 0.2f)
+        )
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+          verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+          if (book?.code.orEmpty().isNotBlank()) {
+            InformationRow(
+              label = stringResource(R.string.code),
+              value = book?.code.orEmpty()
+            )
+          }
+          InformationRow(
+            label = stringResource(R.string.created_at),
+            value = book?.created_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
+          )
+          InformationRow(
+            label = stringResource(R.string.updated_at),
+            value = book?.updated_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
+          )
+        }
+        Text(
+          modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
+          text = stringResource(R.string.contributors),
+          style = MaterialTheme.typography.titleLarge
+        )
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+        ) {
+          visibleContributors.forEach { contributor ->
+            ContributorRow(
+              contributor = contributor,
+              onClick = { /* TODO */ }
+            )
+          }
+          if (contributorsToggleable) {
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .height(contributorsButtonHeight.dp)
+            ) {
+              if (!contributorsExpanded) {
+                ContributorRow(contributor = contributors[minContributors])
+              }
+              Box(
+                modifier = Modifier
+                  .fillMaxSize()
+                  .background(
+                    Brush.verticalGradient(
+                      0.0f to Color.Transparent,
+                      0.2f to synopsisBackground.copy(alpha = 0.5f),
+                      0.8f to synopsisBackground
+                    )
+                  )
+                  .toggleable(
+                    value = contributorsExpanded,
+                    onValueChange = { contributorsExpanded = it },
+                    role = Role.Checkbox,
+                  ),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  modifier = Modifier.graphicsLayer(rotationX = contributorsIconRotation),
+                  imageVector = Icons.Outlined.ExpandMore,
+                  contentDescription = null
+                )
+              }
+            }
+          }
+        }
+        Text(
+          modifier = Modifier.padding(
+            start = 24.dp,
+            end = 24.dp,
+            top = 32.dp,
+            bottom = 12.dp
+          ),
+          text = stringResource(R.string.metadata),
+          style = MaterialTheme.typography.titleLarge
+        )
+        MetadataRow(
+          label = stringResource(R.string.publisher),
+          value = book?.publisher_name.orEmpty(),
+        )
+        MetadataRow(
+          label = stringResource(R.string.language),
+          value = isbnInformation?.language?.toLanguageDisplayName().orEmpty(),
+        )
+        MetadataRow(
+          label = stringResource(R.string.group),
+          value = book?.group_name.orEmpty(),
+        )
+        MetadataRow(
+          label = stringResource(R.string.dimensions),
+          value = stringResource(
+            R.string.dimensions_full,
+            book?.dimension_width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
+            book?.dimension_height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
+          ),
+        )
+        MetadataRow(
+          label = stringResource(R.string.label_price),
+          value = book?.label_price_value?.toLocaleCurrencyString(book.label_price_currency).orEmpty()
+        )
+        MetadataRow(
+          label = stringResource(R.string.paid_price),
+          value = book?.paid_price_value?.toLocaleCurrencyString(book.paid_price_currency).orEmpty()
+        )
+        MetadataRow(
+          label = stringResource(R.string.store),
+          value = book?.store_name.orEmpty(),
+        )
+        if (book?.bought_at != null) {
+          MetadataRow(
+            label = stringResource(R.string.bought_at),
+            value = book.bought_at.formatToLocaleDate(format = DateFormat.LONG),
+          )
+        }
+        if (book?.notes.orEmpty().isNotBlank()) {
+          Text(
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
+            text = stringResource(R.string.notes),
+            style = MaterialTheme.typography.titleLarge
+          )
+          SelectionContainer(
             modifier = Modifier
               .fillMaxWidth()
-              .offset(y = toggleButtonOffset.dp)
-              .background(
-                Brush.verticalGradient(
-                  0.0f to Color.Transparent,
-                  0.2f to containerColor.copy(alpha = 0.5f),
-                  0.8f to containerColor
-                )
-              ),
-            contentAlignment = Alignment.Center
+              .padding(horizontal = 24.dp)
           ) {
-            Icon(
-              modifier = Modifier.graphicsLayer(rotationX = toggleIconRotation),
-              imageVector = Icons.Outlined.ExpandMore,
-              contentDescription = null
+            Text(
+              text = book?.notes.orEmpty(),
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
             )
           }
         }
       }
-      Divider(
-        modifier = Modifier.padding(
-          bottom = 12.dp,
-          start = 24.dp,
-          end = 24.dp
-        ),
-        color = LocalContentColor.current.copy(alpha = 0.2f)
-      )
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-      ) {
-        if (book?.code.orEmpty().isNotBlank()) {
-          InformationRow(
-            label = stringResource(R.string.code),
-            value = book?.code.orEmpty()
-          )
-        }
-        InformationRow(
-          label = stringResource(R.string.created_at),
-          value = book?.created_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
-        )
-        InformationRow(
-          label = stringResource(R.string.updated_at),
-          value = book?.updated_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
-        )
-      }
-      Text(
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
-        text = stringResource(R.string.contributors),
-        style = MaterialTheme.typography.titleLarge
-      )
-      contributors.forEach { contributor ->
-        ContributorRow(
-          contributor = contributor,
-          onClick = { /* TODO */ }
-        )
-      }
-      Text(
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
-        text = stringResource(R.string.metadata),
-        style = MaterialTheme.typography.titleLarge
-      )
-      MetadataRow(
-        label = stringResource(R.string.publisher),
-        value = book?.publisher_name.orEmpty(),
-      )
-      MetadataRow(
-        label = stringResource(R.string.language),
-        value = isbnInformation?.language?.toLanguageDisplayName().orEmpty(),
-      )
-      MetadataRow(
-        label = stringResource(R.string.group),
-        value = book?.group_name.orEmpty(),
-      )
-      MetadataRow(
-        label = stringResource(R.string.dimensions),
-        value = stringResource(
-          R.string.dimensions_full,
-          book?.dimension_width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
-          book?.dimension_height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
-        ),
-      )
-      MetadataRow(
-        label = stringResource(R.string.label_price),
-        value = book?.label_price_value?.toLocaleCurrencyString(book.label_price_currency).orEmpty()
-      )
-      MetadataRow(
-        label = stringResource(R.string.paid_price),
-        value = book?.paid_price_value?.toLocaleCurrencyString(book.paid_price_currency).orEmpty()
-      )
-      MetadataRow(
-        label = stringResource(R.string.store),
-        value = book?.store_name.orEmpty(),
-      )
-      if (book?.bought_at != null) {
-        MetadataRow(
-          label = stringResource(R.string.bought_at),
-          value = book.bought_at.formatToLocaleDate(format = DateFormat.LONG),
-        )
-      }
-      if (book?.notes.orEmpty().isNotBlank()) {
-        Text(
-          modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
-          text = stringResource(R.string.notes),
-          style = MaterialTheme.typography.titleLarge
-        )
-        SelectionContainer(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-        ) {
-          Text(
-            text = book?.notes.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
-      }
     }
+
   }
 
   @Composable
   fun ContributorRow(
     modifier: Modifier = Modifier,
     contributor: BookContributor,
-    onClick: () -> Unit = {}
+    onClick: (() -> Unit)? = null
   ) {
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .clickable(onClick = onClick)
+        .clickable(
+          enabled = onClick != null,
+          onClick = onClick ?: {}
+        )
         .padding(horizontal = 24.dp, vertical = 10.dp)
         .then(modifier),
       verticalAlignment = Alignment.CenterVertically

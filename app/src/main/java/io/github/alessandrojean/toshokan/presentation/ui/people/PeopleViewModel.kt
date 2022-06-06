@@ -3,10 +3,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.people
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.alessandrojean.toshokan.database.data.Person
-import io.github.alessandrojean.toshokan.presentation.ui.people.manage.ManagePeopleMode
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
