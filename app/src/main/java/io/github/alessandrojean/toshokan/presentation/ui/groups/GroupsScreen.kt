@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material.icons.outlined.GroupWork
 import androidx.compose.material.icons.outlined.Reorder
 import androidx.compose.material3.AlertDialog
@@ -55,7 +55,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
-import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -363,7 +362,7 @@ class GroupsScreen : AndroidScreen() {
     ) {
       if (reorderMode) {
         Icon(
-          imageVector = Icons.Outlined.DragHandle,
+          imageVector = Icons.Outlined.DragIndicator,
           contentDescription = null,
           modifier = Modifier.padding(end = 24.dp)
         )

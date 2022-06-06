@@ -7,6 +7,7 @@ import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.domain.LibraryBook
@@ -39,6 +40,11 @@ class BooksRepository @Inject constructor(
 
   fun findBookContributors(id: Long): List<BookContributor> {
     return database.bookCreditQueries.bookContributor(id).executeAsList()
+  }
+
+  fun findReadings(id: Long, descending: Boolean = true): Flow<List<Reading>> {
+    return database.readingQueries.findByBook(id).asFlow().mapToList()
+      .map { if (!descending) it.reversed() else it }
   }
 
   fun findLibraryBooks(isFuture: Boolean = false): Flow<Library> {
@@ -189,6 +195,14 @@ class BooksRepository @Inject constructor(
 
   suspend fun delete(ids: List<Long>) = withContext(Dispatchers.IO) {
     database.bookQueries.deleteBulk(ids)
+  }
+
+  suspend fun insertReading(bookId: Long, readAt: Long?) = withContext(Dispatchers.IO) {
+    database.readingQueries.insert(bookId, readAt)
+  }
+
+  suspend fun bulkDeleteReadings(ids: List<Long>) = withContext(Dispatchers.IO) {
+    database.readingQueries.deleteBulk(ids)
   }
 
 }

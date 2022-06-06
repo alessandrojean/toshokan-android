@@ -52,6 +52,9 @@
   <string name="height_cm">Altura</string>
   <string name="created_at">Data de criação</string>
   <string name="updated_at">Data de modificação</string>
+  <string name="date">Data</string>
+  <string name="read_at">Data de leitura</string>
+  <string name="unknown">Desconhecido</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Desconhecido</string>
@@ -115,6 +118,12 @@
   </string>
   <string name="metadata">Metadados</string>
   <string name="dimensions_full">%s × %s cm</string>
+  <string name="readings">Leituras</string>
+  <string name="create_reading">Nova leitura</string>
+  <string name="no_readings">Nenhuma leitura</string>
+  <string name="latest_reading">Última leitura</string>
+  <string name="today">Hoje</string>
+  <string name="other_date">Outra data</string>
 
   <!-- Statistics -->
   <string name="statistics">Estatísticas</string>

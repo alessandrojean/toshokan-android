@@ -68,10 +68,10 @@ fun OutlinedDateField(
   )
 }
 
-private fun showDatePicker(
+fun showDatePicker(
   activity: AppCompatActivity,
   titleText: String,
-  date: Long?,
+  date: Long? = null,
   onDateChoose: (Long?) -> Unit
 ) {
   val constraints = CalendarConstraints.Builder()

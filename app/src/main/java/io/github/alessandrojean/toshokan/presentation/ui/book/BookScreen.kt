@@ -104,6 +104,7 @@ import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ExpandedIconButton
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
@@ -260,6 +261,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               .fillMaxWidth(),
             book = book,
             contributors = bookContributors,
+            onReadingClick = { navigator.push(ReadingScreen(bookId)) },
             onEditClick = {
               if (book != null) {
                 navigator.push(
@@ -339,6 +341,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     contributors: List<BookContributor>,
     color: Color = MaterialTheme.colorScheme.surface,
     tonalElevation: Dp = 6.dp,
+    onReadingClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
   ) {
@@ -449,7 +452,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               bottomStart = buttonRowCorner
             ),
             contentPadding = buttonRowContentPadding,
-            onClick = { /*TODO*/ }
+            onClick = onReadingClick
           )
           ExpandedIconButton(
             modifier = Modifier.weight(1f),
@@ -551,11 +554,11 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           }
           InformationRow(
             label = stringResource(R.string.created_at),
-            value = book?.created_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
+            value = book?.created_at?.formatToLocaleDate() ?: ""
           )
           InformationRow(
             label = stringResource(R.string.updated_at),
-            value = book?.updated_at?.formatToLocaleDate(format = DateFormat.LONG) ?: ""
+            value = book?.updated_at?.formatToLocaleDate() ?: ""
           )
         }
         Text(
@@ -655,6 +658,12 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           MetadataRow(
             label = stringResource(R.string.bought_at),
             value = book.bought_at.formatToLocaleDate(format = DateFormat.LONG),
+          )
+        }
+        if (book?.latest_reading != null) {
+          MetadataRow(
+            label = stringResource(R.string.latest_reading),
+            value = book.latest_reading.formatToLocaleDate(format = DateFormat.LONG),
           )
         }
         if (book?.notes.orEmpty().isNotBlank()) {

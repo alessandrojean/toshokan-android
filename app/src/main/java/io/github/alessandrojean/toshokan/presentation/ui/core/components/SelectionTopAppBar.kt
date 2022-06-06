@@ -22,7 +22,7 @@ fun SelectionTopAppBar(
   modifier: Modifier = Modifier,
   selectionCount: Int,
   onClearSelectionClick: () -> Unit = {},
-  onEditClick: () -> Unit = {},
+  onEditClick: (() -> Unit)? = null,
   onDeleteClick: () -> Unit = {},
   scrollBehavior: TopAppBarScrollBehavior
 ) {
@@ -49,7 +49,7 @@ fun SelectionTopAppBar(
       }
     },
     actions = {
-      if (selectionCount == 1) {
+      if (selectionCount == 1 && onEditClick != null) {
         IconButton(onClick = onEditClick) {
           Icon(
             Icons.Outlined.Edit,

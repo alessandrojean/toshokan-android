@@ -10,7 +10,8 @@ CREATE TABLE Reading (
 findByBook:
 SELECT *
 FROM Reading
-WHERE book_id = ?;
+WHERE book_id = ?
+ORDER BY read_at DESC;
 
 insert:
 INSERT INTO Reading (book_id, read_at)

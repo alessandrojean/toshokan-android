@@ -42,7 +42,8 @@ SELECT Book.*,
   BookGroup.name AS group_name,
   Publisher.name AS publisher_name,
   Store.name AS store_name,
-  (SELECT count(*) FROM Reading WHERE Reading.book_id = Book.id) AS reading_count
+  (SELECT count(*) FROM Reading WHERE Reading.book_id = Book.id) AS reading_count,
+  (SELECT max(read_at) FROM Reading WHERE Reading.book_id = Book.id) AS latest_reading
 FROM Book
 INNER JOIN BookGroup ON BookGroup.id = Book.group_id
 INNER JOIN Publisher ON Publisher.id = Book.publisher_id
