@@ -1,0 +1,4 @@
+ALTER TABLE Book ADD COLUMN is_favorite INTEGER DEFAULT 0;
+
+UPDATE Book
+SET is_favorite = 0;

@@ -3,7 +3,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.book
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,14 +18,12 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
@@ -35,16 +32,15 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -78,7 +74,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -91,6 +86,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -117,17 +113,17 @@ import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import java.lang.Float.min
 import java.text.DateFormat
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
   @Composable
   @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
   override fun Content() {
-    val bookViewModel = getViewModel<BookViewModel>()
-    val book by bookViewModel.findTheBook(bookId).collectAsStateWithLifecycle(null)
-    val bookContributors by bookViewModel.findTheBookContributors(bookId)
-      .collectAsStateWithLifecycle(emptyList())
+    val bookScreenModel = getScreenModel<BookScreenModel, BookScreenModel.Factory> { factory ->
+      factory.create(bookId)
+    }
+    val book by bookScreenModel.book.collectAsStateWithLifecycle(null)
+    val bookContributors by bookScreenModel.contributors.collectAsStateWithLifecycle(emptyList())
     val navigator = LocalNavigator.currentOrThrow
 
     val scrollState = rememberScrollState()
@@ -169,7 +165,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       visible = showDeleteDialog,
       onDismiss = { showDeleteDialog = false },
       onDelete = {
-        bookViewModel.delete()
+        bookScreenModel.delete()
         navigator.pop()
       }
     )
@@ -211,10 +207,21 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
                 )
               },
               actions = {
-                IconButton(onClick = { }) {
+                IconButton(
+                  enabled = book != null,
+                  onClick = { bookScreenModel.toggleFavorite() }
+                ) {
                   Icon(
-                    imageVector = Icons.Outlined.StarOutline,
-                    contentDescription = null
+                    imageVector = if (book?.is_favorite == true) {
+                      Icons.Filled.Star
+                    } else {
+                      Icons.Outlined.StarOutline
+                    },
+                    contentDescription = if (book?.is_favorite == true) {
+                      stringResource(R.string.action_remove_from_favorites)
+                    } else {
+                      stringResource(R.string.action_add_to_favorites)
+                    }
                   )
                 }
                 IconButton(onClick = { }) {
@@ -790,32 +797,6 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       Text(
         text = value,
         style = MaterialTheme.typography.bodyMedium
-      )
-    }
-  }
-
-  @Composable
-  fun TagButton(
-    modifier: Modifier = Modifier,
-    text: String,
-    onClick: () -> Unit
-  ) {
-    Box(
-      Modifier
-        .clip(MaterialTheme.shapes.small)
-        .background(MaterialTheme.colorScheme.surfaceVariant)
-        .clickable(
-          role = Role.Button,
-          onClick = onClick
-        )
-        .then(modifier)
-    ) {
-      Text(
-        modifier = Modifier.padding(vertical = 2.dp, horizontal = 12.dp),
-        text = text,
-        style = MaterialTheme.typography.bodyMedium.copy(
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
       )
     }
   }

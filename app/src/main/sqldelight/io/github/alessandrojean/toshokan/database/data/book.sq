@@ -23,6 +23,8 @@ CREATE TABLE Book(
   created_at INTEGER AS Long NOT NULL,
   updated_at INTEGER AS Long NOT NULL,
 
+  is_favorite INTEGER AS Boolean DEFAULT 0,
+
   FOREIGN KEY (publisher_id) REFERENCES Publisher (id)
     ON DELETE CASCADE,
   FOREIGN KEY (group_id) REFERENCES BookGroup (id)
@@ -81,10 +83,11 @@ INSERT INTO Book(
   cover_url,
   dimension_width,
   dimension_height,
+  is_favorite,
   created_at,
   updated_at
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, 0, ?, ?);
 
 update:
 UPDATE Book
@@ -93,6 +96,15 @@ SET code = ?, title = ?, volume = ?, synopsis = ?, notes = ?, publisher_id = ?,
   label_price_currency = ?, label_price_value = ?, store_id = ?,
   bought_at = ?, is_future = ?, cover_url = ?, dimension_width = ?,
   dimension_height = ?, updated_at = ?
+WHERE id = ?;
+
+toggleFavorite:
+UPDATE Book
+SET is_favorite = CASE is_favorite
+    WHEN 1 THEN 0
+    ELSE 1
+  END,
+  updated_at = ?
 WHERE id = ?;
 
 delete:

@@ -199,9 +199,9 @@ fun CoverCard(
         ) {
           Box(
             modifier = Modifier
+              .clip(MaterialTheme.shapes.large)
               .fillMaxSize()
-              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp))
-              .clip(MaterialTheme.shapes.large),
+              .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)),
             contentAlignment = Alignment.Center
           ) {
             Icon(

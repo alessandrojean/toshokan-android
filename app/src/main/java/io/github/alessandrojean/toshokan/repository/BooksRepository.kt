@@ -189,6 +189,10 @@ class BooksRepository @Inject constructor(
     }
   }
 
+  suspend fun toggleFavorite(id: Long) = withContext(Dispatchers.IO) {
+    database.bookQueries.toggleFavorite(id = id, updated_at = Date().time)
+  }
+
   suspend fun delete(id: Long) = withContext(Dispatchers.IO) {
     database.bookQueries.delete(id)
   }
