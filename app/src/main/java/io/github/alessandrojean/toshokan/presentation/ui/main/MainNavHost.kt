@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -56,6 +58,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.provider.Navigatio
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
+import kotlinx.coroutines.delay
 
 @Composable
 fun MainNavHost() {
@@ -66,12 +69,7 @@ fun MainNavHost() {
 
   Navigator(TopLevelRoutes.Library.screen) { navigator ->
     var hideBottomNavigation by remember { mutableStateOf(false) }
-
-    val isBottomBarVisible by remember {
-      derivedStateOf {
-        TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
-      }
-    }
+    val isBottomBarVisible = TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
 
     val systemUiController = rememberSystemUiController()
     val navigationBarColor = if (isBottomBarVisible || navigator.isEmpty) {

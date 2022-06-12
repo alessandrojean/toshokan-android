@@ -67,6 +67,7 @@ fun BookCard(
         Box(
           modifier = Modifier
             .fillMaxSize()
+            .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)),
           contentAlignment = Alignment.Center
         ) {

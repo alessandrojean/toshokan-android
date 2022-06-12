@@ -1,5 +1,10 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book
 
+import android.graphics.Bitmap
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.hilt.ScreenModelFactory
@@ -22,12 +27,21 @@ class BookScreenModel @AssistedInject constructor(
   val book = booksRepository.findById(bookId)
   val contributors = booksRepository.findBookContributorsFlow(bookId)
 
+  var palette by mutableStateOf<Palette?>(null)
+    private set
+
   fun toggleFavorite() = coroutineScope.launch {
     booksRepository.toggleFavorite(bookId)
   }
 
   fun delete() = coroutineScope.launch {
     booksRepository.delete(bookId)
+  }
+
+  fun findPalette(image: Bitmap?) {
+    image?.let {
+      palette = Palette.Builder(it).generate()
+    }
   }
 
 }

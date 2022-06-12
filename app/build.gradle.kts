@@ -128,6 +128,9 @@ dependencies {
   implementation("androidx.preference:preference-ktx:1.2.0")
   implementation("com.fredporciuncula:flow-preferences:1.7.0")
 
+  // Palette
+  implementation("androidx.palette:palette-ktx:1.0.0")
+
   // Google ML Kit
   implementation("com.google.mlkit:barcode-scanning:17.0.2")
 

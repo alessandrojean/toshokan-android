@@ -367,7 +367,7 @@ data class ManageBookScreen(
                     allCovers = manageBookViewModel.allCovers,
                     state = manageBookViewModel.coverState,
                     canRefresh = manageBookViewModel.coverRefreshEnabled(),
-                    onChange = { manageBookViewModel.coverUrl = it.imageUrl },
+                    onChange = { manageBookViewModel.coverUrl = it?.imageUrl ?: "" },
                     onRefresh = { manageBookViewModel.fetchCovers() }
                   )
                 }

@@ -7,28 +7,24 @@ data class TitleParts(
   val subtitle: String? = null
 )
 
-private val TITLE_REGEX = "\\s+#(\\d+(?:[.,]\\d+)?)(?::\\s+)?".toRegex()
+private val TITLE_REGEX = "\\s+#([0-9.,]+):?\\s*".toRegex()
 
 fun String.toTitleParts(): TitleParts {
-  val parts = split(TITLE_REGEX)
-  val main = parts.getOrNull(2).let {
-    if (it == null) {
-      this
-    } else {
-      substring(0, indexOf(parts[2]) - 2).trim()
-    }
-  }
+  val match = TITLE_REGEX.find(this)
+    ?: return TitleParts(
+      title = this,
+      main = this
+    )
+
+  val title = substring(0, match.groups[0]!!.range.first)
+  val number = match.groupValues[1]
+  val subtitle = runCatching { substring(match.groups[0]!!.range.last + 1) }
+  val main = runCatching { substring(0, match.groups[1]!!.range.last + 1) }
 
   return TitleParts(
-    title = parts[0].trim(),
-    number = parts.getOrNull(1),
-    main = main,
-    subtitle = if (!parts.getOrNull(2).isNullOrBlank()) {
-      replace(main, "")
-        .replace(":", "")
-        .trim()
-    } else {
-      null
-    }
+    title = title,
+    number = number,
+    main = main.getOrDefault("$title #$number"),
+    subtitle = subtitle.getOrDefault("").ifBlank { null }
   )
 }

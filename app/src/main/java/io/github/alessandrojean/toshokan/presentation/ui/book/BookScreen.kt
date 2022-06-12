@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -34,10 +35,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Person
@@ -55,6 +58,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,9 +68,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
@@ -85,7 +92,10 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toBitmapOrNull
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -97,6 +107,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.CreditRole
+import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
@@ -110,6 +121,7 @@ import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
+import kotlinx.coroutines.launch
 import java.lang.Float.min
 import java.text.DateFormat
 import kotlin.math.ceil
@@ -130,37 +142,22 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
 
-    val systemBarColor = Color.Transparent
-    val systemBarDarkIcons = !isSystemInDarkTheme()
-    val systemUiController = rememberSystemUiController()
-    val localConfiguration = LocalConfiguration.current
-    val localDensity = LocalDensity.current
+    val defaultColorScheme = MaterialTheme.colorScheme
+    val isSystemInDarkTheme = isSystemInDarkTheme()
 
-    val scrolledTopBarContainerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
-    val maxPoint = remember(localConfiguration, localDensity) {
-      with(localDensity) {
-        localConfiguration.screenWidthDp.dp.toPx() * 0.8f
-      }
-    }
-    val currentScrollBounded = min(scrollState.value.toFloat(), maxPoint)
-    val scrollPercentage = currentScrollBounded / maxPoint
-    val coverBottomOffsetDp = 18f
-
-    val topBarContainerColor by remember(scrollPercentage) {
-      derivedStateOf {
-        scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
-      }
-    }
-
-    SideEffect {
-      systemUiController.setStatusBarColor(
-        color = systemBarColor,
-        darkIcons = systemBarDarkIcons
+    val colorScheme = when {
+      bookScreenModel.palette?.vibrantSwatch?.rgb == null -> defaultColorScheme
+      isSystemInDarkTheme -> darkColorScheme(
+        primary = Color(bookScreenModel.palette!!.vibrantSwatch!!.rgb)
+      )
+      else -> lightColorScheme(
+        primary = Color(bookScreenModel.palette!!.vibrantSwatch!!.rgb)
       )
     }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    // Dialog intentionally outside of the custom Material theme.
     DeleteDialog(
       visible = showDeleteDialog,
       onDismiss = { showDeleteDialog = false },
@@ -170,117 +167,156 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       }
     )
 
-    Scaffold(
-      modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-      containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
-      topBar = {
-        Surface(
-          modifier = Modifier.fillMaxWidth(),
-          color = topBarContainerColor,
-          tonalElevation = 0.dp
-        ) {
-          Column(
-            modifier = Modifier
-              .fillMaxWidth()
-              .statusBarsPadding()
-          ) {
-            SmallTopAppBar(
-              scrollBehavior = scrollBehavior,
-              colors = TopAppBarDefaults.smallTopAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent
-              ),
-              navigationIcon = {
-                IconButton(onClick = { navigator.pop() }) {
-                  Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = stringResource(R.string.action_back)
-                  )
-                }
-              },
-              title = {
-                Text(
-                  modifier = Modifier.graphicsLayer(alpha = scrollPercentage),
-                  text = book?.title.orEmpty(),
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis
-                )
-              },
-              actions = {
-                IconButton(
-                  enabled = book != null,
-                  onClick = { bookScreenModel.toggleFavorite() }
-                ) {
-                  Icon(
-                    imageVector = if (book?.is_favorite == true) {
-                      Icons.Filled.Star
-                    } else {
-                      Icons.Outlined.StarOutline
-                    },
-                    contentDescription = if (book?.is_favorite == true) {
-                      stringResource(R.string.action_remove_from_favorites)
-                    } else {
-                      stringResource(R.string.action_add_to_favorites)
-                    }
-                  )
-                }
-                IconButton(onClick = { }) {
-                  Icon(
-                    imageVector = Icons.Outlined.Link,
-                    contentDescription = null
-                  )
-                }
-                IconButton(onClick = { }) {
-                  Icon(
-                    imageVector = Icons.Outlined.MoreVert,
-                    contentDescription = null
-                  )
-                }
-              }
-            )
-            Divider(
-              modifier = Modifier
-                .graphicsLayer(alpha = scrollPercentage),
-              color = LocalContentColor.current.copy(alpha = DividerOpacity)
-            )
-          }
+    MaterialTheme(colorScheme = colorScheme) {
+      val systemBarColor = Color.Transparent
+      val systemBarDarkIcons = !isSystemInDarkTheme
+      val navigationBarColor = colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
+      val systemUiController = rememberSystemUiController()
+      val localConfiguration = LocalConfiguration.current
+      val localDensity = LocalDensity.current
+
+      val scrolledTopBarContainerColor = colorScheme.surfaceWithTonalElevation(6.dp)
+      val maxPoint = remember(localConfiguration, localDensity) {
+        with(localDensity) {
+          localConfiguration.screenWidthDp.dp.toPx() * 0.8f
         }
-      },
-      content = {
-        Column(
-          modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-        ) {
-          BookCoverBox(
-            modifier = Modifier
-              .fillMaxWidth()
-              .offset(y = (ceil(100f * scrollPercentage)).dp)
-              .graphicsLayer(alpha = 0.4f + 0.6f * (1f - scrollPercentage)),
-            coverUrl = book?.cover_url.orEmpty(),
-            contentDescription = book?.title,
-            bottomOffsetDp = coverBottomOffsetDp,
-            topBarHeightDp = 52f,
-          )
-          BookInformation(
-            modifier = Modifier
-              .offset(y = (-coverBottomOffsetDp).dp)
-              .fillMaxWidth(),
-            book = book,
-            contributors = bookContributors,
-            onReadingClick = { navigator.push(ReadingScreen(bookId)) },
-            onEditClick = {
-              if (book != null) {
-                navigator.push(
-                  ManageBookScreen(completeBook = book)
-                )
-              }
-            },
-            onDeleteClick = { showDeleteDialog = true }
+      }
+      val currentScrollBounded = min(scrollState.value.toFloat(), maxPoint)
+      val scrollPercentage = currentScrollBounded / maxPoint
+      val coverBottomOffsetDp = 18f
+
+      val topBarContainerColor by remember(scrollPercentage, scrolledTopBarContainerColor) {
+        derivedStateOf {
+          scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
+        }
+      }
+
+      SideEffect {
+        systemUiController.setStatusBarColor(
+          color = systemBarColor,
+          darkIcons = systemBarDarkIcons
+        )
+
+        if (navigator.lastItem is BookScreen) {
+          systemUiController.setNavigationBarColor(
+            color = navigationBarColor
           )
         }
       }
-    )
+
+      Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
+        topBar = {
+          Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = topBarContainerColor,
+            tonalElevation = 0.dp
+          ) {
+            Column(
+              modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+            ) {
+              SmallTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                  containerColor = Color.Transparent,
+                  scrolledContainerColor = Color.Transparent
+                ),
+                navigationIcon = {
+                  IconButton(onClick = { navigator.pop() }) {
+                    Icon(
+                      imageVector = Icons.Outlined.ArrowBack,
+                      contentDescription = stringResource(R.string.action_back)
+                    )
+                  }
+                },
+                title = {
+                  Text(
+                    modifier = Modifier.graphicsLayer(alpha = scrollPercentage),
+                    text = book?.title.orEmpty(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                  )
+                },
+                actions = {
+                  IconButton(
+                    enabled = book != null,
+                    onClick = { bookScreenModel.toggleFavorite() }
+                  ) {
+                    Icon(
+                      imageVector = if (book?.is_favorite == true) {
+                        Icons.Filled.Star
+                      } else {
+                        Icons.Outlined.StarOutline
+                      },
+                      contentDescription = if (book?.is_favorite == true) {
+                        stringResource(R.string.action_remove_from_favorites)
+                      } else {
+                        stringResource(R.string.action_add_to_favorites)
+                      }
+                    )
+                  }
+                  IconButton(onClick = { }) {
+                    Icon(
+                      imageVector = Icons.Outlined.Link,
+                      contentDescription = null
+                    )
+                  }
+                  IconButton(onClick = { }) {
+                    Icon(
+                      imageVector = Icons.Outlined.MoreVert,
+                      contentDescription = null
+                    )
+                  }
+                }
+              )
+              Divider(
+                modifier = Modifier
+                  .graphicsLayer(alpha = scrollPercentage),
+                color = LocalContentColor.current.copy(alpha = DividerOpacity)
+              )
+            }
+          }
+        },
+        content = {
+          Column(
+            modifier = Modifier
+              .fillMaxSize()
+              .verticalScroll(scrollState)
+          ) {
+            BookCoverBox(
+              modifier = Modifier
+                .fillMaxWidth()
+                .offset(y = (ceil(100f * scrollPercentage)).dp)
+                .graphicsLayer(alpha = 0.4f + 0.6f * (1f - scrollPercentage)),
+              coverUrl = book?.cover_url.orEmpty(),
+              contentDescription = book?.title,
+              bottomOffsetDp = coverBottomOffsetDp,
+              topBarHeightDp = 52f,
+              onSuccess = { bitmap -> bookScreenModel.findPalette(bitmap) }
+            )
+            BookInformation(
+              modifier = Modifier
+                .offset(y = (-coverBottomOffsetDp).dp)
+                .fillMaxWidth(),
+              book = book,
+              contributors = bookContributors,
+              onReadingClick = { navigator.push(ReadingScreen(bookId)) },
+              onEditClick = {
+                if (book != null) {
+                  navigator.push(
+                    ManageBookScreen(completeBook = book)
+                  )
+                }
+              },
+              onDeleteClick = { showDeleteDialog = true }
+            )
+          }
+        }
+      )
+    }
   }
 
   @Composable
@@ -290,12 +326,15 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     contentDescription: String?,
     containerColor: Color = MaterialTheme.colorScheme.background,
     topBarHeightDp: Float = 64f,
-    bottomOffsetDp: Float = 18f
+    bottomOffsetDp: Float = 18f,
+    onSuccess: (Bitmap?) -> Unit
   ) {
     val verticalPadding = (topBarHeightDp + bottomOffsetDp).dp +
       WindowInsets.statusBars
         .asPaddingValues()
         .calculateTopPadding()
+
+    var hasError by remember { mutableStateOf(false) }
 
     Box(
       modifier = Modifier
@@ -312,6 +351,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           .build(),
         modifier = Modifier
           .fillMaxSize()
+          .blur(4.dp)
           .graphicsLayer(alpha = 0.15f),
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
@@ -328,14 +368,29 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           .clipToBounds(),
         contentAlignment = Alignment.Center
       ) {
+        if (hasError || coverUrl.isBlank()) {
+          Icon(
+            modifier = Modifier.size(96.dp),
+            imageVector = Icons.Outlined.Image,
+            contentDescription = null,
+            tint = LocalContentColor.current.copy(alpha = 0.15f)
+          )
+        }
+
         AsyncImage(
           model = ImageRequest.Builder(LocalContext.current)
             .data(coverUrl)
             .crossfade(true)
+            .allowHardware(false)
             .build(),
           modifier = Modifier.clip(MaterialTheme.shapes.large),
           contentDescription = contentDescription,
           contentScale = ContentScale.Inside,
+          onSuccess = { state ->
+            onSuccess.invoke(state.result.drawable.toBitmapOrNull())
+            hasError = false
+          },
+          onError = { hasError = true }
         )
       }
     }
@@ -719,7 +774,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       Icon(
         modifier = Modifier
           .clip(CircleShape)
-          .background(MaterialTheme.colorScheme.surfaceVariant)
+          .background(MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(6.dp))
           .padding(8.dp)
           .size(18.dp),
         imageVector = Icons.Outlined.Person,

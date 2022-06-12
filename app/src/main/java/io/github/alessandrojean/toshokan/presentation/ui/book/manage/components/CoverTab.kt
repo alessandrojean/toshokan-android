@@ -67,7 +67,7 @@ fun CoverTab(
   allCovers: SnapshotStateList<CoverResult>,
   state: CoverTabState = CoverTabState.Display,
   canRefresh: Boolean = true,
-  onChange: (CoverResult) -> Unit,
+  onChange: (CoverResult?) -> Unit,
   onRefresh: () -> Unit,
 ) {
   val gridState = rememberLazyGridState()
@@ -126,11 +126,15 @@ fun CoverTab(
               horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
               items(allCovers, key = { it.imageUrl }) { cover ->
+                val selected = coverUrl == cover.imageUrl
+
                 CoverCard(
                   cover = cover,
                   enabled = !refreshing,
-                  selected = coverUrl == cover.imageUrl,
-                  onClick = { onChange(cover) }
+                  selected = selected,
+                  onClick = {
+                    onChange.invoke(if (!selected) cover else null)
+                  }
                 )
               }
             }
@@ -157,11 +161,6 @@ fun CoverCard(
   onClick: () -> Unit
 ) {
   var imageLoaded by remember { mutableStateOf(false) }
-
-  val coverPainter = rememberAsyncImagePainter(
-    model = cover.imageUrl,
-    contentScale = ContentScale.Crop
-  )
 
   Card(
     modifier = Modifier
