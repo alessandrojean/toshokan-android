@@ -489,53 +489,55 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             onClick = onDeleteClick,
           )
         }
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .toggleable(
-              value = synopsisExpanded,
-              onValueChange = { synopsisExpanded = it },
-              enabled = synopsisToggleable,
-              role = Role.Checkbox,
-              indication = null,
-              interactionSource = MutableInteractionSource()
-            )
-            .padding(
-              bottom = if (synopsisToggleable) 4.dp else 12.dp,
-              start = 24.dp,
-              end = 24.dp
-            )
-            .animateContentSize()
-        ) {
-          Text(
-            text = book?.synopsis.orEmpty().ifEmpty { stringResource(R.string.no_synopsis) },
-            maxLines = if (synopsisExpanded) Int.MAX_VALUE else 4,
-            onTextLayout = { synopsisLayoutResultState = it },
-            overflow = TextOverflow.Clip,
-            style = MaterialTheme.typography.bodyMedium.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              fontStyle = if (book?.synopsis.orEmpty().isEmpty()) FontStyle.Italic else FontStyle.Normal
-            )
-          )
-          if (synopsisToggleable) {
-            Box(
-              modifier = Modifier
-                .fillMaxWidth()
-                .offset(y = toggleButtonOffset.dp)
-                .background(
-                  Brush.verticalGradient(
-                    0.0f to Color.Transparent,
-                    0.2f to synopsisBackground.copy(alpha = 0.5f),
-                    0.8f to synopsisBackground
-                  )
-                ),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                modifier = Modifier.graphicsLayer(rotationX = toggleIconRotation),
-                imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = null
+        if (book?.synopsis.orEmpty().isNotBlank()) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .toggleable(
+                value = synopsisExpanded,
+                onValueChange = { synopsisExpanded = it },
+                enabled = synopsisToggleable,
+                role = Role.Checkbox,
+                indication = null,
+                interactionSource = MutableInteractionSource()
               )
+              .padding(
+                bottom = if (synopsisToggleable) 4.dp else 12.dp,
+                start = 24.dp,
+                end = 24.dp
+              )
+              .animateContentSize()
+          ) {
+            Text(
+              text = book?.synopsis.orEmpty().ifEmpty { stringResource(R.string.no_synopsis) },
+              maxLines = if (synopsisExpanded) Int.MAX_VALUE else 4,
+              onTextLayout = { synopsisLayoutResultState = it },
+              overflow = TextOverflow.Clip,
+              style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontStyle = if (book?.synopsis.orEmpty().isEmpty()) FontStyle.Italic else FontStyle.Normal
+              )
+            )
+            if (synopsisToggleable) {
+              Box(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .offset(y = toggleButtonOffset.dp)
+                  .background(
+                    Brush.verticalGradient(
+                      0.0f to Color.Transparent,
+                      0.2f to synopsisBackground.copy(alpha = 0.5f),
+                      0.8f to synopsisBackground
+                    )
+                  ),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  modifier = Modifier.graphicsLayer(rotationX = toggleIconRotation),
+                  imageVector = Icons.Outlined.ExpandMore,
+                  contentDescription = null
+                )
+              }
             }
           }
         }
@@ -671,6 +673,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           MetadataRow(
             label = stringResource(R.string.latest_reading),
             value = book.latest_reading.formatToLocaleDate(format = DateFormat.LONG),
+            onClick = onReadingClick
           )
         }
         if (book?.notes.orEmpty().isNotBlank()) {

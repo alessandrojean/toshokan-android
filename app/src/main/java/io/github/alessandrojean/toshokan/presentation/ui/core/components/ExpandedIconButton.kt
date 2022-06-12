@@ -47,7 +47,7 @@ fun ExpandedIconButton(
       Text(
         modifier = Modifier.padding(top = 4.dp),
         text = text,
-        maxLines = 1,
+        maxLines = 2,
         overflow = TextOverflow.Ellipsis
       )
     }
