@@ -20,6 +20,10 @@
   <string name="action_view_book">Ver o livro</string>
   <string name="action_add_to_favorites">Adicionar aos favoritos</string>
   <string name="action_remove_from_favorites">Remover dos favoritos</string>
+  <string name="action_first">Primeiro</string>
+  <string name="action_last">Último</string>
+  <string name="action_previous">Anterior</string>
+  <string name="action_next">Próximo</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>

@@ -60,6 +60,14 @@ INNER JOIN BookGroup ON BookGroup.id = Book.group_id
 WHERE is_future = :is_future
 ORDER BY BookGroup.sort ASC, Book.title COLLATE UNICODE ASC;
 
+seriesVolumes:
+SELECT *
+FROM Book
+WHERE title LIKE (:title || '%')
+  AND publisher_id = :publisherId
+  AND group_id = :groupId
+ORDER BY title COLLATE UNICODE ASC;
+
 lastInsertedId:
 SELECT max(id)
 FROM Book;

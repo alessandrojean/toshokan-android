@@ -22,6 +22,10 @@
   <string name="action_view_book">View book</string>
   <string name="action_add_to_favorites">Add to favorites</string>
   <string name="action_remove_from_favorites">Remove from favorites</string>
+  <string name="action_first">First</string>
+  <string name="action_last">Last</string>
+  <string name="action_previous">Previous</string>
+  <string name="action_next">Next</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>

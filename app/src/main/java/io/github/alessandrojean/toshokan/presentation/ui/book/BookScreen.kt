@@ -2,8 +2,13 @@ package io.github.alessandrojean.toshokan.presentation.ui.book
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,14 +18,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -37,15 +48,21 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.ChevronLeft
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.FirstPage
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.LastPage
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -84,6 +101,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -104,8 +122,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
@@ -129,13 +149,13 @@ import kotlin.math.ceil
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
   @Composable
-  @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
   override fun Content() {
     val bookScreenModel = getScreenModel<BookScreenModel, BookScreenModel.Factory> { factory ->
       factory.create(bookId)
     }
     val book by bookScreenModel.book.collectAsStateWithLifecycle(null)
     val bookContributors by bookScreenModel.contributors.collectAsStateWithLifecycle(emptyList())
+    val bookNeighbors by bookScreenModel.findSeriesVolumes(book).collectAsStateWithLifecycle(null)
     val navigator = LocalNavigator.currentOrThrow
 
     val scrollState = rememberScrollState()
@@ -145,14 +165,22 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     val defaultColorScheme = MaterialTheme.colorScheme
     val isSystemInDarkTheme = isSystemInDarkTheme()
 
-    val colorScheme = when {
-      bookScreenModel.palette?.vibrantSwatch?.rgb == null -> defaultColorScheme
-      isSystemInDarkTheme -> darkColorScheme(
-        primary = Color(bookScreenModel.palette!!.vibrantSwatch!!.rgb)
-      )
-      else -> lightColorScheme(
-        primary = Color(bookScreenModel.palette!!.vibrantSwatch!!.rgb)
-      )
+    val colorScheme = remember(bookScreenModel.palette, isSystemInDarkTheme) {
+      when {
+        bookScreenModel.palette?.vibrantSwatch?.rgb == null -> defaultColorScheme
+        isSystemInDarkTheme -> darkColorScheme(
+          primary = Color(bookScreenModel.palette!!.vibrantSwatch!!.rgb)
+        )
+        else -> lightColorScheme(
+          primary = Color(bookScreenModel.palette!!.vibrantSwatch!!.rgb)
+        )
+      }
+    }
+
+    LaunchedEffect(book?.cover_url) {
+      if (book?.cover_url.orEmpty().isBlank()) {
+        bookScreenModel.resetPalette()
+      }
     }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -168,9 +196,15 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     )
 
     MaterialTheme(colorScheme = colorScheme) {
+      val bottomBarTonalElevation = 24.dp
+
       val systemBarColor = Color.Transparent
       val systemBarDarkIcons = !isSystemInDarkTheme
-      val navigationBarColor = colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
+      val navigationBarColor = if (bookNeighbors == null) {
+        colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
+      } else {
+        colorScheme.surfaceWithTonalElevation(bottomBarTonalElevation)
+      }
       val systemUiController = rememberSystemUiController()
       val localConfiguration = LocalConfiguration.current
       val localDensity = LocalDensity.current
@@ -280,7 +314,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             }
           }
         },
-        content = {
+        content = { innerPadding ->
           Column(
             modifier = Modifier
               .fillMaxSize()
@@ -295,12 +329,19 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               contentDescription = book?.title,
               bottomOffsetDp = coverBottomOffsetDp,
               topBarHeightDp = 52f,
-              onSuccess = { bitmap -> bookScreenModel.findPalette(bitmap) }
+              onSuccess = { bitmap -> bookScreenModel.findPalette(bitmap) },
             )
             BookInformation(
               modifier = Modifier
                 .offset(y = (-coverBottomOffsetDp).dp)
                 .fillMaxWidth(),
+              bottomPadding = if (bookNeighbors != null) {
+                (innerPadding.calculateBottomPadding() -
+                  WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+                  .coerceAtLeast(0.dp)
+              } else {
+                0.dp
+              },
               book = book,
               contributors = bookContributors,
               onReadingClick = { navigator.push(ReadingScreen(bookId)) },
@@ -314,8 +355,93 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               onDeleteClick = { showDeleteDialog = true }
             )
           }
+        },
+        bottomBar = {
+          BottomPagination(
+            modifier = Modifier.navigationBarsPadding(),
+            tonalElevation = bottomBarTonalElevation,
+            bookNeighbors = bookNeighbors,
+            onFirstClick = {
+              navigator.replace(BookScreen(bookNeighbors!!.first!!.id))
+            },
+            onLastClick = {
+              navigator.replace(BookScreen(bookNeighbors!!.last!!.id))
+            },
+            onPreviousClick = {
+              navigator.replace(BookScreen(bookNeighbors!!.previous!!.id))
+            },
+            onNextClick = {
+              navigator.replace(BookScreen(bookNeighbors!!.next!!.id))
+            }
+          )
         }
       )
+    }
+  }
+
+  @Composable
+  fun BottomPagination(
+    modifier: Modifier = Modifier,
+    tonalElevation: Dp = 12.dp,
+    bookNeighbors: BookNeighbors?,
+    onFirstClick: () -> Unit,
+    onLastClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit
+  ) {
+    AnimatedVisibility(
+      visible = bookNeighbors != null,
+      enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+      exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+    ) {
+      Column(
+        modifier = Modifier
+          .background(MaterialTheme.colorScheme.surfaceWithTonalElevation(tonalElevation))
+          .then(modifier)
+      ) {
+        Divider(color = LocalContentColor.current.copy(alpha = DividerOpacity))
+        BottomAppBar(tonalElevation = tonalElevation) {
+          Spacer(modifier = Modifier.weight(1f))
+          IconButton(
+            onClick = onFirstClick,
+            enabled = bookNeighbors?.first != null &&
+              bookNeighbors.first.id != bookNeighbors.current?.id
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.FirstPage,
+              contentDescription = stringResource(R.string.action_first)
+            )
+          }
+          IconButton(
+            onClick = onPreviousClick,
+            enabled = bookNeighbors?.previous != null
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.ChevronLeft,
+              contentDescription = stringResource(R.string.action_previous)
+            )
+          }
+          IconButton(
+            onClick = onNextClick,
+            enabled = bookNeighbors?.next != null
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.ChevronRight,
+              contentDescription = stringResource(R.string.action_next)
+            )
+          }
+          IconButton(
+            onClick = onLastClick,
+            enabled = bookNeighbors?.last != null &&
+              bookNeighbors.last.id != bookNeighbors.current?.id
+          ) {
+            Icon(
+              imageVector = Icons.Outlined.LastPage,
+              contentDescription = stringResource(R.string.action_last)
+            )
+          }
+        }
+      }
     }
   }
 
@@ -403,6 +529,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     contributors: List<BookContributor>,
     color: Color = MaterialTheme.colorScheme.surface,
     tonalElevation: Dp = 6.dp,
+    bottomPadding: Dp = 0.dp,
     onReadingClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -470,7 +597,10 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     ) {
       Column(
         modifier = Modifier
-          .padding(top = 24.dp)
+          .padding(
+            top = 24.dp,
+            bottom = bottomPadding
+          )
           .navigationBarsPadding()
       ) {
         Text(

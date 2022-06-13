@@ -11,7 +11,13 @@ import cafe.adriel.voyager.hilt.ScreenModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.github.alessandrojean.toshokan.database.data.Book
+import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.repository.BooksRepository
+import io.github.alessandrojean.toshokan.util.extension.toTitleParts
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 class BookScreenModel @AssistedInject constructor(
@@ -25,7 +31,7 @@ class BookScreenModel @AssistedInject constructor(
   }
 
   val book = booksRepository.findById(bookId)
-  val contributors = booksRepository.findBookContributorsFlow(bookId)
+  val contributors = booksRepository.findBookContributorsAsFlow(bookId)
 
   var palette by mutableStateOf<Palette?>(null)
     private set
@@ -42,6 +48,22 @@ class BookScreenModel @AssistedInject constructor(
     image?.let {
       palette = Palette.Builder(it).generate()
     }
+  }
+
+  fun resetPalette() {
+    palette = null
+  }
+
+  fun findSeriesVolumes(book: CompleteBook?): Flow<BookNeighbors?> {
+    if (book == null) {
+      return flowOf(null)
+    }
+
+    return booksRepository.findSeriesVolumes(
+      title = book.title.toTitleParts(),
+      publisherId = book.publisher_id,
+      groupId = book.group_id
+    )
   }
 
 }

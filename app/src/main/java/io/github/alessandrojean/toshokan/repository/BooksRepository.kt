@@ -8,15 +8,18 @@ import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Reading
+import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.domain.LibraryBook
 import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
+import io.github.alessandrojean.toshokan.util.extension.TitleParts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import logcat.logcat
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +37,7 @@ class BooksRepository @Inject constructor(
     return database.bookQueries.findByCode(code).executeAsOneOrNull()
   }
 
-  fun findBookContributorsFlow(id: Long): Flow<List<BookContributor>> {
+  fun findBookContributorsAsFlow(id: Long): Flow<List<BookContributor>> {
     return database.bookCreditQueries.bookContributor(id).asFlow().mapToList()
   }
 
@@ -72,6 +75,27 @@ class BooksRepository @Inject constructor(
           }
 
         Library(groups = groups.toMap())
+      }
+  }
+
+  fun findSeriesVolumes(title: TitleParts, publisherId: Long, groupId: Long): Flow<BookNeighbors?> {
+    return database.bookQueries.seriesVolumes("${title.title} #", publisherId, groupId)
+      .asFlow()
+      .mapToList()
+      .map { collection ->
+        if (collection.size <= 1) {
+          return@map null
+        }
+
+        val bookIndex = collection.indexOfFirst { it.title == title.full }
+
+        BookNeighbors(
+          first = collection.firstOrNull(),
+          previous = collection.getOrNull(bookIndex - 1),
+          current = collection.getOrNull(bookIndex),
+          next = collection.getOrNull(bookIndex + 1),
+          last = collection.lastOrNull()
+        )
       }
   }
 
