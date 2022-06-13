@@ -11,7 +11,12 @@ class PreferencesManager @Inject constructor(
 
   fun isbnLookupSearchHistory() = flowPrefs.getStringSet(
     PreferenceKeys.isbnLookupSearchHistory,
-    emptySet()
+    defaultValue = emptySet()
+  )
+
+  fun showBookNavigation() = flowPrefs.getBoolean(
+    PreferenceKeys.showBookNavigation,
+    defaultValue = true
   )
 
 }

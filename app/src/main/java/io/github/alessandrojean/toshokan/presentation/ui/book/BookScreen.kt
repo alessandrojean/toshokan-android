@@ -1,6 +1,5 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -9,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,18 +20,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumedWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -46,7 +43,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
@@ -62,7 +58,6 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -85,7 +80,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,7 +95,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -110,19 +103,17 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toBitmapOrNull
 import cafe.adriel.voyager.androidx.AndroidScreen
-import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.hilt.getScreenModel
-import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
@@ -141,7 +132,6 @@ import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
-import kotlinx.coroutines.launch
 import java.lang.Float.min
 import java.text.DateFormat
 import kotlin.math.ceil
@@ -156,6 +146,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     val book by bookScreenModel.book.collectAsStateWithLifecycle(null)
     val bookContributors by bookScreenModel.contributors.collectAsStateWithLifecycle(emptyList())
     val bookNeighbors by bookScreenModel.findSeriesVolumes(book).collectAsStateWithLifecycle(null)
+    val showBookNavigation by bookScreenModel.showBookNavigation.collectAsStateWithLifecycle(false)
     val navigator = LocalNavigator.currentOrThrow
 
     val scrollState = rememberScrollState()
@@ -200,7 +191,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
 
       val systemBarColor = Color.Transparent
       val systemBarDarkIcons = !isSystemInDarkTheme
-      val navigationBarColor = if (bookNeighbors == null) {
+      val navigationBarColor = if (bookNeighbors == null || !showBookNavigation) {
         colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
       } else {
         colorScheme.surfaceWithTonalElevation(bottomBarTonalElevation)
@@ -335,13 +326,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               modifier = Modifier
                 .offset(y = (-coverBottomOffsetDp).dp)
                 .fillMaxWidth(),
-              bottomPadding = if (bookNeighbors != null) {
-                (innerPadding.calculateBottomPadding() -
-                  WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                  .coerceAtLeast(0.dp)
-              } else {
-                0.dp
-              },
+              bottomPadding = innerPadding.calculateBottomPadding(),
+              bottomBarVisible = bookNeighbors != null && showBookNavigation,
               book = book,
               contributors = bookContributors,
               onReadingClick = { navigator.push(ReadingScreen(bookId)) },
@@ -360,6 +346,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           BottomPagination(
             modifier = Modifier.navigationBarsPadding(),
             tonalElevation = bottomBarTonalElevation,
+            visible = showBookNavigation,
             bookNeighbors = bookNeighbors,
             onFirstClick = {
               navigator.replace(BookScreen(bookNeighbors!!.first!!.id))
@@ -383,6 +370,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
   fun BottomPagination(
     modifier: Modifier = Modifier,
     tonalElevation: Dp = 12.dp,
+    visible: Boolean = true,
     bookNeighbors: BookNeighbors?,
     onFirstClick: () -> Unit,
     onLastClick: () -> Unit,
@@ -390,7 +378,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     onNextClick: () -> Unit
   ) {
     AnimatedVisibility(
-      visible = bookNeighbors != null,
+      visible = bookNeighbors != null && visible,
       enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
       exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
     ) {
@@ -460,7 +448,17 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         .asPaddingValues()
         .calculateTopPadding()
 
-    var hasError by remember { mutableStateOf(false) }
+    val coverPainter = rememberAsyncImagePainter(
+      model = ImageRequest.Builder(LocalContext.current)
+        .data(coverUrl)
+        .crossfade(true)
+        .allowHardware(false)
+        .build(),
+      contentScale = ContentScale.Inside,
+      onSuccess = { state ->
+        onSuccess.invoke(state.result.drawable.toBitmapOrNull())
+      },
+    )
 
     Box(
       modifier = Modifier
@@ -477,7 +475,6 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           .build(),
         modifier = Modifier
           .fillMaxSize()
-          .blur(4.dp)
           .graphicsLayer(alpha = 0.15f),
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
@@ -494,7 +491,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           .clipToBounds(),
         contentAlignment = Alignment.Center
       ) {
-        if (hasError || coverUrl.isBlank()) {
+        if (coverPainter.state is AsyncImagePainter.State.Error || coverUrl.isBlank()) {
           Icon(
             modifier = Modifier.size(96.dp),
             imageVector = Icons.Outlined.Image,
@@ -503,20 +500,11 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           )
         }
 
-        AsyncImage(
-          model = ImageRequest.Builder(LocalContext.current)
-            .data(coverUrl)
-            .crossfade(true)
-            .allowHardware(false)
-            .build(),
+        Image(
+          painter = coverPainter,
           modifier = Modifier.clip(MaterialTheme.shapes.large),
           contentDescription = contentDescription,
           contentScale = ContentScale.Inside,
-          onSuccess = { state ->
-            onSuccess.invoke(state.result.drawable.toBitmapOrNull())
-            hasError = false
-          },
-          onError = { hasError = true }
         )
       }
     }
@@ -530,6 +518,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     color: Color = MaterialTheme.colorScheme.surface,
     tonalElevation: Dp = 6.dp,
     bottomPadding: Dp = 0.dp,
+    bottomBarVisible: Boolean = false,
     onReadingClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -589,6 +578,12 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       }
     }
 
+    val consumeInsets = if (bottomBarVisible) {
+      Modifier.consumedWindowInsets(WindowInsets.navigationBars)
+    } else {
+      Modifier
+    }
+
     Surface(
       modifier = modifier,
       shape = ModalBottomSheetShape,
@@ -601,6 +596,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             top = 24.dp,
             bottom = bottomPadding
           )
+          .then(consumeInsets)
           .navigationBarsPadding()
       ) {
         Text(

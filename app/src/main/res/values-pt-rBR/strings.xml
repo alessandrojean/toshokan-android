@@ -192,6 +192,14 @@
   <!-- Settings -->
   <string name="settings">Configurações</string>
   <string name="about">Sobre</string>
+  <string name="settings_general">Geral</string>
+  <string name="settings_library">Biblioteca</string>
+  <string name="settings_search">Busca</string>
+  <string name="settings_backup">Backup e restauração</string>
+  <string name="settings_advanced">Avançado</string>
+
+  <!-- Library settings -->
+  <string name="pref_show_book_navigation">Mostrar a barra de navegação de volumes</string>
 
   <!-- Barcode scanning -->
   <string name="barcode_scanner">Leitor de códigos de barras</string>

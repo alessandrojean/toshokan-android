@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.more
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,22 +36,58 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.groups.GroupsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
+import io.github.alessandrojean.toshokan.presentation.ui.settings.SettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.stores.StoresScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 
 class MoreScreen : AndroidScreen() {
 
   private data class Destination(
-    val title: String,
+    @StringRes val title: Int,
     val icon: ImageVector,
-    val onClick: () -> Unit,
+    val navigate: (Navigator) -> Unit,
     val topDivider: Boolean = false
+  )
+
+  private val destinations = arrayOf(
+    Destination(
+      title = R.string.publishers,
+      icon = Icons.Outlined.Domain,
+      navigate = { it.push(PublishersScreen()) }
+    ),
+    Destination(
+      title = R.string.people,
+      icon = Icons.Outlined.Group,
+      navigate = { it.push(PeopleScreen()) }
+    ),
+    Destination(
+      title = R.string.stores,
+      icon = Icons.Outlined.LocalMall,
+      navigate = { it.push(StoresScreen()) }
+    ),
+    Destination(
+      title = R.string.groups,
+      icon = Icons.Outlined.GroupWork,
+      navigate = { it.push(GroupsScreen()) }
+    ),
+    Destination(
+      title = R.string.settings,
+      icon = Icons.Outlined.Settings,
+      navigate = { it.push(SettingsScreen()) },
+      topDivider = true
+    ),
+    Destination(
+      title = R.string.about,
+      icon = Icons.Outlined.Info,
+      navigate = {}
+    )
   )
 
   @Composable
@@ -59,40 +96,6 @@ class MoreScreen : AndroidScreen() {
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
-
-    val destinations = listOf(
-      Destination(
-        title = stringResource(R.string.publishers),
-        icon = Icons.Outlined.Domain,
-        onClick = { navigator.push(PublishersScreen()) }
-      ),
-      Destination(
-        title = stringResource(R.string.people),
-        icon = Icons.Outlined.Group,
-        onClick = { navigator.push(PeopleScreen()) }
-      ),
-      Destination(
-        title = stringResource(R.string.stores),
-        icon = Icons.Outlined.LocalMall,
-        onClick = { navigator.push(StoresScreen()) }
-      ),
-      Destination(
-        title = stringResource(R.string.groups),
-        icon = Icons.Outlined.GroupWork,
-        onClick = { navigator.push(GroupsScreen()) }
-      ),
-      Destination(
-        title = stringResource(R.string.settings),
-        icon = Icons.Outlined.Settings,
-        onClick = {},
-        topDivider = true
-      ),
-      Destination(
-        title = stringResource(R.string.about),
-        icon = Icons.Outlined.Info,
-        onClick = {}
-      )
-    )
 
     val systemUiController = rememberSystemUiController()
     val statusBarColor = when {
@@ -132,9 +135,9 @@ class MoreScreen : AndroidScreen() {
             }
 
             NavigationItem(
-              title = destination.title,
+              title = stringResource(destination.title),
               icon = destination.icon,
-              onClick = destination.onClick
+              onClick = { destination.navigate.invoke(navigator) }
             )
           }
         }

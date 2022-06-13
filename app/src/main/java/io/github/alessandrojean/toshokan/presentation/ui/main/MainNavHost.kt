@@ -8,11 +8,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -34,9 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +44,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.FadeTransition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -58,15 +54,9 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.provider.Navigatio
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
-import kotlinx.coroutines.delay
 
 @Composable
 fun MainNavHost() {
-  val navigationBarHeight = WindowInsets.navigationBars
-    .asPaddingValues()
-    .calculateBottomPadding()
-    .value.toInt()
-
   Navigator(TopLevelRoutes.Library.screen) { navigator ->
     var hideBottomNavigation by remember { mutableStateOf(false) }
     val isBottomBarVisible = TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
@@ -111,44 +101,48 @@ fun MainNavHost() {
       bottomBar = {
         AnimatedVisibility(
           visible = isBottomBarVisible,
-          enter = fadeIn() + slideInVertically(initialOffsetY = { it + navigationBarHeight }) +
+          enter = fadeIn() + slideInVertically(initialOffsetY = { it }) +
             expandVertically(expandFrom = Alignment.Top, initialHeight = { 0 }, clip = false),
-          exit = fadeOut() + slideOutVertically(targetOffsetY = { it + navigationBarHeight }) +
+          exit = fadeOut() + slideOutVertically(targetOffsetY = { it }) +
             shrinkVertically(targetHeight = { 0 }, clip = false)
         ) {
-          NavigationBar(
-            modifier = Modifier.navigationBarsPadding()
+          Box(
+            modifier = Modifier
+              .navigationBarsPadding()
+              .background(MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation())
           ) {
-            TopLevelRoutes.values.forEach {
-              val isSelected = navigator.lastItem.key == it.screen.key
+            NavigationBar {
+              TopLevelRoutes.values.forEach {
+                val isSelected = navigator.lastItem.key == it.screen.key
 
-              NavigationBarItem(
-                icon = {
-                  Icon(
-                    if (isSelected) it.selectedIcon else it.unselectedIcon,
-                    contentDescription = null
-                  )
-                },
-                label = {
-                  Text(
-                    text = stringResource(it.text),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                  )
-                },
-                selected = isSelected,
-                onClick = {
-                  if (!isSelected) {
-                    if (navigator.lastItem is LibraryScreen) {
-                      navigator.push(it.screen)
-                    } else if (it.screen !is LibraryScreen) {
-                      navigator.replace(it.screen)
-                    } else {
-                      navigator.replaceAll(it.screen)
+                NavigationBarItem(
+                  icon = {
+                    Icon(
+                      if (isSelected) it.selectedIcon else it.unselectedIcon,
+                      contentDescription = null
+                    )
+                  },
+                  label = {
+                    Text(
+                      text = stringResource(it.text),
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis
+                    )
+                  },
+                  selected = isSelected,
+                  onClick = {
+                    if (!isSelected) {
+                      if (navigator.lastItem is LibraryScreen) {
+                        navigator.push(it.screen)
+                      } else if (it.screen !is LibraryScreen) {
+                        navigator.replace(it.screen)
+                      } else {
+                        navigator.replaceAll(it.screen)
+                      }
                     }
                   }
-                }
-              )
+                )
+              }
             }
           }
         }

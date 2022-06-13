@@ -49,6 +49,7 @@ android {
       "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
       "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
       "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
+      "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
       "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
       "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi"
     )

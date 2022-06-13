@@ -4,4 +4,6 @@ object PreferenceKeys {
 
   const val isbnLookupSearchHistory = "isbn_lookup_search_history"
 
+  const val showBookNavigation = "show_book_navigation"
+
 }

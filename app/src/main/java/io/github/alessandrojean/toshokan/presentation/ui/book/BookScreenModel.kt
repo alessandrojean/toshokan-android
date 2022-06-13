@@ -11,6 +11,7 @@ import cafe.adriel.voyager.hilt.ScreenModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 
 class BookScreenModel @AssistedInject constructor(
   private val booksRepository: BooksRepository,
+  private val preferencesManager: PreferencesManager,
   @Assisted private val bookId: Long
 ) : ScreenModel {
 
@@ -35,6 +37,8 @@ class BookScreenModel @AssistedInject constructor(
 
   var palette by mutableStateOf<Palette?>(null)
     private set
+
+  val showBookNavigation = preferencesManager.showBookNavigation().asFlow()
 
   fun toggleFavorite() = coroutineScope.launch {
     booksRepository.toggleFavorite(bookId)
