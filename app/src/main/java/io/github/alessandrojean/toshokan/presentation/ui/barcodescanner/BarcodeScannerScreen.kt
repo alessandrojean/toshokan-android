@@ -23,7 +23,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -60,18 +63,23 @@ class BarcodeScannerScreen : AndroidScreen() {
 
     Scaffold(
       topBar = {
-        SmallTopAppBar(
-          modifier = Modifier.statusBarsPadding(),
-          navigationIcon = {
-            IconButton(onClick = { navigator.pop() }) {
-              Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = stringResource(R.string.action_back)
-              )
-            }
-          },
-          title = { Text(stringResource(R.string.barcode_scanner)) }
-        )
+        Surface(color = MaterialTheme.colorScheme.surface) {
+          SmallTopAppBar(
+            modifier = Modifier.statusBarsPadding(),
+            colors = TopAppBarDefaults.smallTopAppBarColors(
+              containerColor = Color.Transparent
+            ),
+            navigationIcon = {
+              IconButton(onClick = { navigator.pop() }) {
+                Icon(
+                  imageVector = Icons.Default.ArrowBack,
+                  contentDescription = stringResource(R.string.action_back)
+                )
+              }
+            },
+            title = { Text(stringResource(R.string.barcode_scanner)) }
+          )
+        }
       },
       content = { innerPadding ->
         Crossfade(targetState = cameraPermission) { permissionState ->

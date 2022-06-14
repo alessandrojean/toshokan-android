@@ -68,6 +68,30 @@ WHERE title LIKE (:title || '%')
   AND group_id = :groupId
 ORDER BY title COLLATE UNICODE ASC;
 
+search:
+SELECT *
+FROM Book
+WHERE
+  (lower(title) LIKE ('%' || lower(:query) || '%') OR lower(code) = lower(:query) OR :query IS NULL)
+  AND (:isFuture IS NULL OR is_future = :isFuture)
+  AND (:isFavorite IS NULL OR is_favorite = :isFavorite)
+  AND (:groupsIsEmpty OR group_id IN :groupIds)
+  AND (:publishersIsEmpty OR publisher_id IN :publisherIds)
+  AND (:storesIsEmpty OR store_id IN :storeIds)
+  AND (:boughtAtStart IS NULL OR bought_at >= :boughtAtStart)
+  AND (:boughtAtEnd IS NULL OR bought_at <= :boughtAtEnd)
+  AND ((:readAtStart IS NULL OR :readAtEnd IS NULL) OR
+    (SELECT count(*) FROM Reading
+      WHERE Reading.book_id = Book.id
+        AND read_at IS NOT NULL
+        AND (read_at >= :readAtStart OR :readAtStart IS NULL)
+        AND (read_at <= :readAtEnd OR :readAtEnd IS NULL)) > 0)
+  AND (:contributorsIsEmpty OR
+    (SELECT count(*) FROM BookCredit
+      WHERE BookCredit.book_id = Book.id
+        AND BookCredit.person_id IN :contributors) > 0)
+ORDER BY created_at DESC;
+
 lastInsertedId:
 SELECT max(id)
 FROM Book;

@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -33,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,20 +39,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.presentation.ui.barcodescanner.BarcodeScannerScreen
@@ -63,6 +61,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookS
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.presentation.ui.library.components.LibraryGrid
+import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
@@ -81,20 +80,23 @@ class LibraryScreen : AndroidScreen() {
 
     val pagerState = rememberPagerState(initialPage = 0)
 
-    val systemUiController = rememberSystemUiController()
-    val statusBarColor = when {
-      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-        .smallTopAppBarColors()
-        .containerColor(scrollBehavior.scrollFraction)
-        .value
-      else -> MaterialTheme.colorScheme.surface
-    }
+//    val systemUiController = rememberSystemUiController()
+//    val statusBarColor = when {
+//      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
+//        .smallTopAppBarColors()
+//        .containerColor(scrollBehavior.scrollFraction)
+//        .value
+//      else -> MaterialTheme.colorScheme.surface
+//    }
+//
+//    SideEffect {
+//      systemUiController.setStatusBarColor(
+//        color = statusBarColor
+//      )
+//    }
 
-    SideEffect {
-      systemUiController.setStatusBarColor(
-        color = statusBarColor
-      )
-    }
+    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
+    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     if (showCreateBookSheet) {
       CreateBookSheet(
@@ -108,19 +110,25 @@ class LibraryScreen : AndroidScreen() {
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
-        SmallTopAppBar(
-          scrollBehavior = scrollBehavior,
-          modifier = Modifier.statusBarsPadding(),
-          title = { Text(stringResource(R.string.library)) },
-          actions = {
-            IconButton(onClick = { /*TODO*/ }) {
-              Icon(
-                Icons.Default.Search,
-                contentDescription = stringResource(R.string.action_search)
-              )
+        Surface(color = topAppBarBackground) {
+          SmallTopAppBar(
+            modifier = Modifier.statusBarsPadding(),
+            scrollBehavior = scrollBehavior,
+            colors = TopAppBarDefaults.smallTopAppBarColors(
+              containerColor = Color.Transparent,
+              scrolledContainerColor = Color.Transparent
+            ),
+            title = { Text(stringResource(R.string.library)) },
+            actions = {
+              IconButton(onClick = { navigator.push(SearchScreen()) }) {
+                Icon(
+                  Icons.Default.Search,
+                  contentDescription = stringResource(R.string.action_search)
+                )
+              }
             }
-          }
-        )
+          )
+        }
       },
       content = { innerPadding ->
         Crossfade(
@@ -144,7 +152,7 @@ class LibraryScreen : AndroidScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 selectedTabIndex = pagerState.currentPage,
                 edgePadding = 12.dp,
-                containerColor = statusBarColor,
+                containerColor = topAppBarBackground,
                 indicator = { tabPositions ->
                   TabRowDefaults.Indicator(
                     Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
@@ -226,7 +234,13 @@ class LibraryScreen : AndroidScreen() {
             style = MaterialTheme.typography.headlineSmall
           )
           CreateBookSheetItem(
-            icon = Icons.Outlined.QrCodeScanner,
+            icon = {
+              Icon(
+                painter = painterResource(R.drawable.ic_barcode_scanner_outlined),
+                contentDescription = stringResource(R.string.action_scan_barcode),
+                tint = MaterialTheme.colorScheme.onSurface
+              )
+            },
             text = stringResource(R.string.action_scan_barcode),
             onClick = {
               onScanBarcodeClick()
@@ -260,6 +274,25 @@ class LibraryScreen : AndroidScreen() {
     text: String,
     onClick: () -> Unit
   ) {
+    CreateBookSheetItem(
+      icon = {
+        Icon(
+          imageVector = icon,
+          contentDescription = text,
+          tint = MaterialTheme.colorScheme.onSurface
+        )
+      },
+      text = text,
+      onClick = onClick
+    )
+  }
+
+  @Composable
+  fun CreateBookSheetItem(
+    icon: @Composable () -> Unit,
+    text: String,
+    onClick: () -> Unit
+  ) {
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -268,11 +301,7 @@ class LibraryScreen : AndroidScreen() {
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-      Icon(
-        imageVector = icon,
-        contentDescription = text,
-        tint = MaterialTheme.colorScheme.onSurface
-      )
+      icon.invoke()
       Text(
         text = text,
         color = MaterialTheme.colorScheme.onSurface,

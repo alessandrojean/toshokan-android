@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.presentation.ui.settings.library
 
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -9,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
@@ -17,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,29 +47,39 @@ class LibrarySettingsScreen : AndroidScreen() {
     val showBookNavigation by viewModel.showBookNavigation.asFlow()
       .collectAsStateWithLifecycle(initialValue = true)
 
+    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
+    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
+
     Scaffold(
       modifier = Modifier
         .nestedScroll(scrollBehavior.nestedScrollConnection)
-        .systemBarsPadding(),
+        .navigationBarsPadding(),
       topBar = {
-        SmallTopAppBar(
-          scrollBehavior = scrollBehavior,
-          navigationIcon = {
-            IconButton(onClick = { navigator.pop() }) {
-              Icon(
-                imageVector = Icons.Outlined.ArrowBack,
-                contentDescription = stringResource(R.string.action_back)
+        Surface(color = topAppBarBackground) {
+          SmallTopAppBar(
+            modifier = Modifier.statusBarsPadding(),
+            colors = TopAppBarDefaults.smallTopAppBarColors(
+              containerColor = Color.Transparent,
+              scrolledContainerColor = Color.Transparent
+            ),
+            scrollBehavior = scrollBehavior,
+            navigationIcon = {
+              IconButton(onClick = { navigator.pop() }) {
+                Icon(
+                  imageVector = Icons.Outlined.ArrowBack,
+                  contentDescription = stringResource(R.string.action_back)
+                )
+              }
+            },
+            title = {
+              Text(
+                text = stringResource(R.string.settings_library),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
             }
-          },
-          title = {
-            Text(
-              text = stringResource(R.string.settings_library),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
-            )
-          }
-        )
+          )
+        }
       },
       content = { innerPadding ->
         LazyColumn(

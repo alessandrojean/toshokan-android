@@ -7,8 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,23 +18,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -45,7 +46,6 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
 
@@ -76,62 +76,57 @@ class ManagePublisherScreen(
       }
     }
 
-    val systemUiController = rememberSystemUiController()
-    val statusBarColor = when {
-      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-        .smallTopAppBarColors()
-        .containerColor(scrollBehavior.scrollFraction)
-        .value
-      else -> MaterialTheme.colorScheme.surface
-    }
-
-    SideEffect {
-      systemUiController.setStatusBarColor(
-        color = statusBarColor
-      )
-    }
+    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
+    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     Scaffold(
       modifier = Modifier
-        .systemBarsPadding()
-        .nestedScroll(scrollBehavior.nestedScrollConnection),
+        .nestedScroll(scrollBehavior.nestedScrollConnection)
+        .navigationBarsPadding(),
       topBar = {
-        SmallTopAppBar(
-          scrollBehavior = scrollBehavior,
-          navigationIcon = {
-            IconButton(
-              enabled = !managePublisherViewModel.writing,
-              onClick = { navigator.pop() }
-            ) {
-              Icon(
-                Icons.Default.ArrowBack,
-                contentDescription = stringResource(R.string.action_back)
+        Surface(color = topAppBarBackground) {
+          SmallTopAppBar(
+            modifier = Modifier.statusBarsPadding(),
+            colors = TopAppBarDefaults.smallTopAppBarColors(
+              containerColor = Color.Transparent,
+              scrolledContainerColor = Color.Transparent
+            ),
+            scrollBehavior = scrollBehavior,
+            navigationIcon = {
+              IconButton(
+                enabled = !managePublisherViewModel.writing,
+                onClick = { navigator.pop() }
+              ) {
+                Icon(
+                  Icons.Default.ArrowBack,
+                  contentDescription = stringResource(R.string.action_back)
+                )
+              }
+            },
+            title = {
+              Text(
+                text = if (mode == ManagePublisherMode.CREATE) {
+                  stringResource(R.string.create_publisher)
+                } else {
+                  publisher!!.name
+                }
+              )
+            },
+            actions = {
+              TextButton(
+                enabled = !managePublisherViewModel.writing,
+                onClick = {
+                  if (mode == ManagePublisherMode.CREATE) {
+                    managePublisherViewModel.create { navigator.pop() }
+                  } else {
+                    managePublisherViewModel.edit { navigator.pop() }
+                  }
+                },
+                content = { Text(stringResource(R.string.action_finish)) }
               )
             }
-          },
-          title = {
-            Text(
-              text = if (mode == ManagePublisherMode.CREATE) {
-                stringResource(R.string.create_publisher)
-              } else {
-                publisher!!.name
-              }
-            )
-          },
-          actions = {
-            TextButton(
-              enabled = !managePublisherViewModel.writing,
-              onClick = {
-                if (mode == ManagePublisherMode.CREATE) {
-                  managePublisherViewModel.create { navigator.pop() }
-                } else {
-                  managePublisherViewModel.edit { navigator.pop() }
-                }
-              },
-              content = { Text(stringResource(R.string.action_finish)) }
-            )
-          }
-        )
+          )
+        }
       },
       content = { innerPadding ->
         Box(

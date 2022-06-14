@@ -61,7 +61,7 @@ class SkoobLookup @Inject constructor(
     isbn = isbn.toString(),
     title = title.orEmpty(),
     contributors = author.orEmpty()
-      .split(",")
+      .split(",", "&")
       .map { LookupBookContributor(it.trim(), CreditRole.AUTHOR) },
     publisher = publisher.orEmpty(),
     coverUrl = coverUrl.orEmpty(),

@@ -18,6 +18,16 @@ SELECT *
 FROM Person
 ORDER BY name COLLATE UNICODE ASC;
 
+countPersons:
+SELECT count(*)
+FROM Person;
+
+selectAllPaged:
+SELECT *
+FROM Person
+ORDER BY name COLLATE UNICODE ASC
+LIMIT :limit OFFSET :offset;
+
 findByName:
 SELECT *
 FROM Person

@@ -40,7 +40,7 @@ android {
   kotlinOptions {
     jvmTarget = "1.8"
 //    useIR = true
-    freeCompilerArgs += listOf(
+    freeCompilerArgs = freeCompilerArgs + listOf(
       "-opt-in=kotlin.RequiresOptIn",
       "-opt-in=kotlin.Experimental",
       "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -107,7 +107,7 @@ dependencies {
 
   // Material Design
   implementation("com.google.android.material:material:1.7.0-alpha02")
-  implementation("com.google.android.material:compose-theme-adapter-3:1.0.10")
+  implementation("com.google.android.material:compose-theme-adapter-3:1.0.11")
 
   // Accompanist
   val accompanistVersion = "0.24.9-beta"

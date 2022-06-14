@@ -181,6 +181,7 @@ class ManageBookViewModel @Inject constructor(
     coverUrl = existingBook.cover_url.orEmpty()
     notes = existingBook.notes.orEmpty()
     isFuture = existingBook.is_future
+    boughtAt = existingBook.bought_at
 
     labelPriceCurrency = existingBook.label_price_currency
     labelPriceValue = existingBook.label_price_value.toLocaleString()

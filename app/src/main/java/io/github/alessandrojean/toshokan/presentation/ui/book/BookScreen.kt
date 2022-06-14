@@ -83,7 +83,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
@@ -125,7 +124,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookS
 import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ExpandedIconButton
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
-import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
+import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
@@ -586,7 +585,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
 
     Surface(
       modifier = modifier,
-      shape = ModalBottomSheetShape,
+      shape = ModalBottomSheetExtraLargeShape,
       color = color,
       tonalElevation = tonalElevation
     ) {

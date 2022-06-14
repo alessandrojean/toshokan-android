@@ -41,7 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,16 +58,14 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.showDatePicker
-import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupMode
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
-import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetShape
+import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
@@ -95,30 +93,21 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
       skipHalfExpanded = true
     )
 
-    val systemUiController = rememberSystemUiController()
-    val statusBarColor = when {
-      readingScreenModel.selectionMode -> MaterialTheme.colorScheme.surfaceVariant
-      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-        .smallTopAppBarColors()
-        .containerColor(scrollBehavior.scrollFraction)
-        .value
-      else -> MaterialTheme.colorScheme.surface
-    }
-
-    SideEffect {
-      systemUiController.setStatusBarColor(
-        color = statusBarColor
-      )
-    }
+    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
+    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     BackHandler(enabled = readingScreenModel.selectionMode) {
       readingScreenModel.clearSelection()
     }
 
+    val fabExpanded by remember {
+      derivedStateOf { listState.firstVisibleItemIndex == 0 }
+    }
+
     ModalBottomSheetLayout(
       modifier = Modifier.fillMaxSize(),
       sheetState = modalBottomSheetState,
-      sheetShape = ModalBottomSheetShape,
+      sheetShape = ModalBottomSheetExtraLargeShape,
       sheetBackgroundColor = Color.Transparent,
       sheetContent = {
         ModalBottomSheetContent(
@@ -159,29 +148,37 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
                 scrollBehavior = scrollBehavior
               )
             } else {
-              SmallTopAppBar(
-                navigationIcon = {
-                  IconButton(onClick = { navigator.pop() }) {
-                    Icon(
-                      imageVector = Icons.Outlined.ArrowBack,
-                      contentDescription = stringResource(R.string.action_back)
+              Surface(color = topAppBarBackground) {
+                SmallTopAppBar(
+                  modifier = Modifier.statusBarsPadding(),
+                  colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                  ),
+                  scrollBehavior = scrollBehavior,
+                  navigationIcon = {
+                    IconButton(onClick = { navigator.pop() }) {
+                      Icon(
+                        imageVector = Icons.Outlined.ArrowBack,
+                        contentDescription = stringResource(R.string.action_back)
+                      )
+                    }
+                  },
+                  title = {
+                    Text(
+                      text = stringResource(R.string.readings),
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis
                     )
                   }
-                },
-                title = {
-                  Text(
-                    text = stringResource(R.string.readings),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                  )
-                }
-              )
+                )
+              }
             }
           }
         },
         floatingActionButton = {
           ExtendedFloatingActionButton(
-            expanded = listState.firstVisibleItemIndex == 0,
+            expanded = fabExpanded,
             text = { Text(stringResource(R.string.create_reading)) },
             icon = {
               Icon(
@@ -249,7 +246,7 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
       modifier = modifier,
       color = MaterialTheme.colorScheme.surface,
       tonalElevation = 6.dp,
-      shape = ModalBottomSheetShape,
+      shape = ModalBottomSheetExtraLargeShape,
     ) {
       Column(
         modifier = Modifier

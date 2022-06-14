@@ -109,6 +109,13 @@
   <string name="no_results_found">No results found</string>
   <string name="search_by_isbn_tip">Use the top search bar to find a book by the ISBN</string>
 
+  <!-- Library search -->
+  <string name="library_search_placeholder">Search the library</string>
+  <string name="filter_future_only">Future items</string>
+  <string name="filter_favorite">Favorite</string>
+  <string name="filter_bought_at">Bought period</string>
+  <string name="filter_read_at">Read period</string>
+
   <!-- Books -->
   <string name="information">Information</string>
   <string name="contributors">Contributors</string>

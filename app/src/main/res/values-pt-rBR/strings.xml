@@ -90,6 +90,13 @@
   <string name="no_results_found">Nenhum resultado encontrado</string>
   <string name="search_by_isbn_tip">Use a barra de busca para encontrar um livro pelo ISBN</string>
 
+  <!-- Library search -->
+  <string name="library_search_placeholder">Pesquisar na biblioteca</string>
+  <string name="filter_future_only">Itens futuros</string>
+  <string name="filter_favorite">Favorito</string>
+  <string name="filter_bought_at">Período de compra</string>
+  <string name="filter_read_at">Período de leitura</string>
+
   <!-- Books -->
   <string name="information">Informações</string>
   <string name="contributors">Contribuidores</string>

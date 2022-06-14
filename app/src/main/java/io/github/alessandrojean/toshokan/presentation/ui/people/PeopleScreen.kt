@@ -33,18 +33,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -54,7 +55,6 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
@@ -81,21 +81,8 @@ class PeopleScreen : AndroidScreen() {
       derivedStateOf { uiState.selected.isNotEmpty() }
     }
 
-    val systemUiController = rememberSystemUiController()
-    val statusBarColor = when {
-      selectionMode -> MaterialTheme.colorScheme.surfaceVariant
-      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-        .smallTopAppBarColors()
-        .containerColor(scrollBehavior.scrollFraction)
-        .value
-      else -> MaterialTheme.colorScheme.surface
-    }
-
-    SideEffect {
-      systemUiController.setStatusBarColor(
-        color = statusBarColor
-      )
-    }
+    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
+    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     BackHandler(enabled = selectionMode) {
       peopleViewModel.clearSelection()
@@ -125,7 +112,6 @@ class PeopleScreen : AndroidScreen() {
         Crossfade(targetState = selectionMode) { selection ->
           if (selection) {
             SelectionTopAppBar(
-              modifier = Modifier.statusBarsPadding(),
               selectionCount = uiState.selected.size,
               onClearSelectionClick = { peopleViewModel.clearSelection() },
               onEditClick = {
@@ -140,19 +126,25 @@ class PeopleScreen : AndroidScreen() {
               scrollBehavior = scrollBehavior
             )
           } else {
-            SmallTopAppBar(
-              modifier = Modifier.statusBarsPadding(),
-              navigationIcon = {
-                IconButton(onClick = { navigator.pop() }) {
-                  Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = stringResource(R.string.action_back)
-                  )
-                }
-              },
-              title = { Text(stringResource(R.string.people)) },
-              scrollBehavior = scrollBehavior
-            )
+            Surface(color = topAppBarBackground) {
+              SmallTopAppBar(
+                modifier = Modifier.statusBarsPadding(),
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                  containerColor = Color.Transparent,
+                  scrolledContainerColor = Color.Transparent
+                ),
+                navigationIcon = {
+                  IconButton(onClick = { navigator.pop() }) {
+                    Icon(
+                      Icons.Default.ArrowBack,
+                      contentDescription = stringResource(R.string.action_back)
+                    )
+                  }
+                },
+                title = { Text(stringResource(R.string.people)) },
+                scrollBehavior = scrollBehavior
+              )
+            }
           }
         }
       },

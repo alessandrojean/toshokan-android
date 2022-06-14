@@ -6,20 +6,24 @@ import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
+import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.Person
+import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Reading
+import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.domain.LibraryBook
 import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
+import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.util.extension.TitleParts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import logcat.logcat
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -97,6 +101,28 @@ class BooksRepository @Inject constructor(
           last = collection.lastOrNull()
         )
       }
+  }
+
+  suspend fun search(filters: SearchFilters): List<Book> = withContext(Dispatchers.IO) {
+    database.bookQueries
+      .search(
+        query = filters.query.ifBlank { null },
+        isFuture = filters.isFuture,
+        isFavorite = if (filters.favoritesOnly) true else null,
+        groupIds = filters.groups.map(BookGroup::id),
+        groupsIsEmpty = filters.groups.isEmpty(),
+        publisherIds = filters.publishers.map(Publisher::id),
+        publishersIsEmpty = filters.publishers.isEmpty(),
+        storeIds = filters.stores.map(Store::id),
+        storesIsEmpty = filters.stores.isEmpty(),
+        boughtAtStart = filters.boughtAt?.start,
+        boughtAtEnd = filters.boughtAt?.end,
+        readAtStart = filters.readAt?.start,
+        readAtEnd = filters.readAt?.end,
+        contributorsIsEmpty = filters.contributors.isEmpty(),
+        contributors = filters.contributors.map(Person::id)
+      )
+      .executeAsList()
   }
 
   suspend fun insert(

@@ -10,7 +10,12 @@ val Shapes = Shapes(
   large = RoundedCornerShape(8.dp)
 )
 
-val ModalBottomSheetShape = RoundedCornerShape(
+val ModalBottomSheetExtraLargeShape = RoundedCornerShape(
   topStart = 28.dp,
   topEnd = 28.dp
+)
+
+val ModalBottomSheetLargeShape = RoundedCornerShape(
+  topStart = 16.dp,
+  topEnd = 16.dp
 )

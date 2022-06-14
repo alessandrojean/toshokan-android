@@ -12,8 +12,8 @@ This is the native version of [Toshokan](https://github.com/alessandrojean/tosho
 - [x] Books management (simple at the moment)
 - [x] Cover search by ISBN, code or book title
 - [x] Readings control
+- [x] Search with filters
 - [ ] Bulk adding by ISBN barcode
-- [ ] Search with filters
 - [ ] Tracking services integration
 - [ ] Backup and restore support
 - [ ] Custom covers support
