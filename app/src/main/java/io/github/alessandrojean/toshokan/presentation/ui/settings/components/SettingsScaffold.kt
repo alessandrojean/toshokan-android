@@ -1,0 +1,81 @@
+package io.github.alessandrojean.toshokan.presentation.ui.settings.components
+
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import io.github.alessandrojean.toshokan.R
+
+@Composable
+fun SettingsScaffold(
+  modifier: Modifier = Modifier,
+  title: String,
+  onNavigationClick: () -> Unit,
+  content: LazyListScope.() -> Unit
+) {
+  val topAppBarScrollState = rememberTopAppBarScrollState()
+  val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
+  val listState = rememberLazyListState()
+
+  val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
+  val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
+
+  Scaffold(
+    modifier = Modifier
+      .nestedScroll(scrollBehavior.nestedScrollConnection)
+      .navigationBarsPadding()
+      .then(modifier),
+    topBar = {
+      Surface(color = topAppBarBackground) {
+        SmallTopAppBar(
+          modifier = Modifier.statusBarsPadding(),
+          colors = TopAppBarDefaults.smallTopAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
+          ),
+          scrollBehavior = scrollBehavior,
+          navigationIcon = {
+            IconButton(onClick = onNavigationClick) {
+              Icon(
+                imageVector = Icons.Outlined.ArrowBack,
+                contentDescription = stringResource(R.string.action_back)
+              )
+            }
+          },
+          title = {
+            Text(
+              text = title,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+        )
+      }
+    },
+    content = { innerPadding ->
+      LazyColumn(
+        state = listState,
+        contentPadding = innerPadding,
+        content = content
+      )
+    }
+  )
+}

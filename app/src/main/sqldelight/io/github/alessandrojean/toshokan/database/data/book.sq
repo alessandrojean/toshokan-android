@@ -83,9 +83,8 @@ WHERE
   AND ((:readAtStart IS NULL OR :readAtEnd IS NULL) OR
     (SELECT count(*) FROM Reading
       WHERE Reading.book_id = Book.id
-        AND read_at IS NOT NULL
-        AND (read_at >= :readAtStart OR :readAtStart IS NULL)
-        AND (read_at <= :readAtEnd OR :readAtEnd IS NULL)) > 0)
+        AND (:readAtStart IS NULL OR read_at >= :readAtStart)
+        AND (:readAtEnd IS NULL OR read_at <= :readAtEnd)) > 0)
   AND (:contributorsIsEmpty OR
     (SELECT count(*) FROM BookCredit
       WHERE BookCredit.book_id = Book.id

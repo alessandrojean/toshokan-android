@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.service.lookup
 
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.service.lookup.cbl.CblLookup
 import io.github.alessandrojean.toshokan.service.lookup.googlebooks.GoogleBooksLookup
 import io.github.alessandrojean.toshokan.service.lookup.mercadoeditorial.MercadoEditorialLookup
@@ -37,7 +38,8 @@ class LookupRepositoryImpl @Inject constructor(
   googleBooksLookup: GoogleBooksLookup,
   mercadoEditorialLookup: MercadoEditorialLookup,
   openLibraryLookup: OpenLibraryLookup,
-  skoobLookup: SkoobLookup
+  skoobLookup: SkoobLookup,
+  private val preferencesManager: PreferencesManager
 ) : LookupRepository {
 
   private val providers: List<LookupProvider> = listOf(
@@ -45,11 +47,13 @@ class LookupRepositoryImpl @Inject constructor(
   )
 
   override fun searchByIsbn(isbn: String): Flow<LookupResult> {
-    val progressSlice = 1f / providers.size.toFloat()
+    val enabledProviders = preferencesManager.enabledLookupProviders().get()
+    val providersToSearch = providers.filter { it.provider.name in enabledProviders }
+    val progressSlice = 1f / providersToSearch.size.toFloat()
 
     val searchFlow = channelFlow {
       coroutineScope {
-        providers.forEach { provider ->
+        providersToSearch.forEach { provider ->
           launch(Dispatchers.IO) {
             send(runCatching { provider.searchByIsbn(isbn) })
           }

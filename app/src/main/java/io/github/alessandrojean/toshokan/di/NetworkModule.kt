@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.github.alessandrojean.toshokan.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -28,13 +29,15 @@ object NetworkModule {
 
       install(HttpCache)
 
-      install(Logging) {
-        logger = object : Logger {
-          override fun log(message: String) {
-            logcat("HttpClient", LogPriority.INFO) { message }
+      if (BuildConfig.DEBUG) {
+        install(Logging) {
+          logger = object : Logger {
+            override fun log(message: String) {
+              logcat("HttpClient", LogPriority.INFO) { message }
+            }
           }
+          level = LogLevel.HEADERS
         }
-        level = LogLevel.HEADERS
       }
 
       install(ContentNegotiation) {

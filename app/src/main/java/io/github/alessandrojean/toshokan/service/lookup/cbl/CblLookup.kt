@@ -108,7 +108,7 @@ class CblLookup @Inject constructor (
   companion object {
     private const val CBL_API_KEY = "100216A23C5AEE390338BBD19EA86D29"
     private const val CBL_API_VERSION = "2016-09-01"
-    private const val CBL_SITE_URL = "https://www.cblservicos.org.br"
+    private val CBL_SITE_URL = Provider.CBL.url
 
     private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36"

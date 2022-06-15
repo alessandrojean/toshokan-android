@@ -28,7 +28,7 @@ class OpenLibraryLookup @Inject constructor (
   override val client: HttpClient
 ) : LookupProvider() {
 
-  override val baseUrl = "https://openlibrary.org"
+  override val baseUrl = Provider.OPEN_LIBRARY.url
 
   override val provider = Provider.OPEN_LIBRARY
 

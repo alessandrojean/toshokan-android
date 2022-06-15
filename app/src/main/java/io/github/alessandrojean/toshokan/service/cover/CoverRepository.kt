@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.service.cover
 
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.service.cover.amazon.AmazonCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.contentstuff.ContentStuffCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.oembed.OembedCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.urlreplacer.UrlReplacerCoverProvider
@@ -26,6 +27,7 @@ interface CoverRepository {
 
 @Singleton
 class CoverRepositoryImpl @Inject constructor(
+  private val amazonCoverProvider: AmazonCoverProvider,
   contentStuffCoverProvider: ContentStuffCoverProvider.Factory,
   oembedCoverProviderFactory: OembedCoverProvider.Factory,
   urlReplacerCoverProviderFactory: UrlReplacerCoverProvider.Factory,
@@ -119,12 +121,12 @@ class CoverRepositoryImpl @Inject constructor(
         return@withContext emptyList()
       }
 
-      val initialResults = mutableListOf(
-        CoverResult(
-          source = R.string.amazon,
-          imageUrl = book.code.toAmazonCoverUrl()!!
-        )
-      )
+      val amazonCover = async {
+        runCatching { amazonCoverProvider.find(book) }
+          .getOrElse { emptyList() }
+      }
+
+      val initialResults = amazonCover.await().toMutableList()
 
       if (book.initialCovers.isNotEmpty()) {
         initialResults += book.initialCovers

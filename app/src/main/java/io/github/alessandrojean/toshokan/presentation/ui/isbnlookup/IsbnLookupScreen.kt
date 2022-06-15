@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +51,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItems
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SearchTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.HistoryList
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.IsbnLookupResultList
+import io.github.alessandrojean.toshokan.presentation.ui.settings.search.SearchSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.isValidIsbn
@@ -80,17 +85,11 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
             showDuplicateDialog = true
           }
         }
+      },
+      onDisposed = {
+        isbnLookupViewModel.cancelSearch()
       }
     )
-
-//    val systemUiController = rememberSystemUiController()
-//    val statusBarColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
-//
-//    SideEffect {
-//      systemUiController.setStatusBarColor(
-//        color = statusBarColor
-//      )
-//    }
 
     DuplicateDialog(
       visible = showDuplicateDialog,
@@ -141,6 +140,14 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
             isbnLookupViewModel.checkDuplicates()?.let {
               duplicateId = it
               showDuplicateDialog = true
+            }
+          },
+          actions = {
+            IconButton(onClick = { navigator.push(SearchSettingsScreen()) }) {
+              Icon(
+                imageVector = Icons.Outlined.ManageSearch,
+                contentDescription = stringResource(R.string.settings)
+              )
             }
           },
           bottomContent = {
@@ -222,7 +229,6 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 contentPadding = PaddingValues(12.dp),
                 listState = listState,
                 onResultClick = { result ->
-                  isbnLookupViewModel.cancelSearch()
                   navigator.push(ManageBookScreen(result))
                 }
               )

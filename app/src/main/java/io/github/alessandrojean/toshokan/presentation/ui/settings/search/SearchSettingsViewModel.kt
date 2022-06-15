@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.presentation.ui.settings.library
+package io.github.alessandrojean.toshokan.presentation.ui.settings.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,14 +8,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LibrarySettingsViewModel @Inject constructor(
+class SearchSettingsViewModel @Inject constructor(
   preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-  val showBookNavigation = preferencesManager.showBookNavigation()
+  val enabledLookupProviders = preferencesManager.enabledLookupProviders()
 
-  fun onShowBookNavigationChanged(newValue: Boolean) = viewModelScope.launch {
-    showBookNavigation.setAndCommit(newValue)
+  fun onEnabledLookupProvidersChanged(newValue: Set<String>) = viewModelScope.launch {
+    enabledLookupProviders.setAndCommit(newValue)
   }
 
 }

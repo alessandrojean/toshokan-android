@@ -6,4 +6,6 @@ object PreferenceKeys {
 
   const val showBookNavigation = "show_book_navigation"
 
+  const val enabledLookupProviders = "enabled_lookup_providers"
+
 }

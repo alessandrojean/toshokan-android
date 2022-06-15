@@ -24,6 +24,7 @@
   <string name="action_last">Último</string>
   <string name="action_previous">Anterior</string>
   <string name="action_next">Próximo</string>
+  <string name="action_open_in_browser">Abrir no navegador</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>
@@ -207,6 +208,9 @@
 
   <!-- Library settings -->
   <string name="pref_show_book_navigation">Mostrar a barra de navegação de volumes</string>
+
+  <!-- Search settings -->
+  <string name="pref_header_lookup_providers">Provedores</string>
 
   <!-- Barcode scanning -->
   <string name="barcode_scanner">Leitor de códigos de barras</string>

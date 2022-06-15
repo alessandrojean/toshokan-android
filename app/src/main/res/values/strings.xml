@@ -26,6 +26,7 @@
   <string name="action_last">Last</string>
   <string name="action_previous">Previous</string>
   <string name="action_next">Next</string>
+  <string name="action_open_in_browser">Open in browser</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>
@@ -41,7 +42,7 @@
   <string name="cbl" translatable="false">CBL</string>
   <string name="mercado_editorial" translatable="false">Mercado Editorial</string>
   <string name="open_library" translatable="false">Open Library</string>
-  <string name="google_books" translatable="false">Google Books</string>
+  <string name="google_books" translatable="false">Google Books™</string>
 
   <!-- Publisher cover providers -->
   <string name="loja_panini" translatable="false">Loja Panini</string>
@@ -226,6 +227,9 @@
 
   <!-- Library settings -->
   <string name="pref_show_book_navigation">Show book volumes navigation bar</string>
+
+  <!-- Search settings -->
+  <string name="pref_header_lookup_providers">Providers</string>
 
   <!-- Barcode scanning -->
   <string name="barcode_scanner">Barcode scanner</string>

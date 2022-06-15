@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.text.KeyboardActions
@@ -54,6 +55,7 @@ fun SearchTopAppBar(
   onSearchTextChanged: (String) -> Unit = {},
   onSearchAction: () -> Unit = {},
   bottomContent: @Composable ColumnScope.() -> Unit = {},
+  actions: @Composable RowScope.() -> Unit = {},
   keyboardType: KeyboardType = KeyboardType.Text
 ) {
   var showClearButton by remember { mutableStateOf(false) }
@@ -137,6 +139,8 @@ fun SearchTopAppBar(
               )
             }
           }
+
+          actions.invoke(this)
         }
       )
 

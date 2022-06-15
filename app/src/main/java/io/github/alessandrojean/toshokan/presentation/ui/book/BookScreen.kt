@@ -97,6 +97,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -599,7 +601,9 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           .navigationBarsPadding()
       ) {
         Text(
-          modifier = Modifier.padding(horizontal = 24.dp),
+          modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .semantics { heading() },
           text = book?.title.orEmpty(),
           style = MaterialTheme.typography.titleLarge
         )
@@ -751,7 +755,9 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           )
         }
         Text(
-          modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
+          modifier = Modifier
+            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp)
+            .semantics { heading() },
           text = stringResource(R.string.contributors),
           style = MaterialTheme.typography.titleLarge
         )
@@ -802,12 +808,14 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           }
         }
         Text(
-          modifier = Modifier.padding(
-            start = 24.dp,
-            end = 24.dp,
-            top = 32.dp,
-            bottom = 12.dp
-          ),
+          modifier = Modifier
+            .padding(
+              start = 24.dp,
+              end = 24.dp,
+              top = 32.dp,
+              bottom = 12.dp
+            )
+            .semantics { heading() },
           text = stringResource(R.string.metadata),
           style = MaterialTheme.typography.titleLarge
         )
@@ -858,7 +866,9 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         }
         if (book?.notes.orEmpty().isNotBlank()) {
           Text(
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
+            modifier = Modifier
+              .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp)
+              .semantics { heading() },
             text = stringResource(R.string.notes),
             style = MaterialTheme.typography.titleLarge
           )

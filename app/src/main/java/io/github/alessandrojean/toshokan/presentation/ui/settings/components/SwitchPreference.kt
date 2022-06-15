@@ -20,6 +20,7 @@ fun SwitchPreference(
   summary: String? = null,
   checked: Boolean = false,
   enabled: Boolean = true,
+  trailingContent: @Composable () -> Unit = {},
   onCheckedChange: (Boolean) -> Unit = {}
 ) {
   Row(
@@ -46,9 +47,12 @@ fun SwitchPreference(
       }
     }
 
+    trailingContent.invoke()
+
     Switch(
       modifier = Modifier.padding(start = 16.dp),
       checked = checked,
+      enabled = enabled,
       onCheckedChange = null,
     )
   }
