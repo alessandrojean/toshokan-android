@@ -1,8 +1,11 @@
 package io.github.alessandrojean.toshokan.repository
 
+import android.content.Context
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
@@ -15,27 +18,39 @@ import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Library
-import io.github.alessandrojean.toshokan.domain.LibraryBook
 import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.domain.SearchFilters
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.util.extension.TitleParts
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import logcat.LogPriority
+import logcat.logcat
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class BooksRepository @Inject constructor(
-  private val database: ToshokanDatabase
+  @ApplicationContext private val context: Context,
+  private val database: ToshokanDatabase,
+  private val coverCache: CoverCache
 ) {
 
-  fun findById(id: Long): Flow<CompleteBook?> {
+  fun findById(id: Long): CompleteBook? {
+    return database.bookQueries.completeBook(id).executeAsOneOrNull()
+  }
+
+  fun findByIdAsFlow(id: Long): Flow<CompleteBook?> {
     return database.bookQueries.completeBook(id).asFlow().mapToOneOrNull()
+  }
+
+  fun findSimpleById(id: Long): Flow<Book?> {
+    return database.bookQueries.findById(id).asFlow().mapToOneOrNull()
   }
 
   fun findByCode(code: String): Book? {
@@ -76,12 +91,28 @@ class BooksRepository @Inject constructor(
             )
 
             val books = libraryItems.map { item ->
-              LibraryBook(
+              Book(
                 id = item.id,
+                code = item.code,
                 title = item.title,
                 volume = item.volume,
-                coverUrl = item.cover_url,
-                isFuture = item.is_future
+                synopsis = item.synopsis,
+                notes = item.notes,
+                publisher_id = item.publisher_id,
+                group_id = item.group_id,
+                paid_price_currency = item.paid_price_currency,
+                paid_price_value = item.paid_price_value,
+                label_price_currency = item.label_price_currency,
+                label_price_value = item.label_price_value,
+                store_id = item.store_id,
+                bought_at = item.bought_at,
+                is_future = item.is_future,
+                cover_url = item.cover_url,
+                dimension_width = item.dimension_width,
+                dimension_height = item.dimension_height,
+                created_at = item.created_at,
+                updated_at = item.updated_at,
+                is_favorite = item.is_favorite,
               )
             }
 
@@ -155,7 +186,7 @@ class BooksRepository @Inject constructor(
     storeId: Long,
     boughtAt: Long?,
     isFuture: Boolean = false,
-    coverUrl: String?,
+    cover: BookCover?,
     dimensionWidth: Float,
     dimensionHeight: Float,
     contributors: List<Contributor>
@@ -179,7 +210,11 @@ class BooksRepository @Inject constructor(
         store_id = storeId,
         bought_at = boughtAt,
         is_future = isFuture,
-        cover_url = coverUrl,
+        cover_url = if (cover is BookCover.External) {
+          cover.imageUrl
+        } else {
+          null
+        },
         dimension_width = dimensionWidth,
         dimension_height = dimensionHeight,
         created_at = now,
@@ -194,6 +229,21 @@ class BooksRepository @Inject constructor(
           person_id = contributor.person?.id ?: contributor.personId!!,
           role = contributor.role
         )
+      }
+    }
+
+    if (cover is BookCover.Custom) {
+      val customCoverResult = runCatching {
+        context.contentResolver.openInputStream(cover.uri)?.use { inputStream ->
+          coverCache.setCustomCoverToCache(
+            book = database.bookQueries.findById(bookId!!).executeAsOne(),
+            inputStream = inputStream
+          )
+        }
+      }
+
+      customCoverResult.exceptionOrNull()?.let {
+        logcat(LogPriority.ERROR) { "Failed to save the custom cover for the book $bookId" }
       }
     }
 
@@ -214,7 +264,7 @@ class BooksRepository @Inject constructor(
     storeId: Long,
     boughtAt: Long?,
     isFuture: Boolean = false,
-    coverUrl: String?,
+    cover: BookCover?,
     dimensionWidth: Float,
     dimensionHeight: Float,
     contributors: List<Contributor>
@@ -238,7 +288,11 @@ class BooksRepository @Inject constructor(
         store_id = storeId,
         bought_at = boughtAt,
         is_future = isFuture,
-        cover_url = coverUrl,
+        cover_url = if (cover is BookCover.External) {
+          cover.imageUrl
+        } else {
+          null
+        },
         dimension_width = dimensionWidth,
         dimension_height = dimensionHeight,
         updated_at = now
@@ -254,6 +308,26 @@ class BooksRepository @Inject constructor(
         )
       }
     }
+
+    val customCoverFile = coverCache.getCustomCoverFile(id)
+
+    val coverResult = runCatching {
+      if (customCoverFile.exists() && cover !is BookCover.Custom) {
+        coverCache.deleteCustomCover(id)
+      } else if (cover is BookCover.Custom) {
+        context.contentResolver.openInputStream(cover.uri)?.use { inputStream ->
+          coverCache.deleteCustomCover(id)
+          coverCache.setCustomCoverToCache(
+            bookId = id,
+            inputStream = inputStream
+          )
+        }
+      } else { /* Do nothing */ }
+    }
+
+    coverResult.exceptionOrNull()?.let {
+      logcat(LogPriority.ERROR) { "Failed to update the custom cover for book $id" }
+    }
   }
 
   suspend fun toggleFavorite(id: Long) = withContext(Dispatchers.IO) {
@@ -261,10 +335,22 @@ class BooksRepository @Inject constructor(
   }
 
   suspend fun delete(id: Long) = withContext(Dispatchers.IO) {
+    val book = database.bookQueries.findById(id).executeAsOne()
+
+    runCatching {
+      coverCache.deleteFromCache(book, deleteCustomCover = true)
+    }
+
     database.bookQueries.delete(id)
   }
 
   suspend fun delete(ids: List<Long>) = withContext(Dispatchers.IO) {
+    runCatching {
+      database.bookQueries.findByIds(ids).executeAsList().forEach { book ->
+        coverCache.deleteFromCache(book, deleteCustomCover = true)
+      }
+    }
+
     database.bookQueries.deleteBulk(ids)
   }
 

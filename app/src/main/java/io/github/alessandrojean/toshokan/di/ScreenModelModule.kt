@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
 import dagger.multibindings.IntoMap
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreenModel
+import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreenModel
 import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScreenModel
 
 @Module
@@ -26,6 +27,13 @@ abstract class ScreenModelModule {
   @ScreenModelFactoryKey(BookScreenModel.Factory::class)
   abstract fun bindBookScreenModelFactory(
     bookScreenModelFactory: BookScreenModel.Factory
+  ): ScreenModelFactory
+
+  @Binds
+  @IntoMap
+  @ScreenModelFactoryKey(ManageBookScreenModel.Factory::class)
+  abstract fun bindManageBookScreenModelFactory(
+    manageBookScreenModelFactory: ManageBookScreenModel.Factory
   ): ScreenModelFactory
 
 }

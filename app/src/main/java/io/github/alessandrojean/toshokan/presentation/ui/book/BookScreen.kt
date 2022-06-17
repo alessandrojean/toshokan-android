@@ -45,9 +45,9 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScr
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
+import io.github.alessandrojean.toshokan.util.extension.push
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.launch
-import logcat.logcat
 
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
@@ -57,6 +57,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       factory.create(bookId)
     }
     val book by bookScreenModel.book.collectAsStateWithLifecycle(null)
+    val simpleBook by bookScreenModel.simpleBook.collectAsStateWithLifecycle(null)
     val bookContributors by bookScreenModel.contributors.collectAsStateWithLifecycle(emptyList())
     val bookNeighbors by bookScreenModel.findSeriesVolumes(book).collectAsStateWithLifecycle(null)
     val showBookNavigation by bookScreenModel.showBookNavigation.collectAsStateWithLifecycle(false)
@@ -88,9 +89,6 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         )
       }
     }
-
-    logcat { coverDominantColor?.toString(16).orEmpty() }
-    logcat { colorScheme.primary.toString() }
 
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showCoverFullScreenDialog by rememberSaveable { mutableStateOf(false) }
@@ -141,8 +139,6 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           else -> colorScheme.surfaceWithTonalElevation(bottomBarTonalElevation)
         }
 
-        logcat { navigationBarColor.toString() }
-
         SideEffect {
           if (navigator.lastItem is BookScreen) {
             systemUiController.setNavigationBarColor(
@@ -169,6 +165,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         ) {
           BookScreenContent(
             book = book,
+            simpleBook = simpleBook,
             bookContributors = bookContributors,
             bookNeighbors = bookNeighbors,
             showBookNavigation = showBookNavigation,
@@ -183,7 +180,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             onEditClick = {
               if (book != null) {
                 navigator.push(
-                  ManageBookScreen(completeBook = book)
+                  ManageBookScreen(existingBookId = book!!.id)
                 )
               }
             },
@@ -223,9 +220,19 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         exit = fadeOut()
       ) {
         BookCoverFullScreenDialog(
-          coverUrl = book?.cover_url.orEmpty(),
+          book = simpleBook,
           onShareClick = { bitmap -> bookScreenModel.shareImage(bitmap, book!!) },
           onSaveClick = { bitmap -> bookScreenModel.saveImage(bitmap, book!!) },
+          onEditClick = {
+            showCoverFullScreenDialog = false
+            
+            navigator.push {
+              ManageBookScreen(
+                existingBookId = book!!.id,
+                initialTab = ManageBookScreen.ManageBookTab.Cover
+              )
+            }
+          },
           onDismiss = { showCoverFullScreenDialog = false }
         )
       }

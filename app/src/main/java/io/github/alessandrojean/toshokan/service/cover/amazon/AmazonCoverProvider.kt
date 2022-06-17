@@ -2,6 +2,7 @@ package io.github.alessandrojean.toshokan.service.cover.amazon
 
 import android.graphics.BitmapFactory
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
@@ -34,7 +35,7 @@ class AmazonCoverProvider @Inject constructor(
     url(book.code.toAmazonCoverUrl()!!)
   }
 
-  override suspend fun findParse(response: HttpResponse): List<CoverResult> {
+  override suspend fun findParse(response: HttpResponse): List<BookCover.Result> {
     val bodyStream = response.body<ByteArray>().inputStream()
     val image = BitmapFactory.decodeStream(bodyStream)
     val width = image.width
@@ -49,7 +50,7 @@ class AmazonCoverProvider @Inject constructor(
     }
 
     return listOf(
-      CoverResult(
+      BookCover.Result(
         source = R.string.amazon,
         imageUrl = response.request.url.toString()
       )

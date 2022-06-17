@@ -117,6 +117,7 @@
   <!-- Library -->
   <string name="library">Library</string>
   <string name="create_book">New book</string>
+  <string name="edit_book">Edit book</string>
   <string name="action_new_book">New</string>
   <string name="action_fill_manually">Fill manually</string>
   <string name="action_scan_barcode">Scan an ISBN barcode</string>
@@ -141,6 +142,7 @@
   <string name="cover">Cover</string>
   <string name="no_covers_found">No covers found</string>
   <string name="current_cover">Current</string>
+  <string name="custom_cover">Custom</string>
   <string name="no_contributors">No contributors</string>
   <string name="person_role">as %s</string>
   <string name="action_edit_contributor">Edit contributor</string>

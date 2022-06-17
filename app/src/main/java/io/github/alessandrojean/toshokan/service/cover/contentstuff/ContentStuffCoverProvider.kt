@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.service.cover.contentstuff
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
@@ -47,7 +48,7 @@ class ContentStuffCoverProvider @AssistedInject constructor(
     }
   }
 
-  override suspend fun findParse(response: HttpResponse): List<CoverResult> {
+  override suspend fun findParse(response: HttpResponse): List<BookCover.Result> {
     val document = response.document()
     val firstProductImage = document.selectFirst("#content div.product div.image img.img-responsive")
       ?: return emptyList()
@@ -55,7 +56,7 @@ class ContentStuffCoverProvider @AssistedInject constructor(
     val coverUrl = firstProductImage.attr("src")
       .replace(IMAGE_SIZE_REGEX) { "/img/${it.groupValues[1].toInt() + 2}_900x900." }
 
-    return listOf(CoverResult(imageUrl = coverUrl))
+    return listOf(BookCover.Result(source = website.title, imageUrl = coverUrl))
   }
 
   companion object {

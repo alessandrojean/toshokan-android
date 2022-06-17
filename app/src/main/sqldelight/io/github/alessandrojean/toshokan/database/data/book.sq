@@ -39,6 +39,16 @@ FROM Book
 WHERE code = ?
 LIMIT 1;
 
+findById:
+SELECT *
+FROM Book
+WHERE id = ?;
+
+findByIds:
+SELECT *
+FROM Book
+WHERE id IN ?;
+
 allTitles:
 SELECT title
 FROM Book
@@ -58,8 +68,7 @@ INNER JOIN Store ON Store.id = Book.store_id
 WHERE Book.id = ?;
 
 libraryItems:
-SELECT Book.id, title, volume, is_future, cover_url, group_id,
-  name AS group_name, sort AS group_sort
+SELECT Book.*, name AS group_name, sort AS group_sort
 FROM Book
 INNER JOIN BookGroup ON BookGroup.id = Book.group_id
 WHERE is_future = :is_future

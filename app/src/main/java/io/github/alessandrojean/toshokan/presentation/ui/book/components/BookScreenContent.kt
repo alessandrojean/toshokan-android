@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
@@ -54,6 +55,7 @@ import kotlin.math.min
 fun BookScreenContent(
   modifier: Modifier = Modifier,
   book: CompleteBook?,
+  simpleBook: Book?,
   bookContributors: List<BookContributor>,
   bookNeighbors: BookNeighbors?,
   showBookNavigation: Boolean = true,
@@ -188,8 +190,7 @@ fun BookScreenContent(
             .fillMaxWidth()
             .offset(y = (ceil(100f * scrollPercentage)).dp)
             .graphicsLayer(alpha = 0.4f + 0.6f * (1f - scrollPercentage)),
-          coverUrl = book?.cover_url.orEmpty(),
-          contentDescription = book?.title,
+          book = simpleBook,
           bottomOffsetDp = coverBottomOffsetDp,
           topBarHeightDp = 52f,
           onImageSuccess = onImageSuccess,

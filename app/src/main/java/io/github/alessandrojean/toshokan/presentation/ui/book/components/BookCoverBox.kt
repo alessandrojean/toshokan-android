@@ -36,12 +36,12 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import io.github.alessandrojean.toshokan.database.data.Book
 
 @Composable
 fun BookCoverBox(
   modifier: Modifier = Modifier,
-  coverUrl: String,
-  contentDescription: String?,
+  book: Book?,
   containerColor: Color = MaterialTheme.colorScheme.background,
   topBarHeightDp: Float = 64f,
   bottomOffsetDp: Float = 18f,
@@ -55,7 +55,7 @@ fun BookCoverBox(
 
   val coverPainter = rememberAsyncImagePainter(
     model = ImageRequest.Builder(LocalContext.current)
-      .data(coverUrl)
+      .data(book)
       .crossfade(true)
       .allowHardware(false)
       .build(),
@@ -75,14 +75,14 @@ fun BookCoverBox(
   ) {
     AsyncImage(
       model = ImageRequest.Builder(LocalContext.current)
-        .data(coverUrl)
+        .data(book)
         .crossfade(true)
         .build(),
       modifier = Modifier
         .fillMaxSize()
         .blur(4.dp)
         .graphicsLayer(alpha = 0.15f),
-      contentDescription = contentDescription,
+      contentDescription = book?.title,
       contentScale = ContentScale.Crop,
     )
     Box(
@@ -97,7 +97,7 @@ fun BookCoverBox(
         .clipToBounds(),
       contentAlignment = Alignment.Center
     ) {
-      if (coverPainter.state is AsyncImagePainter.State.Error || coverUrl.isBlank()) {
+      if (coverPainter.state is AsyncImagePainter.State.Error || book?.cover_url.isNullOrBlank()) {
         Icon(
           modifier = Modifier.size(96.dp),
           imageVector = Icons.Outlined.Image,
@@ -109,14 +109,14 @@ fun BookCoverBox(
       Image(
         modifier = Modifier
           .clickable(
-            enabled = coverPainter.state is AsyncImagePainter.State.Success && coverUrl.isNotBlank(),
+            enabled = coverPainter.state is AsyncImagePainter.State.Success,
             onClick = onCoverClick,
             interactionSource = remember { MutableInteractionSource() },
             indication = null
           )
           .clip(MaterialTheme.shapes.large),
         painter = coverPainter,
-        contentDescription = contentDescription,
+        contentDescription = book?.title,
         contentScale = ContentScale.Inside,
       )
     }

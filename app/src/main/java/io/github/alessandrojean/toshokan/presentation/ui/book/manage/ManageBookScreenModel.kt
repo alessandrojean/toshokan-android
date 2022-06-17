@@ -7,10 +7,15 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
+import androidx.core.net.toUri
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.hilt.ScreenModelFactory
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Publisher
@@ -23,6 +28,7 @@ import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverRepository
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
@@ -34,17 +40,26 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import java.util.Date
 import java.util.Locale
-import javax.inject.Inject
 
-@HiltViewModel
-class ManageBookViewModel @Inject constructor(
+class ManageBookScreenModel @AssistedInject constructor(
   private val booksRepository: BooksRepository,
   private val groupsRepository: GroupsRepository,
   private val peopleRepository: PeopleRepository,
   private val publishersRepository: PublishersRepository,
   private val storesRepository: StoresRepository,
-  private val coverRepository: CoverRepository
-) : ViewModel() {
+  private val coverRepository: CoverRepository,
+  private val coverCache: CoverCache,
+  @Assisted val lookupBook: LookupBookResult? = null,
+  @Assisted val existingBookId: Long? = null
+) : ScreenModel {
+
+  @AssistedFactory
+  interface Factory : ScreenModelFactory {
+    fun create(
+      @Assisted lookupBook: LookupBookResult? = null,
+      @Assisted existingBookId: Long? = null
+    ): ManageBookScreenModel
+  }
 
   enum class Mode {
     CREATING,
@@ -68,7 +83,7 @@ class ManageBookViewModel @Inject constructor(
   var paidPriceValue by mutableStateOf("")
   var boughtAt by mutableStateOf<Long?>(Date().time)
   var isFuture by mutableStateOf(false)
-  var coverUrl by mutableStateOf("")
+  var cover by mutableStateOf<BookCover?>(null)
   var dimensionWidth by mutableStateOf("")
   var dimensionHeight by mutableStateOf("")
 
@@ -88,9 +103,7 @@ class ManageBookViewModel @Inject constructor(
 
   val contributors = mutableStateListOf<Contributor>()
 
-  private var lookupBook by mutableStateOf<LookupBookResult?>(null)
-  private var existingBook by mutableStateOf<CompleteBook?>(null)
-  var allCovers = mutableStateListOf<CoverResult>()
+  var allCovers = mutableStateListOf<BookCover>()
     private set
   var coverState by mutableStateOf<CoverTabState>(CoverTabState.Display)
     private set
@@ -108,17 +121,22 @@ class ManageBookViewModel @Inject constructor(
   var writing by mutableStateOf(false)
     private set
 
-  // TODO: Make the view model use AssistedInject when Dagger adds support to it.
-  fun setFieldValues(lookupBook: LookupBookResult) = viewModelScope.launch {
-    if (lookupBook == this@ManageBookViewModel.lookupBook) {
-      return@launch
+  init {
+    if (lookupBook != null) {
+      setFieldValues(lookupBook)
+    } else if (existingBookId != null) {
+      booksRepository.findById(existingBookId)?.let { completeBook ->
+        setFieldValues(completeBook)
+      }
     }
+  }
 
+  // TODO: Make the view model use AssistedInject when Dagger adds support to it.
+  private fun setFieldValues(lookupBook: LookupBookResult) = coroutineScope.launch {
     code = lookupBook.isbn
     title = lookupBook.title
     synopsis = lookupBook.synopsis
     publisherText = lookupBook.publisher
-    coverUrl = lookupBook.coverUrl
 
     lookupBook.labelPrice?.let {
       labelPriceCurrency = it.currency
@@ -146,29 +164,22 @@ class ManageBookViewModel @Inject constructor(
 
     logcat { contributors.toString() }
 
-    this@ManageBookViewModel.lookupBook = lookupBook
-
     publishersRepository.selectAll()
       .firstOrNull { it.name.equals(lookupBook.publisher, ignoreCase = true) }
       ?.let { publisher = it }
 
     if (lookupBook.coverUrl.isNotBlank()) {
-      allCovers.add(
-        CoverResult(
-          source = lookupBook.provider!!.title,
-          imageUrl = lookupBook.coverUrl
-        )
+      cover = BookCover.Result(
+        source = lookupBook.provider!!.title,
+        imageUrl = lookupBook.coverUrl
       )
+      allCovers.add(cover!!)
     }
 
     mode = Mode.CREATING
   }
 
-  fun setFieldValues(existingBook: CompleteBook) = viewModelScope.launch {
-    if (existingBook == this@ManageBookViewModel.existingBook) {
-      return@launch
-    }
-
+  private fun setFieldValues(existingBook: CompleteBook) = coroutineScope.launch {
     code = existingBook.code.orEmpty()
     title = existingBook.title
     synopsis = existingBook.synopsis.orEmpty()
@@ -178,7 +189,6 @@ class ManageBookViewModel @Inject constructor(
     storeText = existingBook.store_name
     group = groupsRepository.findById(existingBook.group_id)
     groupText = existingBook.group_name
-    coverUrl = existingBook.cover_url.orEmpty()
     notes = existingBook.notes.orEmpty()
     isFuture = existingBook.is_future
     boughtAt = existingBook.bought_at
@@ -191,8 +201,6 @@ class ManageBookViewModel @Inject constructor(
 
     dimensionWidth = existingBook.dimension_width.toLocaleString()
     dimensionHeight = existingBook.dimension_height.toLocaleString()
-
-    this@ManageBookViewModel.existingBook = existingBook
 
     val allPeople = peopleRepository.selectAll()
 
@@ -207,13 +215,14 @@ class ManageBookViewModel @Inject constructor(
       }
       .let(contributors::addAll)
 
-    if (existingBook.cover_url.orEmpty().isNotBlank()) {
-      allCovers.add(
-        CoverResult(
-          source = R.string.current_cover,
-          imageUrl = existingBook.cover_url!!
-        )
-      )
+    val customCover = coverCache.getCustomCoverFile(existingBook)
+
+    if (customCover.exists()) {
+      cover = BookCover.Custom(uri = customCover.toUri())
+      allCovers.add(cover!!)
+    } else if (existingBook.cover_url.orEmpty().isNotBlank()) {
+      cover = BookCover.Current(imageUrl = existingBook.cover_url!!)
+      allCovers.add(cover!!)
     }
 
     mode = Mode.EDITING
@@ -229,7 +238,7 @@ class ManageBookViewModel @Inject constructor(
     )
   }
 
-  fun fetchCovers() = viewModelScope.launch {
+  fun fetchCovers() = coroutineScope.launch {
     if (code.isEmpty() || title.isEmpty() || publisherText.isEmpty()) {
       return@launch
     }
@@ -240,26 +249,14 @@ class ManageBookViewModel @Inject constructor(
 
     coverState = if (allCovers.isEmpty()) CoverTabState.Loading else CoverTabState.Refreshing
 
-    val initialCovers = mutableListOf(
-      CoverResult(
+    val initialCovers = mutableListOf<BookCover>(
+      BookCover.Result(
         source = lookupBook?.provider?.title,
         imageUrl = lookupBook?.coverUrl.orEmpty()
       )
     )
 
-    if (
-      lookupBook?.coverUrl.orEmpty() != coverUrl &&
-        allCovers.firstOrNull { it.imageUrl == coverUrl } == null
-    ) {
-      initialCovers.add(
-        CoverResult(
-          source = R.string.current_cover,
-          imageUrl = coverUrl
-        )
-      )
-    }
-
-    allCovers = coverRepository
+    val coversFound = coverRepository
       .find(
         SimpleBookInfo(
           code = code,
@@ -268,12 +265,17 @@ class ManageBookViewModel @Inject constructor(
           initialCovers = initialCovers
         )
       )
-      .toMutableStateList()
+      .filterIsInstance<BookCover.Result>()
 
-    val currentCover = allCovers.firstOrNull { it.imageUrl == coverUrl }
+    allCovers = (allCovers.filterNot { it is BookCover.Result } + coversFound).toMutableStateList()
 
-    if (currentCover == null) {
-      coverUrl = ""
+    val currentCover = allCovers.filterIsInstance<BookCover.Current>().firstOrNull()
+    val duplicate = allCovers.filterIsInstance<BookCover.Result>()
+      .firstOrNull { it.imageUrl == currentCover?.imageUrl }
+
+    if (duplicate != null && currentCover != null) {
+      allCovers.remove(currentCover)
+      cover = duplicate
     }
 
     coverState = CoverTabState.Display
@@ -300,7 +302,7 @@ class ManageBookViewModel @Inject constructor(
       return
     }
 
-    viewModelScope.launch {
+    coroutineScope.launch {
       writing = true
 
       // First step: create the relationships if needed.
@@ -339,7 +341,7 @@ class ManageBookViewModel @Inject constructor(
         storeId = storeId,
         boughtAt = boughtAt,
         isFuture = isFuture,
-        coverUrl = coverUrl.ifEmpty { null },
+        cover = cover,
         dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
         dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
         contributors = insertedContributors
@@ -355,7 +357,7 @@ class ManageBookViewModel @Inject constructor(
       return
     }
 
-    viewModelScope.launch {
+    coroutineScope.launch {
       writing = true
 
       // First step: create the relationships if needed.
@@ -376,7 +378,7 @@ class ManageBookViewModel @Inject constructor(
 
       // Third step: Update the book.
       booksRepository.update(
-        id = existingBook!!.id,
+        id = existingBookId!!,
         code = code,
         title = title,
         volume = title.toTitleParts().number,
@@ -395,7 +397,7 @@ class ManageBookViewModel @Inject constructor(
         storeId = storeId,
         boughtAt = boughtAt,
         isFuture = isFuture,
-        coverUrl = coverUrl.ifEmpty { null },
+        cover = cover,
         dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
         dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
         contributors = insertedContributors

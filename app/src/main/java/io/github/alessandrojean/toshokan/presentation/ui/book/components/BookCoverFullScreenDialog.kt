@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Icon
@@ -30,21 +31,23 @@ import androidx.core.graphics.drawable.toBitmapOrNull
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ZoomableImage
 
 @Composable
 fun BookCoverFullScreenDialog(
   modifier: Modifier = Modifier,
   containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-  coverUrl: String,
+  book: Book?,
   onShareClick: (Bitmap?) -> Unit,
   onSaveClick: (Bitmap?) -> Unit,
+  onEditClick: () -> Unit,
   onDismiss: () -> Unit
 ) {
   val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
   val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollFraction = 0f).value
 
-  val imagePainter = rememberAsyncImagePainter(model = coverUrl)
+  val imagePainter = rememberAsyncImagePainter(model = book)
 
   val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
   val navigationBarHeightPx = with(LocalDensity.current) { navigationBarHeight.toPx() }
@@ -69,6 +72,16 @@ fun BookCoverFullScreenDialog(
           },
           title = {},
           actions = {
+            IconButton(
+              enabled = imagePainter.state is AsyncImagePainter.State.Success,
+              onClick = onEditClick
+            ) {
+              Icon(
+                imageVector = Icons.Outlined.Edit,
+                contentDescription = stringResource(R.string.action_edit)
+              )
+            }
+
             IconButton(
               enabled = imagePainter.state is AsyncImagePainter.State.Success,
               onClick = {
@@ -115,6 +128,7 @@ fun BookCoverFullScreenDialog(
             .fillMaxSize()
             .align(Alignment.Center),
           painter = imagePainter,
+          contentDescription = book?.title,
           initialOffset = Offset(x = 0.0f, y = -navigationBarHeightPx / 2)
         )
       }

@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.data
+package io.github.alessandrojean.toshokan.data.storage
 
 import android.app.Application
 import android.content.ContentValues
@@ -58,6 +58,8 @@ class ImageSaver @Inject constructor(
   private fun saveImageInCache(image: Image): Uri {
     val locationFolder = application.cacheImagesDir
 
+    locationFolder.mkdirs()
+
     val destFile = File(locationFolder, "${image.fileName}.jpg")
     val byteArrayInputStream = ByteArrayOutputStream().run {
       image.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, this)
@@ -99,7 +101,7 @@ class ImageSaver @Inject constructor(
 
       downloadsDirectory.also {
         if (!it.exists()) {
-          it.mkdir()
+          it.mkdirs()
         }
       }
 

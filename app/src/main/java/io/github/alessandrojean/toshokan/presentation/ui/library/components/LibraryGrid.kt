@@ -9,16 +9,16 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.alessandrojean.toshokan.domain.LibraryBook
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BookCard
 
 @Composable
 fun LibraryGrid(
   modifier: Modifier = Modifier,
-  books: List<LibraryBook>,
+  books: List<Book>,
   contentPadding: PaddingValues = PaddingValues(4.dp),
   columns: GridCells = GridCells.Adaptive(minSize = 96.dp),
-  onBookClick: (LibraryBook) -> Unit,
+  onBookClick: (Book) -> Unit,
 ) {
   LazyVerticalGrid(
     modifier = modifier,
@@ -30,9 +30,7 @@ fun LibraryGrid(
     items(books, key = { it.id }) { book ->
       BookCard(
         modifier = Modifier.fillMaxWidth(),
-        title = book.title,
-        coverUrl = book.coverUrl,
-        isFuture = book.isFuture,
+        book = book,
         onClick = { onBookClick.invoke(book) }
       )
     }

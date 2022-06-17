@@ -1,5 +1,7 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -8,14 +10,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -25,14 +30,17 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.ImageSearch
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -57,17 +65,19 @@ import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
-import io.github.alessandrojean.toshokan.service.cover.CoverResult
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 
 @Composable
 fun CoverTab(
-  coverUrl: String,
-  allCovers: SnapshotStateList<CoverResult>,
+  cover: BookCover?,
+  allCovers: SnapshotStateList<BookCover>,
   state: CoverTabState = CoverTabState.Display,
   canRefresh: Boolean = true,
-  onChange: (CoverResult?) -> Unit,
+  onChange: (BookCover?) -> Unit,
   onRefresh: () -> Unit,
+  onCustomCoverPicked: (BookCover.Custom) -> Unit = {},
 ) {
   val gridState = rememberLazyGridState()
   val scrollState = rememberScrollState()
@@ -77,84 +87,114 @@ fun CoverTab(
   }
 
   val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = refreshing)
-
-  Crossfade(
-    targetState = state,
-    modifier = Modifier.fillMaxSize()
-  ) { coverState ->
-    when (coverState) {
-      is CoverTabState.Loading -> {
-        Box(
-          modifier = Modifier
-            .fillMaxSize()
-            .navigationBarsPadding(),
-          contentAlignment = Alignment.Center
-        ) {
-          CircularProgressIndicator()
-        }
+  
+  var customCover by remember { mutableStateOf<BookCover.Custom?>(null) }
+  val customCoverPickerLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.GetContent(),
+    onResult = { uri ->
+      uri?.let {
+        customCover = BookCover.Custom(uri = it)
+        onCustomCoverPicked.invoke(customCover!!)
       }
-      is CoverTabState.Display,
-      is CoverTabState.Refreshing -> {
-        SwipeRefresh(
-          state = swipeRefreshState,
-          swipeEnabled = canRefresh,
-          indicator = { state, trigger ->
-            SwipeRefreshIndicator(
-              state = state,
-              refreshTriggerDistance = trigger,
-              backgroundColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary
+    }
+  )
+  
+  Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    floatingActionButton = {
+      FloatingActionButton(
+        onClick = { customCoverPickerLauncher.launch("image/*") }
+      ) {
+        Icon(
+          imageVector = Icons.Outlined.AddPhotoAlternate,
+          contentDescription = stringResource(R.string.action_add)
+        )
+      }
+    },
+    content = { innerPadding ->
+      Crossfade(
+        targetState = state,
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(innerPadding)
+      ) { coverState ->
+        when (coverState) {
+          is CoverTabState.Loading -> {
+            BoxedCircularProgressIndicator(
+              modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
             )
-          },
-          onRefresh = onRefresh
-        ) {
-          if (allCovers.isNotEmpty()) {
-            LazyVerticalGrid(
-              modifier = Modifier.selectableGroup(),
-              state = gridState,
-              columns = GridCells.Adaptive(minSize = 96.dp),
-              contentPadding = PaddingValues(
-                top = 4.dp,
-                start = 4.dp,
-                end = 4.dp,
-                bottom = 4.dp + WindowInsets.navigationBars
-                  .asPaddingValues()
-                  .calculateBottomPadding()
-              ),
-              verticalArrangement = Arrangement.spacedBy(4.dp),
-              horizontalArrangement = Arrangement.spacedBy(4.dp)
+          }
+          is CoverTabState.Display,
+          is CoverTabState.Refreshing -> {
+            SwipeRefresh(
+              state = swipeRefreshState,
+              swipeEnabled = canRefresh,
+              indicator = { state, trigger ->
+                SwipeRefreshIndicator(
+                  state = state,
+                  refreshTriggerDistance = trigger,
+                  backgroundColor = MaterialTheme.colorScheme.primary,
+                  contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+              },
+              onRefresh = onRefresh
             ) {
-              items(allCovers, key = { it.imageUrl }) { cover ->
-                val selected = coverUrl == cover.imageUrl
+              if (allCovers.isNotEmpty()) {
+                LazyVerticalGrid(
+                  modifier = Modifier.selectableGroup(),
+                  state = gridState,
+                  columns = GridCells.Adaptive(minSize = 96.dp),
+                  contentPadding = PaddingValues(
+                    top = 4.dp,
+                    start = 4.dp,
+                    end = 4.dp,
+                    bottom = 4.dp + innerPadding.calculateBottomPadding()
+                  ),
+                  verticalArrangement = Arrangement.spacedBy(4.dp),
+                  horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                  items(allCovers, contentType = { it.javaClass.canonicalName }) { coverOption ->
+                    val selected = cover == coverOption
 
-                CoverCard(
-                  cover = cover,
-                  enabled = !refreshing,
-                  selected = selected,
-                  onClick = {
-                    onChange.invoke(if (!selected) cover else null)
+                    CoverCard(
+                      cover = coverOption,
+                      enabled = !refreshing,
+                      selected = selected,
+                      onClick = {
+                        onChange.invoke(if (!selected) coverOption else null)
+                      }
+                    )
                   }
+                }
+              } else {
+                NoItemsFound(
+                  modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+                  text = stringResource(R.string.no_covers_found),
+                  icon = Icons.Outlined.ImageSearch
                 )
               }
             }
-          } else {
-            NoItemsFound(
-              modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState),
-              text = stringResource(R.string.no_covers_found),
-              icon = Icons.Outlined.ImageSearch
-            )
           }
         }
       }
+    },
+    bottomBar = {
+      Spacer(
+        modifier = Modifier.windowInsetsPadding(
+          WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
+        )
+      )
     }
-  }
+  )
 }
 
 @Composable
 fun CoverCard(
-  cover: CoverResult,
+  cover: BookCover,
   enabled: Boolean,
   selected: Boolean,
   onClick: () -> Unit
@@ -210,9 +250,14 @@ fun CoverCard(
           }
         }
 
+        val dataUrl = when (cover) {
+          is BookCover.External -> cover.imageUrl
+          is BookCover.Custom -> cover.uri
+        }
+
         AsyncImage(
           model = ImageRequest.Builder(LocalContext.current)
-            .data(cover.imageUrl)
+            .data(dataUrl)
             .crossfade(true)
             .build(),
           contentDescription = null,
@@ -226,7 +271,12 @@ fun CoverCard(
         modifier = Modifier
           .fillMaxWidth()
           .padding(top = 4.dp),
-        text = stringResource(cover.source!!),
+        text = when(cover) {
+          is BookCover.Current -> stringResource(R.string.current_cover)
+          is BookCover.Custom -> stringResource(R.string.custom_cover)
+          is BookCover.Result -> stringResource(cover.source!!)
+          else -> ""
+        },
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         style = MaterialTheme.typography.bodyMedium

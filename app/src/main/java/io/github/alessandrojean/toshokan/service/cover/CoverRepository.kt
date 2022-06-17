@@ -22,7 +22,7 @@ import javax.inject.Singleton
 
 interface CoverRepository {
   fun hasProvider(book: SimpleBookInfo): Boolean
-  suspend fun find(book: SimpleBookInfo): List<CoverResult>
+  suspend fun find(book: SimpleBookInfo): List<BookCover>
 }
 
 @Singleton
@@ -115,7 +115,7 @@ class CoverRepositoryImpl @Inject constructor(
     return providers.firstOrNull { it.condition.invoke(book) } != null
   }
 
-  override suspend fun find(book: SimpleBookInfo): List<CoverResult> {
+  override suspend fun find(book: SimpleBookInfo): List<BookCover> {
     return withContext(Dispatchers.IO) {
       if (!book.code.isValidIsbn()) {
         return@withContext emptyList()
@@ -126,10 +126,11 @@ class CoverRepositoryImpl @Inject constructor(
           .getOrElse { emptyList() }
       }
 
-      val initialResults = amazonCover.await().toMutableList()
+      val initialResults = amazonCover.await().toMutableList<BookCover.External>()
 
       if (book.initialCovers.isNotEmpty()) {
         initialResults += book.initialCovers
+          .filterIsInstance<BookCover.External>()
           .filter { it.imageUrl.isNotBlank() }
       }
 

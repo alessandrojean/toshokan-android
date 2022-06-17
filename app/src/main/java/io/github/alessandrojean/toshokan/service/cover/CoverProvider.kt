@@ -42,7 +42,7 @@ abstract class CoverProvider {
   /**
    * Find the covers for the book.
    */
-  open suspend fun find(book: SimpleBookInfo): List<CoverResult> {
+  open suspend fun find(book: SimpleBookInfo): List<BookCover.Result> {
     if (!condition.invoke(book)) {
       return emptyList()
     }
@@ -52,7 +52,6 @@ abstract class CoverProvider {
       val response = client.request(request)
 
       findParse(response)
-        .map { it.copy(source = website.title) }
     }
 
     if (result.isFailure) {
@@ -70,6 +69,6 @@ abstract class CoverProvider {
   /**
    * Parse the response and convert it to the proper class.
    */
-  protected abstract suspend fun findParse(response: HttpResponse): List<CoverResult>
+  protected abstract suspend fun findParse(response: HttpResponse): List<BookCover.Result>
 
 }

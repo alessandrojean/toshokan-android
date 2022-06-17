@@ -1,6 +1,5 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -12,10 +11,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ActivityContext
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.alessandrojean.toshokan.BuildConfig
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.data.ImageSaver
+import io.github.alessandrojean.toshokan.data.storage.ImageSaver
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
@@ -25,7 +22,6 @@ import io.github.alessandrojean.toshokan.service.link.LinkRepository
 import io.github.alessandrojean.toshokan.util.extension.appName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toShareIntent
-import io.github.alessandrojean.toshokan.util.extension.toSlug
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toast
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +42,8 @@ class BookScreenModel @AssistedInject constructor(
     fun create(@Assisted bookId: Long): BookScreenModel
   }
 
-  val book = booksRepository.findById(bookId)
+  val book = booksRepository.findByIdAsFlow(bookId)
+  val simpleBook = booksRepository.findSimpleById(bookId)
   val contributors = booksRepository.findBookContributorsAsFlow(bookId)
 
   val showBookNavigation = preferencesManager.showBookNavigation().asFlow()

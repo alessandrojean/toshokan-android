@@ -27,6 +27,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -46,6 +49,10 @@ fun ContributorsTab(
 ) {
   val listState = rememberLazyListState()
 
+  val fabExpanded by remember {
+    derivedStateOf { listState.firstVisibleItemIndex == 0 }
+  }
+
   Scaffold(
     modifier = Modifier.fillMaxSize(),
     floatingActionButton = {
@@ -62,7 +69,7 @@ fun ContributorsTab(
               contentDescription = stringResource(R.string.action_add)
             )
           },
-          expanded = listState.firstVisibleItemIndex == 0,
+          expanded = fabExpanded,
           onClick = onAddContributorClick
         )
       }

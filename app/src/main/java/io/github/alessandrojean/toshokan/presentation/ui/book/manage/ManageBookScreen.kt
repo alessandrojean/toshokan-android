@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.manage
 
+import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -75,7 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import cafe.adriel.voyager.androidx.AndroidScreen
-import cafe.adriel.voyager.hilt.getViewModel
+import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.pager.HorizontalPager
@@ -96,56 +97,59 @@ import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetE
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
+import java.io.Serializable
 import java.util.Locale
 
 data class ManageBookScreen(
   val lookupBook: LookupBookResult? = null,
-  val completeBook: CompleteBook? = null
+  val existingBookId: Long? = null,
+  val initialTab: ManageBookTab = ManageBookTab.Information
 ) : AndroidScreen() {
 
-  private val tabs = listOf(
-    ManageBookTab.Information,
-    ManageBookTab.Contributors,
-    ManageBookTab.Organization,
-    ManageBookTab.Cover
-  )
-  
   @Composable
   override fun Content() {
-    val manageBookViewModel = getViewModel<ManageBookViewModel>()
+    val tabs = remember {
+      listOf(
+        ManageBookTab.Information,
+        ManageBookTab.Contributors,
+        ManageBookTab.Organization,
+        ManageBookTab.Cover
+      )
+    }
+
+    val manageBookScreenModel = getScreenModel<ManageBookScreenModel, ManageBookScreenModel.Factory> {
+      it.create(lookupBook, existingBookId)
+    }
     val navigator = LocalNavigator.currentOrThrow
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState = rememberPagerState(
+      initialPage = tabs
+        .indexOfFirst { it == initialTab }
+        .coerceAtLeast(0)
+    )
     val scope = rememberCoroutineScope()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
 
     val tabState = listOf(
-      manageBookViewModel.informationTabInvalid,
-      manageBookViewModel.contributorsTabInvalid,
-      manageBookViewModel.organizationTabInvalid
+      manageBookScreenModel.informationTabInvalid,
+      manageBookScreenModel.contributorsTabInvalid,
+      manageBookScreenModel.organizationTabInvalid
     )
 
-    val allPublishers by manageBookViewModel.publishers
+    val allPublishers by manageBookScreenModel.publishers
       .collectAsStateWithLifecycle(emptyList())
-    val allStores by manageBookViewModel.stores
+    val allStores by manageBookScreenModel.stores
       .collectAsStateWithLifecycle(emptyList())
-    val allGroups by manageBookViewModel.groups
+    val allGroups by manageBookScreenModel.groups
       .collectAsStateWithLifecycle(emptyList())
-
-    LaunchedEffect(lookupBook, completeBook) {
-      if (lookupBook != null) {
-        scope.launch { manageBookViewModel.setFieldValues(lookupBook) }
-      } else if (completeBook != null) {
-        scope.launch { manageBookViewModel.setFieldValues(completeBook) }
-      }
-    }
 
     val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
     val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     LaunchedEffect(pagerState.currentPage) {
       if (tabs[pagerState.currentPage] is ManageBookTab.Cover) {
-        scope.launch { manageBookViewModel.fetchCovers() }
+        scope.launch { manageBookScreenModel.fetchCovers() }
       }
     }
 
@@ -155,25 +159,25 @@ data class ManageBookScreen(
     )
 
     var showContributorPickerDialog by remember { mutableStateOf(false) }
-    val allPeople by manageBookViewModel.people.collectAsStateWithLifecycle(emptyList())
+    val allPeople by manageBookScreenModel.people.collectAsStateWithLifecycle(emptyList())
 
     if (showContributorPickerDialog) {
       ContributorPickerDialog(
         allPeople = allPeople,
-        contributor = manageBookViewModel.selectedContributor,
+        contributor = manageBookScreenModel.selectedContributor,
         onDismiss = {
           showContributorPickerDialog = false
-          manageBookViewModel.selectedContributor = null
+          manageBookScreenModel.selectedContributor = null
         },
         onFinish = { contributor ->
-          manageBookViewModel.handleContributor(contributor)
+          manageBookScreenModel.handleContributor(contributor)
           showContributorPickerDialog = false
         }
       )
     }
 
     // Disable the back handling when writing to the database.
-    BackHandler(manageBookViewModel.writing) {}
+    BackHandler(manageBookScreenModel.writing) {}
 
     ModalBottomSheetLayout(
       sheetState = modalBottomSheetState,
@@ -181,14 +185,14 @@ data class ManageBookScreen(
       sheetBackgroundColor = Color.Transparent,
       sheetContent = {
         ModalBottomSheet(
-          contributor = manageBookViewModel.selectedContributor,
+          contributor = manageBookScreenModel.selectedContributor,
           onEditClick = {
             scope.launch { modalBottomSheetState.hide() }
             showContributorPickerDialog = true
           },
           onRemoveClick = {
             scope.launch { modalBottomSheetState.hide() }
-            manageBookViewModel.removeSelectedContributor()
+            manageBookScreenModel.removeSelectedContributor()
           }
         )
       }
@@ -207,7 +211,7 @@ data class ManageBookScreen(
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                   IconButton(
-                    enabled = !manageBookViewModel.writing,
+                    enabled = !manageBookScreenModel.writing,
                     onClick = { navigator.pop() }
                   ) {
                     Icon(
@@ -218,27 +222,31 @@ data class ManageBookScreen(
                 },
                 title = {
                   Text(
-                    text = completeBook?.title ?: stringResource(R.string.create_book),
+                    text = if (existingBookId != null) {
+                      stringResource(R.string.edit_book)
+                    } else {
+                      stringResource(R.string.create_book)
+                    },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                   )
                 },
                 actions = {
                   TextButton(
-                    enabled = !manageBookViewModel.informationTabInvalid &&
-                      !manageBookViewModel.contributorsTabInvalid &&
-                      !manageBookViewModel.informationTabInvalid &&
-                      !manageBookViewModel.writing,
+                    enabled = !manageBookScreenModel.informationTabInvalid &&
+                      !manageBookScreenModel.contributorsTabInvalid &&
+                      !manageBookScreenModel.informationTabInvalid &&
+                      !manageBookScreenModel.writing,
                     onClick = {
-                      if (manageBookViewModel.mode == ManageBookViewModel.Mode.CREATING) {
-                        manageBookViewModel.create { bookId ->
+                      if (manageBookScreenModel.mode == ManageBookScreenModel.Mode.CREATING) {
+                        manageBookScreenModel.create { bookId ->
                           if (bookId != null) {
                             navigator.popUntil { it is LibraryScreen }
                             navigator.push(BookScreen(bookId))
                           }
                         }
                       } else {
-                        manageBookViewModel.edit {
+                        manageBookScreenModel.edit {
                           navigator.pop()
                         }
                       }
@@ -296,70 +304,74 @@ data class ManageBookScreen(
             when (tabs[page]) {
               is ManageBookTab.Information -> {
                 InformationTab(
-                  code = manageBookViewModel.code,
-                  title = manageBookViewModel.title,
-                  synopsis = manageBookViewModel.synopsis,
-                  publisher = manageBookViewModel.publisher,
-                  publisherText = manageBookViewModel.publisherText,
+                  code = manageBookScreenModel.code,
+                  title = manageBookScreenModel.title,
+                  synopsis = manageBookScreenModel.synopsis,
+                  publisher = manageBookScreenModel.publisher,
+                  publisherText = manageBookScreenModel.publisherText,
                   allPublishers = allPublishers,
-                  labelPriceCurrency = manageBookViewModel.labelPriceCurrency,
-                  labelPriceValue = manageBookViewModel.labelPriceValue,
-                  paidPriceCurrency = manageBookViewModel.paidPriceCurrency,
-                  paidPriceValue = manageBookViewModel.paidPriceValue,
-                  dimensionWidth = manageBookViewModel.dimensionWidth,
-                  dimensionHeight = manageBookViewModel.dimensionHeight,
-                  onCodeChange = { manageBookViewModel.code = it },
-                  onTitleChange = { manageBookViewModel.title = it },
-                  onSynopsisChange = { manageBookViewModel.synopsis = it },
-                  onPublisherTextChange = { manageBookViewModel.publisherText = it },
-                  onPublisherChange = { manageBookViewModel.publisher = it },
-                  onLabelPriceValueChange = { manageBookViewModel.labelPriceValue = it },
-                  onLabelPriceCurrencyChange = { manageBookViewModel.labelPriceCurrency = it },
-                  onPaidPriceValueChange = { manageBookViewModel.paidPriceValue = it },
-                  onPaidPriceCurrencyChange = { manageBookViewModel.paidPriceCurrency = it },
-                  onDimensionWidthChange = { manageBookViewModel.dimensionWidth = it },
-                  onDimensionHeightChange = { manageBookViewModel.dimensionHeight = it }
+                  labelPriceCurrency = manageBookScreenModel.labelPriceCurrency,
+                  labelPriceValue = manageBookScreenModel.labelPriceValue,
+                  paidPriceCurrency = manageBookScreenModel.paidPriceCurrency,
+                  paidPriceValue = manageBookScreenModel.paidPriceValue,
+                  dimensionWidth = manageBookScreenModel.dimensionWidth,
+                  dimensionHeight = manageBookScreenModel.dimensionHeight,
+                  onCodeChange = { manageBookScreenModel.code = it },
+                  onTitleChange = { manageBookScreenModel.title = it },
+                  onSynopsisChange = { manageBookScreenModel.synopsis = it },
+                  onPublisherTextChange = { manageBookScreenModel.publisherText = it },
+                  onPublisherChange = { manageBookScreenModel.publisher = it },
+                  onLabelPriceValueChange = { manageBookScreenModel.labelPriceValue = it },
+                  onLabelPriceCurrencyChange = { manageBookScreenModel.labelPriceCurrency = it },
+                  onPaidPriceValueChange = { manageBookScreenModel.paidPriceValue = it },
+                  onPaidPriceCurrencyChange = { manageBookScreenModel.paidPriceCurrency = it },
+                  onDimensionWidthChange = { manageBookScreenModel.dimensionWidth = it },
+                  onDimensionHeightChange = { manageBookScreenModel.dimensionHeight = it }
                 )
               }
               is ManageBookTab.Contributors -> {
                 ContributorsTab(
-                  writing = manageBookViewModel.writing,
-                  contributors = manageBookViewModel.contributors,
+                  writing = manageBookScreenModel.writing,
+                  contributors = manageBookScreenModel.contributors,
                   onAddContributorClick = { showContributorPickerDialog = true },
                   onContributorLongClick = { contributor ->
-                    manageBookViewModel.selectedContributor = contributor
+                    manageBookScreenModel.selectedContributor = contributor
                     scope.launch { modalBottomSheetState.show() }
                   }
                 )
               }
               is ManageBookTab.Organization -> {
                 OrganizationTab(
-                  store = manageBookViewModel.store,
-                  storeText = manageBookViewModel.storeText,
+                  store = manageBookScreenModel.store,
+                  storeText = manageBookScreenModel.storeText,
                   allStores = allStores,
-                  boughtAt = manageBookViewModel.boughtAt,
-                  group = manageBookViewModel.group,
-                  groupText = manageBookViewModel.groupText,
+                  boughtAt = manageBookScreenModel.boughtAt,
+                  group = manageBookScreenModel.group,
+                  groupText = manageBookScreenModel.groupText,
                   allGroups = allGroups,
-                  notes = manageBookViewModel.notes,
-                  isFuture = manageBookViewModel.isFuture,
-                  onStoreTextChange = { manageBookViewModel.storeText = it },
-                  onStoreChange = { manageBookViewModel.store = it },
-                  onBoughtAtChange = { manageBookViewModel.boughtAt = it },
-                  onGroupTextChange = { manageBookViewModel.groupText = it },
-                  onGroupChange = { manageBookViewModel.group = it },
-                  onNotesChange = { manageBookViewModel.notes = it },
-                  onIsFutureChange = { manageBookViewModel.isFuture = it }
+                  notes = manageBookScreenModel.notes,
+                  isFuture = manageBookScreenModel.isFuture,
+                  onStoreTextChange = { manageBookScreenModel.storeText = it },
+                  onStoreChange = { manageBookScreenModel.store = it },
+                  onBoughtAtChange = { manageBookScreenModel.boughtAt = it },
+                  onGroupTextChange = { manageBookScreenModel.groupText = it },
+                  onGroupChange = { manageBookScreenModel.group = it },
+                  onNotesChange = { manageBookScreenModel.notes = it },
+                  onIsFutureChange = { manageBookScreenModel.isFuture = it }
                 )
               }
               is ManageBookTab.Cover -> {
                 CoverTab(
-                  coverUrl = manageBookViewModel.coverUrl,
-                  allCovers = manageBookViewModel.allCovers,
-                  state = manageBookViewModel.coverState,
-                  canRefresh = manageBookViewModel.coverRefreshEnabled(),
-                  onChange = { manageBookViewModel.coverUrl = it?.imageUrl ?: "" },
-                  onRefresh = { manageBookViewModel.fetchCovers() }
+                  cover = manageBookScreenModel.cover,
+                  allCovers = manageBookScreenModel.allCovers,
+                  state = manageBookScreenModel.coverState,
+                  canRefresh = manageBookScreenModel.coverRefreshEnabled(),
+                  onChange = { manageBookScreenModel.cover = it },
+                  onRefresh = { manageBookScreenModel.fetchCovers() },
+                  onCustomCoverPicked = { customCover ->
+                    manageBookScreenModel.cover = customCover
+                    manageBookScreenModel.allCovers.add(customCover)
+                  }
                 )
               }
             }
@@ -741,7 +753,8 @@ data class ManageBookScreen(
     }
   }
 
-  sealed class ManageBookTab(@StringRes val title: Int) {
+  @Parcelize
+  sealed class ManageBookTab(@StringRes val title: Int) : Parcelable, Serializable {
     object Information : ManageBookTab(R.string.information)
     object Contributors : ManageBookTab(R.string.contributors)
     object Organization : ManageBookTab(R.string.organization)

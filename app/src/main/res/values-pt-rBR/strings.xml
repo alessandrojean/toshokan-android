@@ -90,6 +90,7 @@
   <!-- Library -->
   <string name="library">Biblioteca</string>
   <string name="create_book">Novo livro</string>
+  <string name="edit_book">Editando livro</string>
   <string name="action_new_book">Novo</string>
   <string name="action_fill_manually">Preencher manualmente</string>
   <string name="action_scan_barcode">Ler código de barras</string>
@@ -114,6 +115,7 @@
   <string name="cover">Capa</string>
   <string name="no_covers_found">Nenhuma capa encontrada</string>
   <string name="current_cover">Atual</string>
+  <string name="custom_cover">Personalizada</string>
   <string name="no_contributors">Nenhum contribuidor</string>
   <string name="person_role">como %s</string>
   <string name="action_edit_contributor">Editar contribuidor</string>

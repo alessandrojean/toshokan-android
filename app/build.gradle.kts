@@ -51,7 +51,8 @@ android {
       "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
       "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
       "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
-      "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi"
+      "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi",
+      "-opt-in=coil.annotation.ExperimentalCoilApi"
     )
   }
 
@@ -162,6 +163,11 @@ dependencies {
 
   // Coil
   implementation("io.coil-kt:coil-compose:2.1.0")
+
+  // OkHttp (used for Coil stuff)
+  val okHttpVersion = "4.10.0"
+  implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
+  implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
 
   // SQLDelight
   val sqlDelightVersion = rootProject.extra["sqldelight_version"]

@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.service.cover.wordpress
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
@@ -55,7 +56,7 @@ class WordPressCoverProvider @AssistedInject constructor(
     }
   }
 
-  override suspend fun findParse(response: HttpResponse): List<CoverResult> {
+  override suspend fun findParse(response: HttpResponse): List<BookCover.Result> {
     val result = response.body<List<WordPressItem>>()
 
     if (result.isEmpty()) {
@@ -65,7 +66,7 @@ class WordPressCoverProvider @AssistedInject constructor(
     return result
       .flatMap { it.embedded?.featuredMedia.orEmpty() }
       .mapNotNull { it.sourceUrl }
-      .map { sourceUrl -> CoverResult(imageUrl = sourceUrl) }
+      .map { sourceUrl -> BookCover.Result(source = website.title, imageUrl = sourceUrl) }
   }
 
   companion object {

@@ -38,9 +38,7 @@ fun SearchResultsGrid(
         modifier = Modifier
           .fillMaxWidth()
           .animateItemPlacement(),
-        title = book.title,
-        coverUrl = book.cover_url,
-        isFuture = book.is_future,
+        book = book,
         onClick = { onResultClick.invoke(book) }
       )
     }

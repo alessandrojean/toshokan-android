@@ -31,14 +31,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 
 @Composable
 fun BookCard(
   modifier: Modifier = Modifier,
-  title: String,
-  coverUrl: String?,
-  isFuture: Boolean,
+  book: Book,
   shape: Shape = MaterialTheme.shapes.large,
   onClick: () -> Unit
 ) {
@@ -81,11 +80,11 @@ fun BookCard(
       }
       AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
-          .data(coverUrl)
+          .data(book)
           .crossfade(true)
           .build(),
         modifier = Modifier.clip(shape),
-        contentDescription = title,
+        contentDescription = book.title,
         contentScale = ContentScale.Inside,
         onSuccess = { imageLoaded = true }
       )

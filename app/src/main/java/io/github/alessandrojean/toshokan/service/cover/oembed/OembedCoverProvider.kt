@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.service.cover.oembed
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.CoverResult
@@ -48,7 +49,7 @@ class OembedCoverProvider @AssistedInject constructor(
     }
   }
 
-  override suspend fun findParse(response: HttpResponse): List<CoverResult> {
+  override suspend fun findParse(response: HttpResponse): List<BookCover.Result> {
     val result = response.body<OembedInformation>()
 
     if (result.thumbnailUrl.isNullOrBlank()) {
@@ -56,7 +57,7 @@ class OembedCoverProvider @AssistedInject constructor(
     }
 
     return listOf(
-      CoverResult(imageUrl = result.thumbnailUrl)
+      BookCover.Result(source = website.title, imageUrl = result.thumbnailUrl)
     )
   }
 }
