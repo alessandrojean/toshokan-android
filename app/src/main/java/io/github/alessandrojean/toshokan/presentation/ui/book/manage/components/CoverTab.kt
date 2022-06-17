@@ -3,9 +3,13 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.manage.components
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +40,7 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.ImageSearch
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -52,6 +57,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -65,6 +72,7 @@ import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.service.cover.BookCover
@@ -201,6 +209,11 @@ fun CoverCard(
 ) {
   var imageLoaded by remember { mutableStateOf(false) }
 
+  val borderWidth by animateDpAsState(if (selected) 2.dp else 0.dp)
+  val borderColor by animateColorAsState(
+    if (selected) MaterialTheme.colorScheme.surfaceTint else Color.Transparent
+  )
+
   Card(
     modifier = Modifier
       .fillMaxWidth()
@@ -213,7 +226,7 @@ fun CoverCard(
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = if (selected) {
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(4.dp)
       } else {
         MaterialTheme.colorScheme.surface
       }
@@ -262,7 +275,9 @@ fun CoverCard(
             .build(),
           contentDescription = null,
           contentScale = ContentScale.Inside,
-          modifier = Modifier.clip(MaterialTheme.shapes.large),
+          modifier = Modifier
+            .border(BorderStroke(borderWidth, borderColor), MaterialTheme.shapes.large)
+            .clip(MaterialTheme.shapes.large),
           onSuccess = { imageLoaded = true }
         )
       }

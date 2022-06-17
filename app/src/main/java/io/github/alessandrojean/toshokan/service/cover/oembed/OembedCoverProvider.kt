@@ -6,7 +6,6 @@ import dagger.assisted.AssistedInject
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
-import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

@@ -95,6 +95,8 @@ import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
+import io.github.alessandrojean.toshokan.util.ConnectionState
+import io.github.alessandrojean.toshokan.util.connectivityState
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -130,6 +132,7 @@ data class ManageBookScreen(
     val scope = rememberCoroutineScope()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
+    val internetConnection by connectivityState()
 
     val tabState = listOf(
       manageBookScreenModel.informationTabInvalid,
@@ -148,7 +151,10 @@ data class ManageBookScreen(
     val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     LaunchedEffect(pagerState.currentPage) {
-      if (tabs[pagerState.currentPage] is ManageBookTab.Cover) {
+      if (
+        tabs[pagerState.currentPage] is ManageBookTab.Cover &&
+        internetConnection == ConnectionState.Available
+      ) {
         scope.launch { manageBookScreenModel.fetchCovers() }
       }
     }
@@ -365,7 +371,8 @@ data class ManageBookScreen(
                   cover = manageBookScreenModel.cover,
                   allCovers = manageBookScreenModel.allCovers,
                   state = manageBookScreenModel.coverState,
-                  canRefresh = manageBookScreenModel.coverRefreshEnabled(),
+                  canRefresh = manageBookScreenModel.coverRefreshEnabled() &&
+                    internetConnection == ConnectionState.Available,
                   onChange = { manageBookScreenModel.cover = it },
                   onRefresh = { manageBookScreenModel.fetchCovers() },
                   onCustomCoverPicked = { customCover ->

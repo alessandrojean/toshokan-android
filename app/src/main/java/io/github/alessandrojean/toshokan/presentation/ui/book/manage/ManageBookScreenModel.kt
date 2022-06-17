@@ -14,7 +14,6 @@ import cafe.adriel.voyager.hilt.ScreenModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
@@ -30,7 +29,6 @@ import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverRepository
-import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
@@ -249,11 +247,12 @@ class ManageBookScreenModel @AssistedInject constructor(
 
     coverState = if (allCovers.isEmpty()) CoverTabState.Loading else CoverTabState.Refreshing
 
-    val initialCovers = mutableListOf<BookCover>(
+    val initialCovers = listOfNotNull(
       BookCover.Result(
         source = lookupBook?.provider?.title,
         imageUrl = lookupBook?.coverUrl.orEmpty()
-      )
+      ),
+      cover.takeIf { it is BookCover.Result }
     )
 
     val coversFound = coverRepository

@@ -25,8 +25,3 @@ sealed class BookCover : Parcelable, Serializable {
     imageUrl: String
   ) : External(imageUrl)
 }
-
-data class CoverResult(
-  @StringRes val source: Int? = null,
-  val imageUrl: String
-)

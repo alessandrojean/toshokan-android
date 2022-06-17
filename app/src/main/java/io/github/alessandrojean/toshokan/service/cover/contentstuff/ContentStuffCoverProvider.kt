@@ -6,7 +6,6 @@ import dagger.assisted.AssistedInject
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
-import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.github.alessandrojean.toshokan.util.extension.document
 import io.github.alessandrojean.toshokan.util.removeDashes
