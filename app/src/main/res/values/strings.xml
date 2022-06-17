@@ -45,7 +45,7 @@
   <string name="website">Website</string>
   <string name="instagram" translatable="false">Instagram</string>
   <string name="twitter" translatable="false">Twitter</string>
-  <string name="amazon" translatable="false">Amazon</string>
+  <string name="amazon" translatable="false">Amazon™</string>
   <string name="skoob" translatable="false">Skoob</string>
   <string name="cbl" translatable="false">CBL</string>
   <string name="mercado_editorial" translatable="false">Mercado Editorial</string>
@@ -243,6 +243,7 @@
   <string name="settings_general">General</string>
   <string name="settings_library">Library</string>
   <string name="settings_search">Search</string>
+  <string name="settings_covers">Covers</string>
   <string name="settings_backup">Backup and restore</string>
   <string name="settings_advanced">Advanced</string>
 

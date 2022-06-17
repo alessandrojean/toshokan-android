@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.presentation.ui.settings.search
+package io.github.alessandrojean.toshokan.presentation.ui.settings.covers
 
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -25,32 +25,32 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsHeader
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SwitchPreference
-import io.github.alessandrojean.toshokan.service.lookup.Provider
+import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import java.text.Collator
 import java.util.Locale
 
-class SearchSettingsScreen : AndroidScreen() {
+class CoversSettingsScreen : AndroidScreen() {
 
   @Composable
   override fun Content() {
-    val viewModel = getViewModel<SearchSettingsViewModel>()
+    val viewModel = getViewModel<CoversSettingsViewModel>()
     val navigator = LocalNavigator.currentOrThrow
     val uriHandler = LocalUriHandler.current
     val currentLocale = Locale.getDefault()
     val collator = Collator.getInstance(currentLocale)
     val context = LocalContext.current
     val providers = remember(currentLocale) {
-      Provider.values().sortedWith(compareBy(collator) { context.getString(it.title) })
+      CoverProviderWebsite.values().sortedWith(compareBy(collator) { context.getString(it.title) })
     }
 
-    val disabledLookupProviders by viewModel.disabledLookupProviders.asFlow()
+    val disabledCoverProviders by viewModel.disabledCoverProviders.asFlow()
       .collectAsStateWithLifecycle(initialValue = emptySet())
 
     val actionOpenInBrowser = stringResource(R.string.action_open_in_browser)
 
     SettingsScaffold(
-      title = stringResource(R.string.settings_search),
+      title = stringResource(R.string.settings_covers),
       onNavigationClick = { navigator.pop() }
     ) {
       item {
@@ -58,7 +58,7 @@ class SearchSettingsScreen : AndroidScreen() {
       }
 
       items(providers, key = { it.name }) { provider ->
-        val checked =  provider.name !in disabledLookupProviders
+        val checked =  provider.name !in disabledCoverProviders
 
         SwitchPreference(
           modifier = Modifier.semantics {
@@ -75,7 +75,7 @@ class SearchSettingsScreen : AndroidScreen() {
           title = stringResource(provider.title),
           summary = provider.url,
           checked = checked,
-          enabled = disabledLookupProviders.size < providers.size - 1 || !checked,
+          enabled = provider != CoverProviderWebsite.AMAZON,
           trailingContent = {
             IconButton(
               modifier = Modifier.clearAndSetSemantics {},
@@ -92,12 +92,12 @@ class SearchSettingsScreen : AndroidScreen() {
           },
           onCheckedChange = { enabled ->
             val newSet = if (enabled) {
-              disabledLookupProviders - provider.name
+              disabledCoverProviders - provider.name
             } else {
-              disabledLookupProviders + provider.name
+              disabledCoverProviders + provider.name
             }
 
-            viewModel.onDisabledLookupProvidersChanged(newSet)
+            viewModel.onDisabledCoverProvidersChanged(newSet)
           }
         )
       }

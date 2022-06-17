@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.util.extension
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.annotation.StringRes
 import io.github.alessandrojean.toshokan.R
@@ -17,6 +18,12 @@ val Context.cacheImagesDir: File
  */
 val Context.appName: String
   get() = getString(R.string.app_name)
+
+/**
+ * Check if the device has a camera.
+ */
+val Context.deviceHasCamera: Boolean
+  get() = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
 
 /**
  * Display a toast in this context.

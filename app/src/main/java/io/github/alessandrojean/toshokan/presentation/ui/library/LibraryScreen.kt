@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,6 +66,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.util.ConnectionState
 import io.github.alessandrojean.toshokan.util.connectivityState
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
+import io.github.alessandrojean.toshokan.util.extension.deviceHasCamera
 import kotlinx.coroutines.launch
 
 class LibraryScreen : AndroidScreen() {
@@ -208,6 +210,9 @@ class LibraryScreen : AndroidScreen() {
     onFillManuallyClick: () -> Unit,
     onDismiss: () -> Unit
   ) {
+    val context = LocalContext.current
+    val hasCamera = remember { context.deviceHasCamera }
+
     Dialog(onDismissRequest = onDismiss) {
       Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -228,20 +233,22 @@ class LibraryScreen : AndroidScreen() {
             color =  MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.headlineSmall
           )
-          CreateBookSheetItem(
-            icon = {
-              Icon(
-                painter = painterResource(R.drawable.ic_barcode_scanner_outlined),
-                contentDescription = stringResource(R.string.action_scan_barcode),
-                tint = MaterialTheme.colorScheme.onSurface
-              )
-            },
-            text = stringResource(R.string.action_scan_barcode),
-            onClick = {
-              onScanBarcodeClick()
-              onDismiss()
-            }
-          )
+          if (hasCamera) {
+            CreateBookSheetItem(
+              icon = {
+                Icon(
+                  painter = painterResource(R.drawable.ic_barcode_scanner_outlined),
+                  contentDescription = stringResource(R.string.action_scan_barcode),
+                  tint = MaterialTheme.colorScheme.onSurface
+                )
+              },
+              text = stringResource(R.string.action_scan_barcode),
+              onClick = {
+                onScanBarcodeClick()
+                onDismiss()
+              }
+            )
+          }
           CreateBookSheetItem(
             icon = Icons.Outlined.Search,
             text = stringResource(R.string.action_search_by_isbn),

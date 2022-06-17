@@ -47,8 +47,8 @@ class LookupRepositoryImpl @Inject constructor(
   )
 
   override fun searchByIsbn(isbn: String): Flow<LookupResult> {
-    val enabledProviders = preferencesManager.enabledLookupProviders().get()
-    val providersToSearch = providers.filter { it.provider.name in enabledProviders }
+    val disabledProviders = preferencesManager.disabledLookupProviders().get()
+    val providersToSearch = providers.filter { it.provider.name !in disabledProviders }
     val progressSlice = 1f / providersToSearch.size.toFloat()
 
     val searchFlow = channelFlow {

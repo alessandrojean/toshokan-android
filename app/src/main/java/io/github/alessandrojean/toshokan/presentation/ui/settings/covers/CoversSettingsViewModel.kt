@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.presentation.ui.settings.search
+package io.github.alessandrojean.toshokan.presentation.ui.settings.covers
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,14 +8,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchSettingsViewModel @Inject constructor(
+class CoversSettingsViewModel @Inject constructor(
   preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-  val disabledLookupProviders = preferencesManager.disabledLookupProviders()
+  val disabledCoverProviders = preferencesManager.disabledCoverProviders()
 
-  fun onDisabledLookupProvidersChanged(newValue: Set<String>) = viewModelScope.launch {
-    disabledLookupProviders.setAndCommit(newValue)
+  fun onDisabledCoverProvidersChanged(newValue: Set<String>) = viewModelScope.launch {
+    disabledCoverProviders.setAndCommit(newValue)
   }
 
 }

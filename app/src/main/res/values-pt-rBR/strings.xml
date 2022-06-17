@@ -216,6 +216,7 @@
   <string name="settings_general">Geral</string>
   <string name="settings_library">Biblioteca</string>
   <string name="settings_search">Busca</string>
+  <string name="settings_covers">Capas</string>
   <string name="settings_backup">Backup e restauração</string>
   <string name="settings_advanced">Avançado</string>
 

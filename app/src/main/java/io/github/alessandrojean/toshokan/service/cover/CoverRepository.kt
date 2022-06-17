@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.service.cover
 
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.service.cover.amazon.AmazonCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.contentstuff.ContentStuffCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.oembed.OembedCoverProvider
@@ -31,7 +32,8 @@ class CoverRepositoryImpl @Inject constructor(
   contentStuffCoverProvider: ContentStuffCoverProvider.Factory,
   oembedCoverProviderFactory: OembedCoverProvider.Factory,
   urlReplacerCoverProviderFactory: UrlReplacerCoverProvider.Factory,
-  wordPressCoverProviderFactory: WordPressCoverProvider.Factory
+  wordPressCoverProviderFactory: WordPressCoverProvider.Factory,
+  private val preferencesManager: PreferencesManager
 ) : CoverRepository {
 
   private val providers = arrayOf(
@@ -41,7 +43,7 @@ class CoverRepositoryImpl @Inject constructor(
         book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("jbc", ignoreCase = true)
       },
-      baseUrl = "https://editorajbc.com.br",
+      baseUrl = CoverProviderWebsite.JBC.url,
       createPath = { book ->
         val series = book.title.toTitleParts().title
           .toSlug(Locale("pt", "BR"))
@@ -66,7 +68,7 @@ class CoverRepositoryImpl @Inject constructor(
         book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("newpop", ignoreCase = true)
       },
-      baseUrl = "https://www.newpop.com.br"
+      baseUrl = CoverProviderWebsite.NEWPOP.url
     ),
     wordPressCoverProviderFactory.create(
       website = CoverProviderWebsite.PIPOCA_E_NANQUIM,
@@ -74,7 +76,7 @@ class CoverRepositoryImpl @Inject constructor(
         book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("pipoca & nanquim", ignoreCase = true)
       },
-      baseUrl = "https://pipocaenanquim.com.br",
+      baseUrl = CoverProviderWebsite.PIPOCA_E_NANQUIM.url,
       transformer = WordPressCoverProvider.TITLE_TRANSFORMER,
       collection = WordPressCoverProvider.COLLECTION_PRODUCTS
     ),
@@ -95,7 +97,7 @@ class CoverRepositoryImpl @Inject constructor(
         book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("veneta", ignoreCase = true)
       },
-      baseUrl = "https://veneta.com.br",
+      baseUrl = CoverProviderWebsite.VENETA.url,
       transformer = WordPressCoverProvider.TITLE_TRANSFORMER,
       collection = WordPressCoverProvider.COLLECTION_PRODUCTS
     ),
@@ -112,7 +114,10 @@ class CoverRepositoryImpl @Inject constructor(
   )
 
   override fun hasProvider(book: SimpleBookInfo): Boolean {
-    return providers.firstOrNull { it.condition.invoke(book) } != null
+    val disabledProviders = preferencesManager.disabledCoverProviders().get()
+    val providersToSearch = providers.filter { it.website.name !in disabledProviders }
+
+    return providersToSearch.firstOrNull { it.condition.invoke(book) } != null
   }
 
   override suspend fun find(book: SimpleBookInfo): List<BookCover> {
@@ -134,7 +139,10 @@ class CoverRepositoryImpl @Inject constructor(
           .filter { it.imageUrl.isNotBlank() }
       }
 
-      val provider = providers.firstOrNull { it.condition.invoke(book) }
+      val disabledProviders = preferencesManager.disabledCoverProviders().get()
+      val providersToSearch = providers.filter { it.website.name !in disabledProviders }
+
+      val provider = providersToSearch.firstOrNull { it.condition.invoke(book) }
         ?: return@withContext initialResults.distinctBy { it.imageUrl }
 
       val coverResult = async {

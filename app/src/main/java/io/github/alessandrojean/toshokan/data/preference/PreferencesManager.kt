@@ -20,9 +20,14 @@ class PreferencesManager @Inject constructor(
     defaultValue = true
   )
 
-  fun enabledLookupProviders() = flowPrefs.getStringSet(
-    PreferenceKeys.enabledLookupProviders,
-    defaultValue = Provider.values().map(Provider::name).toSet()
+  fun disabledLookupProviders() = flowPrefs.getStringSet(
+    PreferenceKeys.disabledLookupProviders,
+    defaultValue = emptySet()
+  )
+
+  fun disabledCoverProviders() = flowPrefs.getStringSet(
+    PreferenceKeys.disabledCoverProviders,
+    defaultValue = emptySet()
   )
 
 }

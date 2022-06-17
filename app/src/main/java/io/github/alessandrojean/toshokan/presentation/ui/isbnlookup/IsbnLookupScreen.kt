@@ -3,11 +3,18 @@ package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
@@ -15,7 +22,6 @@ import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +35,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,7 +62,15 @@ import io.github.alessandrojean.toshokan.presentation.ui.settings.search.SearchS
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.ConnectionState
 import io.github.alessandrojean.toshokan.util.connectivityState
+import io.github.alessandrojean.toshokan.util.extension.bottom
+import io.github.alessandrojean.toshokan.util.extension.bottomPadding
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
+import io.github.alessandrojean.toshokan.util.extension.copy
+import io.github.alessandrojean.toshokan.util.extension.end
+import io.github.alessandrojean.toshokan.util.extension.navigationBarsWithIme
+import io.github.alessandrojean.toshokan.util.extension.navigationBarsWithImePadding
+import io.github.alessandrojean.toshokan.util.extension.start
+import io.github.alessandrojean.toshokan.util.extension.top
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 
 data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
@@ -181,7 +194,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 modifier = Modifier
                   .fillMaxSize()
                   .padding(innerPadding)
-                  .imePadding()
+                  .navigationBarsWithImePadding()
               )
             }
             IsbnLookupState.NO_INTERNET -> {
@@ -191,14 +204,16 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 modifier = Modifier
                   .fillMaxSize()
                   .padding(innerPadding)
-                  .imePadding()
+                  .navigationBarsWithImePadding()
               )
             }
             IsbnLookupState.HISTORY -> {
               HistoryList(
                 modifier = Modifier.fillMaxSize(),
                 history = history.toList(),
-                contentPadding = innerPadding,
+                contentPadding = innerPadding.copy(
+                  bottom = innerPadding.bottom + WindowInsets.navigationBarsWithIme.bottomPadding
+                ),
                 onClick = {
                   isbnLookupViewModel.searchQuery = it
                   isbnLookupViewModel.search()
@@ -213,7 +228,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 modifier = Modifier
                   .fillMaxSize()
                   .padding(innerPadding)
-                  .imePadding()
+                  .navigationBarsWithImePadding()
               )
             }
             IsbnLookupState.NO_RESULTS -> {
@@ -223,7 +238,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 modifier = Modifier
                   .fillMaxSize()
                   .padding(innerPadding)
-                  .imePadding()
+                  .navigationBarsWithImePadding()
               )
             }
             IsbnLookupState.ERROR -> {
@@ -234,17 +249,19 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                 modifier = Modifier
                   .fillMaxSize()
                   .padding(innerPadding)
-                  .imePadding()
+                  .navigationBarsWithImePadding()
               )
             }
             IsbnLookupState.RESULTS -> {
               IsbnLookupResultList(
                 results = isbnLookupViewModel.results,
-                modifier = Modifier
-                  .fillMaxSize()
-                  .padding(innerPadding)
-                  .imePadding(),
-                contentPadding = PaddingValues(12.dp),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                  top = 12.dp + innerPadding.top,
+                  start = 12.dp + innerPadding.start,
+                  end = 12.dp + innerPadding.end,
+                  bottom = 12.dp + WindowInsets.navigationBarsWithIme.bottomPadding
+                ),
                 listState = listState,
                 onResultClick = { result ->
                   navigator.push(ManageBookScreen(result))
