@@ -27,6 +27,10 @@ class GroupsRepository @Inject constructor(
     return database.groupQueries.findById(id).executeAsOneOrNull()
   }
 
+  fun findByIds(ids: List<Long>): List<BookGroup> {
+    return database.groupQueries.findByIds(ids).executeAsList()
+  }
+
   suspend fun insert(name: String): Long? = withContext(Dispatchers.IO) {
     val now = Date().time
 

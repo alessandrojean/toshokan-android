@@ -19,7 +19,9 @@ import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 enum class SearchState {
@@ -31,13 +33,13 @@ enum class SearchState {
 @HiltViewModel
 class SearchViewModel @Inject constructor(
   private val booksRepository: BooksRepository,
-  groupsRepository: GroupsRepository,
-  peopleRepository: PeopleRepository,
-  publishersRepository: PublishersRepository,
-  storesRepository: StoresRepository
+  private val groupsRepository: GroupsRepository,
+  private val peopleRepository: PeopleRepository,
+  private val publishersRepository: PublishersRepository,
+  private val storesRepository: StoresRepository
 ) : ViewModel() {
 
-  var filters by mutableStateOf(SearchFilters())
+  var filters by mutableStateOf(SearchFilters.Complete())
     private set
   val results = mutableStateListOf<Book>()
   var state by mutableStateOf(SearchState.HISTORY)
@@ -47,11 +49,37 @@ class SearchViewModel @Inject constructor(
   val allPublishers = publishersRepository.publishers
   val allPersons = peopleRepository.people
   val allStores = storesRepository.stores
+  val allCollections = booksRepository.findCollections()
 
   fun clearSearch() {
     state = SearchState.HISTORY
-    filters = SearchFilters()
+    filters = SearchFilters.Complete()
     results.clear()
+  }
+
+  fun onFiltersChanged(newFilters: SearchFilters) {
+    if (newFilters is SearchFilters.Complete) {
+      filters = newFilters.copy()
+    } else if (newFilters is SearchFilters.Incomplete) {
+      viewModelScope.launch {
+        filters = withContext(Dispatchers.IO) {
+          SearchFilters.Complete(
+            query = newFilters.query,
+            isFuture = newFilters.isFuture,
+            favoritesOnly = newFilters.favoritesOnly,
+            collections = newFilters.collections,
+            groups = groupsRepository.findByIds(newFilters.groups),
+            publishers = publishersRepository.findByIds(newFilters.publishers),
+            contributors = peopleRepository.findByIds(newFilters.contributors),
+            stores = storesRepository.findByIds(newFilters.stores),
+            boughtAt = newFilters.boughtAt,
+            readAt = newFilters.readAt
+          )
+        }
+      }
+    }
+
+    search()
   }
 
   fun onSearchTextChanged(newQuery: String) {
@@ -85,6 +113,11 @@ class SearchViewModel @Inject constructor(
 
   fun onContributorsChanged(newContributors: List<Person>) {
     filters = filters.copy(contributors = newContributors)
+    search()
+  }
+
+  fun onCollectionsChanged(newCollections: List<String>) {
+    filters = filters.copy(collections = newCollections)
     search()
   }
 

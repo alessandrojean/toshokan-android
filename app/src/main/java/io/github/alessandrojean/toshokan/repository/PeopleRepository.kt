@@ -25,6 +25,10 @@ class PeopleRepository @Inject constructor(
     return database.personQueries.findByName(name).executeAsOneOrNull()
   }
 
+  fun findByIds(ids: List<Long>): List<Person> {
+    return database.personQueries.findByIds(ids).executeAsList()
+  }
+
   suspend fun insert(
     name: String,
     description: String = "",

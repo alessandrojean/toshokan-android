@@ -20,6 +20,7 @@ import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.util.extension.TitleParts
+import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -52,6 +53,15 @@ class BooksRepository @Inject constructor(
   fun findReadings(id: Long, descending: Boolean = true): Flow<List<Reading>> {
     return database.readingQueries.findByBook(id).asFlow().mapToList()
       .map { if (!descending) it.reversed() else it }
+  }
+
+  fun findCollections(): Flow<List<String>> {
+    return database.bookQueries.allTitles().asFlow().mapToList()
+      .map { allTitles ->
+        allTitles.groupBy { it.toTitleParts().title }
+          .filterValues { it.size > 1 }
+          .keys.toList()
+      }
   }
 
   fun findLibraryBooks(isFuture: Boolean = false): Flow<Library> {
@@ -98,13 +108,14 @@ class BooksRepository @Inject constructor(
           previous = collection.getOrNull(bookIndex - 1),
           current = collection.getOrNull(bookIndex),
           next = collection.getOrNull(bookIndex + 1),
-          last = collection.lastOrNull()
+          last = collection.lastOrNull(),
+          count = collection.size
         )
       }
   }
 
-  suspend fun search(filters: SearchFilters): List<Book> = withContext(Dispatchers.IO) {
-    database.bookQueries
+  suspend fun search(filters: SearchFilters.Complete): List<Book> = withContext(Dispatchers.IO) {
+    var results = database.bookQueries
       .search(
         query = filters.query.ifBlank { null },
         isFuture = filters.isFuture,
@@ -123,6 +134,12 @@ class BooksRepository @Inject constructor(
         contributors = filters.contributors.map(Person::id)
       )
       .executeAsList()
+
+    if (filters.collections.isNotEmpty()) {
+      results = results.filter { it.title.toTitleParts().title in filters.collections }
+    }
+
+    results
   }
 
   suspend fun insert(

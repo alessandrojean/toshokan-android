@@ -2,7 +2,10 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.reading
 
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -63,7 +66,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
-import io.github.alessandrojean.toshokan.presentation.ui.core.components.showDatePicker
+import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePicker
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
@@ -137,7 +140,7 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
       Scaffold(
         modifier = Modifier
           .nestedScroll(scrollBehavior.nestedScrollConnection)
-          .systemBarsPadding(),
+          .navigationBarsPadding(),
         topBar = {
           Crossfade(targetState = readingScreenModel.selectionMode) { selectionMode ->
             if (selectionMode) {
@@ -177,19 +180,25 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
           }
         },
         floatingActionButton = {
-          ExtendedFloatingActionButton(
-            expanded = fabExpanded,
-            text = { Text(stringResource(R.string.create_reading)) },
-            icon = {
-              Icon(
-                imageVector = Icons.Outlined.Add,
-                contentDescription = null
-              )
-            },
-            onClick = {
-              scope.launch { modalBottomSheetState.show() }
-            }
-          )
+          AnimatedVisibility(
+            visible = !readingScreenModel.selectionMode,
+            enter = fadeIn(),
+            exit = fadeOut()
+          ) {
+            ExtendedFloatingActionButton(
+              expanded = fabExpanded,
+              text = { Text(stringResource(R.string.create_reading)) },
+              icon = {
+                Icon(
+                  imageVector = Icons.Outlined.Add,
+                  contentDescription = null
+                )
+              },
+              onClick = {
+                scope.launch { modalBottomSheetState.show() }
+              }
+            )
+          }
         },
         content = { innerPadding ->
           Crossfade(

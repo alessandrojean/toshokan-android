@@ -15,6 +15,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePicker
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
 
@@ -66,24 +67,4 @@ fun OutlinedDateField(
       }
     }
   )
-}
-
-fun showDatePicker(
-  activity: AppCompatActivity,
-  titleText: String,
-  date: Long? = null,
-  onDateChoose: (Long?) -> Unit
-) {
-  val constraints = CalendarConstraints.Builder()
-    .setValidator(DateValidatorPointBackward.now())
-    .build()
-
-  val picker = MaterialDatePicker.Builder.datePicker()
-    .setTitleText(titleText)
-    .setSelection(date ?: MaterialDatePicker.todayInUtcMilliseconds())
-    .setCalendarConstraints(constraints)
-    .build()
-
-  picker.addOnPositiveButtonClickListener { onDateChoose(it.toLocalCalendar()?.timeInMillis) }
-  picker.show(activity.supportFragmentManager, picker.toString())
 }

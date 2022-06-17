@@ -7,5 +7,6 @@ data class BookNeighbors(
   val previous: Book? = null,
   val current: Book? = null,
   val next: Book? = null,
-  val last: Book? = null
+  val last: Book? = null,
+  val count: Int = 0
 )

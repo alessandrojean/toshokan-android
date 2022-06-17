@@ -18,6 +18,11 @@ SELECT *
 FROM Person
 ORDER BY name COLLATE UNICODE ASC;
 
+findByIds:
+SELECT *
+FROM Person
+WHERE id IN ?;
+
 countPersons:
 SELECT count(*)
 FROM Person;

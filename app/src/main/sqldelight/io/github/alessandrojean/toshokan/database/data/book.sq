@@ -39,6 +39,11 @@ FROM Book
 WHERE code = ?
 LIMIT 1;
 
+allTitles:
+SELECT title
+FROM Book
+ORDER BY title COLLATE UNICODE ASC;
+
 completeBook:
 SELECT Book.*,
   BookGroup.name AS group_name,

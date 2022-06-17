@@ -25,6 +25,7 @@ fun Float.toLocaleCurrencyString(
   options: android.icu.text.NumberFormat.() -> Unit = {}
 ): String {
   val numberFormat = android.icu.text.NumberFormat.getCurrencyInstance(locale).apply {
+    minimumFractionDigits = 2
     maximumFractionDigits = 2
     this.currency = currency
   }

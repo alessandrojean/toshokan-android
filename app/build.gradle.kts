@@ -75,6 +75,7 @@ dependencies {
   // Kotlin
   val coroutinesVersion = rootProject.extra["coroutines_version"]
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:$coroutinesVersion")
 
   // Core
   implementation("androidx.core:core-ktx:1.8.0")

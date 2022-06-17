@@ -424,9 +424,11 @@ data class ManageBookScreen(
           icon = Icons.Outlined.Delete,
           onClick = onRemoveClick
         )
-        Spacer(modifier = Modifier
-          .fillMaxWidth()
-          .height(8.dp))
+        Spacer(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(8.dp)
+        )
       }
     }
   }

@@ -21,6 +21,10 @@ class StoresRepository @Inject constructor(
     return database.storeQueries.findById(storeId).executeAsOneOrNull()
   }
 
+  fun findByIds(ids: List<Long>): List<Store> {
+    return database.storeQueries.findByIds(ids).executeAsList()
+  }
+
   suspend fun insert(
     name: String,
     description: String = "",

@@ -22,6 +22,11 @@ SELECT *
 FROM Publisher
 WHERE id = ?;
 
+findByIds:
+SELECT *
+FROM Publisher
+WHERE id IN ?;
+
 findByName:
 SELECT *
 FROM Publisher

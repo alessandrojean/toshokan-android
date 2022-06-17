@@ -1,9 +1,11 @@
 package io.github.alessandrojean.toshokan.presentation.ui.isbnlookup
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,14 +14,21 @@ import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupRepository
 import io.github.alessandrojean.toshokan.service.lookup.LookupResult
+import io.github.alessandrojean.toshokan.util.ConnectionState
 import io.github.alessandrojean.toshokan.util.isValidIsbn
+import io.github.alessandrojean.toshokan.util.observeConnectivityAsFlow
 import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class IsbnLookupState {
   EMPTY,
+  NO_INTERNET,
   LOADING,
   RESULTS,
   NO_RESULTS,
@@ -29,10 +38,11 @@ enum class IsbnLookupState {
 
 @HiltViewModel
 class IsbnLookupViewModel @Inject constructor(
+  application: Application,
   private val booksRepository: BooksRepository,
   private val lookupRepository: LookupRepository,
   private val preferencesManager: PreferencesManager
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
   var searchQuery by mutableStateOf("")
   var results = mutableStateListOf<LookupBookResult>()
@@ -41,13 +51,31 @@ class IsbnLookupViewModel @Inject constructor(
   var state by mutableStateOf(IsbnLookupState.EMPTY)
   val history = preferencesManager.isbnLookupSearchHistory().asFlow()
 
+  private val context
+    get() = getApplication<Application>()
+
   init {
-    if (preferencesManager.isbnLookupSearchHistory().get().isNotEmpty()) {
-      state = IsbnLookupState.HISTORY
-    }
+    setupConnectivityObserver()
   }
 
   private var searchJob: Job? = null
+
+  private fun hasSearchHistory(): Boolean {
+    return preferencesManager.isbnLookupSearchHistory().get().isNotEmpty()
+  }
+
+  private fun setupConnectivityObserver() = viewModelScope.launch {
+    context.observeConnectivityAsFlow()
+      .cancellable()
+      .collect {
+        state = if (it is ConnectionState.Available) {
+          if (hasSearchHistory()) IsbnLookupState.HISTORY else IsbnLookupState.EMPTY
+        } else {
+          cancelSearch()
+          IsbnLookupState.NO_INTERNET
+        }
+      }
+  }
 
   fun cancelSearch() {
     if (searchJob?.isActive == true) {

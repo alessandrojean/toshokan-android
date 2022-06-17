@@ -25,11 +25,19 @@
   <string name="action_previous">Anterior</string>
   <string name="action_next">Próximo</string>
   <string name="action_open_in_browser">Abrir no navegador</string>
+  <string name="action_enable_flash">Ligar o flash</string>
+  <string name="action_disable_flash">Desligar o flash</string>
+  <string name="action_share">Compartilhar</string>
+  <string name="action_view_links">Ver links</string>
+  <string name="action_save_image">Salvar imagem</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>
   <string name="search_tip">Digite um nome para buscar</string>
   <string name="currency_search_tip">Digite um nome ou código para buscar</string>
+  <string name="no_internet_connection">Sem conexão de internet</string>
+  <string name="error_during_image_save">Erro ao salvar a imagem</string>
+  <string name="image_saved_successfully">Imagem salva com sucesso</string>
 
   <!-- Websites -->
   <string name="website">Site</string>
@@ -97,6 +105,7 @@
   <string name="filter_favorite">Favorito</string>
   <string name="filter_bought_at">Período de compra</string>
   <string name="filter_read_at">Período de leitura</string>
+  <string name="filter_collection">Coleções</string>
 
   <!-- Books -->
   <string name="information">Informações</string>
@@ -116,6 +125,7 @@
   <string name="book_read">Lido</string>
   <string name="book_unread">Não lido</string>
   <string name="book_in_collection">Na coleção</string>
+  <string name="book_series">Série</string>
   <string name="book_future">Futuro</string>
   <string name="book_delete_title">Deleção de livros</string>
   <plurals name="book_delete_warning">
@@ -138,6 +148,7 @@
   <string name="latest_reading">Última leitura</string>
   <string name="today">Hoje</string>
   <string name="other_date">Outra data</string>
+  <string name="links">Links</string>
 
   <!-- Statistics -->
   <string name="statistics">Estatísticas</string>

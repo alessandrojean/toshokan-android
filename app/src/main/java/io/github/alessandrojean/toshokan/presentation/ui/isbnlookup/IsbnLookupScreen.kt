@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.Search
@@ -28,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +55,8 @@ import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.H
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.components.IsbnLookupResultList
 import io.github.alessandrojean.toshokan.presentation.ui.settings.search.SearchSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
+import io.github.alessandrojean.toshokan.util.ConnectionState
+import io.github.alessandrojean.toshokan.util.connectivityState
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 
@@ -115,6 +119,8 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
 
     val topAppBarBackground = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
 
+    val internetConnection by connectivityState()
+
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
@@ -136,10 +142,12 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
           },
           onSearchTextChanged = { isbnLookupViewModel.searchQuery = it },
           onSearchAction = {
-            isbnLookupViewModel.search()
-            isbnLookupViewModel.checkDuplicates()?.let {
-              duplicateId = it
-              showDuplicateDialog = true
+            if (internetConnection is ConnectionState.Available) {
+              isbnLookupViewModel.search()
+              isbnLookupViewModel.checkDuplicates()?.let {
+                duplicateId = it
+                showDuplicateDialog = true
+              }
             }
           },
           actions = {
@@ -170,6 +178,16 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
             IsbnLookupState.EMPTY -> {
               NoItemsFound(
                 icon = Icons.Outlined.Search,
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+                  .imePadding()
+              )
+            }
+            IsbnLookupState.NO_INTERNET -> {
+              NoItemsFound(
+                icon = Icons.Outlined.CloudOff,
+                text = stringResource(R.string.no_internet_connection),
                 modifier = Modifier
                   .fillMaxSize()
                   .padding(innerPadding)

@@ -8,6 +8,7 @@ import io.github.alessandrojean.toshokan.service.cover.CoverResult
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
+import io.github.alessandrojean.toshokan.util.toIsbn10
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
@@ -56,8 +57,26 @@ class AmazonCoverProvider @Inject constructor(
   }
 
   companion object {
-    const val AMAZON_IMAGES_URL = "https://images-na.ssl-images-amazon.com/images/P"
-    const val AMAZON_IMAGE_SIZE = "SL700"
+    private const val AMAZON_IMAGES_URL = "https://images-na.ssl-images-amazon.com/images/P"
+    private const val AMAZON_IMAGE_FULL_SIZE = "SCRM"
+    private const val AMAZON_IMAGE_SIZE = "SL700"
+
+    fun isbnToAmazonCoverUrl(isbn: String): String? {
+      if (!isbn.isValidIsbn()) {
+        return null
+      }
+
+      val arguments = listOf(AMAZON_IMAGE_FULL_SIZE, AMAZON_IMAGE_SIZE)
+        .filter { it.isNotEmpty() }
+
+      val argumentsUrl = if (arguments.isNotEmpty()) {
+        arguments.joinToString("_", prefix = "._", postfix = "_")
+      } else {
+        ""
+      }
+
+      return "$AMAZON_IMAGES_URL/${isbn.toIsbn10()}.01$argumentsUrl.jpg"
+    }
   }
 
 }

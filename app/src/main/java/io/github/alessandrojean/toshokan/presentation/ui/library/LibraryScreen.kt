@@ -62,6 +62,8 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItems
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.presentation.ui.library.components.LibraryGrid
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
+import io.github.alessandrojean.toshokan.util.ConnectionState
+import io.github.alessandrojean.toshokan.util.connectivityState
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
@@ -80,21 +82,6 @@ class LibraryScreen : AndroidScreen() {
 
     val pagerState = rememberPagerState(initialPage = 0)
 
-//    val systemUiController = rememberSystemUiController()
-//    val statusBarColor = when {
-//      scrollBehavior.scrollFraction > 0 -> TopAppBarDefaults
-//        .smallTopAppBarColors()
-//        .containerColor(scrollBehavior.scrollFraction)
-//        .value
-//      else -> MaterialTheme.colorScheme.surface
-//    }
-//
-//    SideEffect {
-//      systemUiController.setStatusBarColor(
-//        color = statusBarColor
-//      )
-//    }
-
     val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
     val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
@@ -106,6 +93,8 @@ class LibraryScreen : AndroidScreen() {
         onDismiss = { showCreateBookSheet = false }
       )
     }
+
+    val internetConnection by connectivityState()
 
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -195,7 +184,13 @@ class LibraryScreen : AndroidScreen() {
       floatingActionButtonPosition = FabPosition.End,
       floatingActionButton = {
         FloatingActionButton(
-          onClick = { showCreateBookSheet = true }
+          onClick = {
+            if (internetConnection is ConnectionState.Unavailable) {
+              navigator.push(ManageBookScreen())
+            } else {
+              showCreateBookSheet = true
+            }
+          }
         ) {
           Icon(
             Icons.Default.Add,

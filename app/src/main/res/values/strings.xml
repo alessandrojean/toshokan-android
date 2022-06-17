@@ -27,11 +27,19 @@
   <string name="action_previous">Previous</string>
   <string name="action_next">Next</string>
   <string name="action_open_in_browser">Open in browser</string>
+  <string name="action_enable_flash">Enable flash</string>
+  <string name="action_disable_flash">Disable flash</string>
+  <string name="action_share">Share</string>
+  <string name="action_view_links">View links</string>
+  <string name="action_save_image">Save image</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>
   <string name="search_tip">Type a name to search</string>
   <string name="currency_search_tip">Type a name or code to search</string>
+  <string name="no_internet_connection">No internet connection</string>
+  <string name="error_during_image_save">Failed to save the image</string>
+  <string name="image_saved_successfully">Image saved successfully</string>
 
   <!-- Websites -->
   <string name="website">Website</string>
@@ -52,6 +60,14 @@
   <string name="shueisha" translatable="false">Shueisha</string>
   <string name="veneta" translatable="false">Veneta</string>
   <string name="viz_media" translatable="false">VIZ Media</string>
+
+  <!-- Link providers -->
+  <string name="goodreads" translatable="false">Goodreads</string>
+  <string name="amazon_br" translatable="false">Amazon.com.br</string>
+  <string name="amazon_jp" translatable="false">Amazon.co.jp</string>
+  <string name="amazon_es" translatable="false">Amazon.es</string>
+  <string name="newpop_shop" translatable="false">NewPOP SHOP</string>
+  <string name="fnac_pt" translatable="false">Fnac.pt</string>
 
   <!-- Common fields -->
   <string name="code">Code</string>
@@ -116,6 +132,7 @@
   <string name="filter_favorite">Favorite</string>
   <string name="filter_bought_at">Bought period</string>
   <string name="filter_read_at">Read period</string>
+  <string name="filter_collection">Collections</string>
 
   <!-- Books -->
   <string name="information">Information</string>
@@ -135,6 +152,7 @@
   <string name="book_read">Read</string>
   <string name="book_unread">Unread</string>
   <string name="book_in_collection">In collection</string>
+  <string name="book_series">Series</string>
   <string name="book_future">Future</string>
   <string name="book_delete_title">Book deletion</string>
   <plurals name="book_delete_warning">
@@ -157,6 +175,7 @@
   <string name="latest_reading">Latest reading</string>
   <string name="today">Today</string>
   <string name="other_date">Other date</string>
+  <string name="links">Links</string>
 
   <!-- Statistics -->
   <string name="statistics">Statistics</string>
