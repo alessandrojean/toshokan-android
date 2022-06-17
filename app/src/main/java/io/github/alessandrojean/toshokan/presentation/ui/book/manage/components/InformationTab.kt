@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +43,8 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.OutlinedMonetaryField
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
+import io.github.alessandrojean.toshokan.util.extension.bringIntoViewOnFocus
+import io.github.alessandrojean.toshokan.util.extension.navigationBarsWithImePadding
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 
 @Composable
@@ -72,6 +77,7 @@ fun InformationTab(
   var showPublisherPickerDialog by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
   val keyboardController = LocalSoftwareKeyboardController.current
+  val scope = rememberCoroutineScope()
 
   FullScreenItemPickerDialog(
     visible = showPublisherPickerDialog,
@@ -94,14 +100,15 @@ fun InformationTab(
   Column(
     modifier = Modifier
       .fillMaxSize()
-      .verticalScroll(scrollState)
       .padding(12.dp)
-      .navigationBarsPadding()
-      .imePadding(),
+      .navigationBarsWithImePadding()
+      .verticalScroll(scrollState),
     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)
   ) {
     OutlinedTextField(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier
+        .fillMaxWidth()
+        .bringIntoViewOnFocus(scope),
       value = code,
       onValueChange = onCodeChange,
       singleLine = true,
@@ -116,7 +123,9 @@ fun InformationTab(
     )
 
     OutlinedTextField(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier
+        .fillMaxWidth()
+        .bringIntoViewOnFocus(scope),
       value = title,
       onValueChange = onTitleChange,
       maxLines = 3,
@@ -131,7 +140,9 @@ fun InformationTab(
     )
 
     OutlinedTextField(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier
+        .fillMaxWidth()
+        .bringIntoViewOnFocus(scope),
       value = publisherText,
       onValueChange = {
         onPublisherTextChange.invoke(it)
@@ -158,7 +169,9 @@ fun InformationTab(
     )
 
     OutlinedTextField(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier
+        .fillMaxWidth()
+        .bringIntoViewOnFocus(scope),
       value = synopsis,
       onValueChange = onSynopsisChange,
       maxLines = 10,
@@ -171,7 +184,9 @@ fun InformationTab(
       verticalAlignment = Alignment.CenterVertically
     ) {
       OutlinedTextField(
-        modifier = Modifier.weight(1f),
+        modifier = Modifier
+          .weight(1f)
+          .bringIntoViewOnFocus(scope),
         value = dimensionWidth,
         isError = dimensionWidth.isEmpty() || dimensionWidth.parseLocaleValueOrNull() == null,
         label = { Text(stringResource(R.string.width_cm)) },
@@ -189,7 +204,9 @@ fun InformationTab(
       )
       Text("×", modifier = Modifier.padding(top = 4.dp))
       OutlinedTextField(
-        modifier = Modifier.weight(1f),
+        modifier = Modifier
+          .weight(1f)
+          .bringIntoViewOnFocus(scope),
         value = dimensionHeight,
         isError = dimensionHeight.isEmpty() || dimensionHeight.parseLocaleValueOrNull() == null,
         label = { Text(stringResource(R.string.height_cm)) },
@@ -212,7 +229,9 @@ fun InformationTab(
       horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
       OutlinedMonetaryField(
-        modifier = Modifier.weight(0.5f),
+        modifier = Modifier
+          .weight(0.5f)
+          .bringIntoViewOnFocus(scope),
         value = labelPriceValue,
         currency = labelPriceCurrency,
         isError = labelPriceValue.isEmpty(),
@@ -233,7 +252,9 @@ fun InformationTab(
         )
       )
       OutlinedMonetaryField(
-        modifier = Modifier.weight(0.5f),
+        modifier = Modifier
+          .weight(0.5f)
+          .bringIntoViewOnFocus(scope),
         value = paidPriceValue,
         currency = paidPriceCurrency,
         isError = paidPriceValue.isEmpty(),

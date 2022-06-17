@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,7 @@ import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.OutlinedDateField
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
+import io.github.alessandrojean.toshokan.util.extension.bringIntoViewOnFocus
 
 @Composable
 fun OrganizationTab(
@@ -64,6 +66,7 @@ fun OrganizationTab(
   var showStorePickerDialog by remember { mutableStateOf(false) }
   var showGroupPickerDialog by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
+  val scope = rememberCoroutineScope()
 
   FullScreenItemPickerDialog(
     visible = showGroupPickerDialog,
@@ -109,7 +112,8 @@ fun OrganizationTab(
     OutlinedTextField(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(top = 12.dp, start = 12.dp, end = 12.dp),
+        .padding(top = 12.dp, start = 12.dp, end = 12.dp)
+        .bringIntoViewOnFocus(scope),
       value = storeText,
       onValueChange = onStoreTextChange,
       singleLine = true,
@@ -145,7 +149,8 @@ fun OrganizationTab(
     OutlinedTextField(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp),
+        .padding(horizontal = 12.dp)
+        .bringIntoViewOnFocus(scope),
       value = groupText,
       onValueChange = onGroupTextChange,
       singleLine = true,
@@ -171,7 +176,8 @@ fun OrganizationTab(
     OutlinedTextField(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp),
+        .padding(horizontal = 12.dp)
+        .bringIntoViewOnFocus(scope),
       value = notes,
       onValueChange = onNotesChange,
       maxLines = 10,

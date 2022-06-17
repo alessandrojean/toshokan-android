@@ -9,11 +9,18 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun PaddingValues.copy(
@@ -50,3 +57,19 @@ val WindowInsets.bottomPadding
 
 fun Modifier.navigationBarsWithImePadding() =
   composed { windowInsetsPadding(WindowInsets.navigationBarsWithIme) }
+
+// TODO: Think of a better fix when the IME issue gets fixed.
+// https://issuetracker.google.com/issues/192043120
+fun Modifier.bringIntoViewOnFocus(scope: CoroutineScope): Modifier = composed {
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
+
+  bringIntoViewRequester(bringIntoViewRequester)
+    .onFocusChanged {
+      if (it.isFocused || it.hasFocus) {
+        scope.launch {
+//          delay(1000)
+          bringIntoViewRequester.bringIntoView()
+        }
+      }
+    }
+}
