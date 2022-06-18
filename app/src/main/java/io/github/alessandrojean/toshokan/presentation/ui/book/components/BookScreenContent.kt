@@ -189,7 +189,9 @@ fun BookScreenContent(
           modifier = Modifier
             .fillMaxWidth()
             .offset(y = (ceil(100f * scrollPercentage)).dp)
-            .graphicsLayer(alpha = 0.4f + 0.6f * (1f - scrollPercentage)),
+            .graphicsLayer {
+              alpha = 0.4f + 0.6f * (1f - scrollPercentage)
+            },
           book = simpleBook,
           bottomOffsetDp = coverBottomOffsetDp,
           topBarHeightDp = 52f,

@@ -52,6 +52,9 @@ val PaddingValues.end: Dp
 val WindowInsets.Companion.navigationBarsWithIme: WindowInsets
   @Composable get() = navigationBars.union(WindowInsets.ime)
 
+val WindowInsets.topPadding
+  @Composable get() = asPaddingValues().top
+
 val WindowInsets.bottomPadding
   @Composable get() = asPaddingValues().bottom
 
