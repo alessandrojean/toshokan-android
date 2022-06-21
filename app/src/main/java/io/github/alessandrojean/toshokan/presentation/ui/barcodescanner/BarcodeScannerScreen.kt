@@ -11,13 +11,24 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,7 +42,6 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -50,16 +60,32 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.permissions.PermissionStatus
@@ -68,7 +94,9 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.service.barcode.BarcodeAnalyser
+import io.github.alessandrojean.toshokan.util.extension.bottomPadding
 import io.github.alessandrojean.toshokan.util.isValidBarcode
+import kotlinx.coroutines.guava.asDeferred
 import kotlinx.coroutines.guava.await
 import java.util.concurrent.Executors
 
@@ -191,7 +219,8 @@ class BarcodeScannerScreen : AndroidScreen() {
     focusOnTap: Boolean = true,
     enableTorch: Boolean = false,
     onHasFlashUnitDetected: (Boolean) -> Unit = {},
-    onBarcodeDetected: (List<Barcode>) -> Unit
+    onBarcodeDetected: (List<Barcode>) -> Unit,
+    overlay: @Composable BoxScope.() -> Unit = { Overlay(modifier = Modifier.fillMaxSize()) }
   ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -199,8 +228,13 @@ class BarcodeScannerScreen : AndroidScreen() {
 
     val cameraExecutor = Executors.newSingleThreadExecutor()
 
-    val cameraProvider by produceState<ProcessCameraProvider?>(initialValue = null) {
-      value = ProcessCameraProvider.getInstance(context).await()
+    val cameraProvider by produceState<ProcessCameraProvider?>(
+      initialValue = null,
+      lifecycleOwner.lifecycle
+    ) {
+      lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        value = ProcessCameraProvider.getInstance(context).await()
+      }
     }
 
     val barcodeAnalyser = BarcodeAnalyser(onBarcodeDetected)
@@ -232,47 +266,157 @@ class BarcodeScannerScreen : AndroidScreen() {
       }
     }
 
-    DisposableEffect(Unit) {
+    // TODO: Handle camera unbind on Lifecycle, currently broken by Voyager.
+    DisposableEffect(lifecycleOwner.lifecycle) {
+//      val observer = LifecycleEventObserver { _, event ->
+//        if (event == Lifecycle.Event.ON_PAUSE) {
+//          cameraProvider?.unbindAll()
+//        }
+//      }
+//
+//      lifecycleOwner.lifecycle.addObserver(observer)
+
       onDispose {
+//        lifecycleOwner.lifecycle.removeObserver(observer)
         cameraProvider?.unbindAll()
       }
     }
 
-    AndroidView(
-      modifier = modifier.pointerInput(camera, focusOnTap) {
-        if (!focusOnTap) {
-          return@pointerInput
-        }
+    Box(
+      modifier = Modifier
+        .pointerInput(camera, focusOnTap) {
+          if (!focusOnTap) {
+            return@pointerInput
+          }
 
-        detectTapGestures {
-          val meteringPointFactory = SurfaceOrientedMeteringPointFactory(
-            size.width.toFloat(),
-            size.height.toFloat()
-          )
-
-          val meteringAction = FocusMeteringAction
-            .Builder(
-              meteringPointFactory.createPoint(it.x, it.y),
-              FocusMeteringAction.FLAG_AF
+          detectTapGestures { tapOffset ->
+            val meteringPointFactory = SurfaceOrientedMeteringPointFactory(
+              size.width.toFloat(),
+              size.height.toFloat()
             )
-            .disableAutoCancel()
-            .build()
 
-          camera?.cameraControl?.startFocusAndMetering(meteringAction)
+            val meteringAction = FocusMeteringAction
+              .Builder(
+                meteringPointFactory.createPoint(tapOffset.x, tapOffset.y),
+                FocusMeteringAction.FLAG_AF
+              )
+              .disableAutoCancel()
+              .build()
+
+            camera?.cameraControl?.startFocusAndMetering(meteringAction)
+          }
         }
-      },
-      factory = { androidViewContext ->
-        PreviewView(androidViewContext).also {
-          it.scaleType = scaleType
-          it.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-          )
-          it.implementationMode = implementationMode
-          preview.setSurfaceProvider(it.surfaceProvider)
+        .then(modifier)
+    ) {
+      AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { androidViewContext ->
+          PreviewView(androidViewContext).also {
+            it.scaleType = scaleType
+            it.layoutParams = ViewGroup.LayoutParams(
+              ViewGroup.LayoutParams.MATCH_PARENT,
+              ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            it.implementationMode = implementationMode
+            preview.setSurfaceProvider(it.surfaceProvider)
+          }
         }
-      }
+      )
+
+      overlay.invoke(this)
+    }
+  }
+
+  @Composable
+  fun Overlay(
+    modifier: Modifier = Modifier,
+    widthPercentage: Float = 0.7f,
+    aspectRatio: Float = 2f / 1f,
+    animationDurationMillis: Int = 1_500,
+    anchorColor: Color = MaterialTheme.colorScheme.primary,
+    containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+  ) {
+    val navigationBarsPadding = WindowInsets.navigationBars.bottomPadding + 96.dp
+    val navigationBarsHeightPx = with(LocalDensity.current) { navigationBarsPadding.toPx() }
+
+    val infiniteTransition = rememberInfiniteTransition()
+    val anchorOpacity by infiniteTransition.animateFloat(
+      initialValue = 1.0f,
+      targetValue = 0.0f,
+      animationSpec = infiniteRepeatable(
+        animation = tween(animationDurationMillis, easing = LinearEasing),
+        repeatMode = RepeatMode.Reverse
+      )
     )
+
+    val anchorColorAnimated = anchorColor.copy(alpha = anchorOpacity)
+
+    Canvas(modifier = modifier) {
+      val width = widthPercentage * size.width
+      val height = (1f / aspectRatio) * width
+
+      val left = (size.width - width) / 2f
+      val right = (size.width - width) / 2f + width
+      val top = (size.height - height - navigationBarsHeightPx) / 2f
+      val bottom = (size.height - height - navigationBarsHeightPx) / 2f + height
+      val cornerRadius = CornerRadius(32f, 32f)
+
+      val roundRectPath = Path().apply {
+        val roundRect = RoundRect(
+          left = left,
+          right = right,
+          top = top,
+          bottom = bottom,
+          cornerRadius = cornerRadius
+        )
+
+        addRoundRect(roundRect)
+      }
+
+      clipPath(roundRectPath, clipOp = ClipOp.Difference) {
+        drawRect(SolidColor(containerColor))
+      }
+
+      val anchorSize = 0.1f * width
+      val strokeWidth = 10f
+
+      val anchorPath = Path().apply {
+        val anchorRect = RoundRect(
+          left = left + strokeWidth,
+          right = right - strokeWidth,
+          top = top + strokeWidth,
+          bottom = bottom - strokeWidth,
+          cornerRadius = CornerRadius(cornerRadius.x - 3, cornerRadius.y - 3)
+        )
+
+        val firstRect = RoundRect(
+          left = left,
+          right = right,
+          top = top + anchorSize,
+          bottom = bottom - anchorSize
+        )
+
+        val secondRect = RoundRect(
+          left = left + anchorSize,
+          right = right - anchorSize,
+          top = top,
+          bottom = bottom
+        )
+
+        addRoundRect(anchorRect)
+        addRoundRect(firstRect)
+        addRoundRect(secondRect)
+      }
+
+      clipPath(anchorPath, clipOp = ClipOp.Difference) {
+        drawRoundRect(
+          color = anchorColorAnimated,
+          topLeft = Offset(x = left, y = top),
+          size = Size(width, height),
+          cornerRadius = cornerRadius
+        )
+      }
+    }
   }
 
 }
