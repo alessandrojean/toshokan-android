@@ -44,6 +44,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.groups.GroupsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.SettingsScreen
+import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsCategory
 import io.github.alessandrojean.toshokan.presentation.ui.stores.StoresScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 
@@ -70,29 +71,29 @@ class MoreScreen : AndroidScreen() {
           state = listState,
           contentPadding = innerPadding
         ) {
-          item {
-            NavigationItem(
+          item("publishers") {
+            SettingsCategory(
               title = stringResource(R.string.publishers),
               icon = Icons.Outlined.Domain,
               onClick = { navigator.push(PublishersScreen()) }
             )
           }
-          item {
-            NavigationItem(
+          item("people") {
+            SettingsCategory(
               title = stringResource(R.string.people),
               icon = Icons.Outlined.Group,
               onClick = { navigator.push(PeopleScreen()) }
             )
           }
-          item {
-            NavigationItem(
+          item("stores") {
+            SettingsCategory(
               title = stringResource(R.string.stores),
               icon = Icons.Outlined.LocalMall,
               onClick = { navigator.push(StoresScreen()) }
             )
           }
-          item {
-            NavigationItem(
+          item("groups") {
+            SettingsCategory(
               title = stringResource(R.string.groups),
               icon = Icons.Outlined.GroupWork,
               onClick = { navigator.push(GroupsScreen()) }
@@ -103,15 +104,15 @@ class MoreScreen : AndroidScreen() {
               color = LocalContentColor.current.copy(alpha = DividerOpacity)
             )
           }
-          item {
-            NavigationItem(
+          item("settings") {
+            SettingsCategory(
               title = stringResource(R.string.settings),
               icon = Icons.Outlined.Settings,
               onClick = { navigator.push(SettingsScreen()) }
             )
           }
-          item {
-            NavigationItem(
+          item("about") {
+            SettingsCategory(
               title = stringResource(R.string.about),
               icon = Icons.Outlined.Info,
               onClick = {}
@@ -120,33 +121,6 @@ class MoreScreen : AndroidScreen() {
         }
       }
     )
-  }
-
-  @Composable
-  fun NavigationItem(
-    modifier: Modifier = Modifier,
-    title: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-  ) {
-    Row(
-      modifier = modifier
-        .fillMaxWidth()
-        .clickable(
-          onClick = onClick
-        )
-        .padding(16.dp)
-    ) {
-      Icon(
-        imageVector = icon,
-        contentDescription = title,
-        tint = MaterialTheme.colorScheme.surfaceTint
-      )
-      Text(
-        text = title,
-        modifier = Modifier.padding(start = 24.dp)
-      )
-    }
   }
 
 }
