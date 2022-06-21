@@ -3,13 +3,9 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.components
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -25,15 +21,10 @@ import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.drawable.toBitmapOrNull
 import coil.compose.AsyncImagePainter
@@ -44,9 +35,6 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ZoomableImage
 import io.github.alessandrojean.toshokan.util.extension.bottomPadding
-import io.github.alessandrojean.toshokan.util.extension.copy
-import io.github.alessandrojean.toshokan.util.extension.navigationBarsWithIme
-import io.github.alessandrojean.toshokan.util.extension.top
 
 @Composable
 fun BookCoverFullScreenDialog(

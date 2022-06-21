@@ -82,7 +82,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole

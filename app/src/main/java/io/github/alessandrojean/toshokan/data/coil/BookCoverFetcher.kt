@@ -43,9 +43,6 @@ import okio.buffer
 import okio.sink
 import java.io.File
 import java.io.IOException
-import java.lang.Exception
-import java.lang.IllegalStateException
-import javax.inject.Inject
 import kotlin.coroutines.resumeWithException
 
 class BookCoverFetcher(

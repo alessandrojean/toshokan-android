@@ -1,7 +1,6 @@
 package io.github.alessandrojean.toshokan.data.preference
 
 import com.fredporciuncula.flow.preferences.FlowSharedPreferences
-import io.github.alessandrojean.toshokan.service.lookup.Provider
 import javax.inject.Inject
 import javax.inject.Singleton
 

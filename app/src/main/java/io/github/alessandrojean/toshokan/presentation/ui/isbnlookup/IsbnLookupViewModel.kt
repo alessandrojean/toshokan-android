@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
@@ -20,9 +19,6 @@ import io.github.alessandrojean.toshokan.util.observeConnectivityAsFlow
 import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

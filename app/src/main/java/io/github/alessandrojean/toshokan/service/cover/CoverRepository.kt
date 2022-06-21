@@ -1,6 +1,5 @@
 package io.github.alessandrojean.toshokan.service.cover
 
-import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.service.cover.amazon.AmazonCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.contentstuff.ContentStuffCoverProvider
@@ -11,7 +10,6 @@ import io.github.alessandrojean.toshokan.util.extension.toSlug
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import io.github.alessandrojean.toshokan.util.removeDashes
-import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
 import io.github.alessandrojean.toshokan.util.toIsbn10
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import kotlinx.coroutines.Dispatchers

@@ -11,13 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.DateValidatorPointBackward
-import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePicker
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
-import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
 
 @Composable
 fun OutlinedDateField(

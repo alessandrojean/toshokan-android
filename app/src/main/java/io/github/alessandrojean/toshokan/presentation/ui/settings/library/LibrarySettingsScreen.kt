@@ -2,7 +2,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.settings.library
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
@@ -13,7 +12,6 @@ import io.github.alessandrojean.toshokan.data.preference.PreferenceKeys
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SwitchPreference
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 
 class LibrarySettingsScreen : AndroidScreen() {
 

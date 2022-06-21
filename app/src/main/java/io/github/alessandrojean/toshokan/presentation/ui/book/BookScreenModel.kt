@@ -12,8 +12,8 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ActivityContext
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.data.storage.ImageSaver
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
+import io.github.alessandrojean.toshokan.data.storage.ImageSaver
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.repository.BooksRepository
