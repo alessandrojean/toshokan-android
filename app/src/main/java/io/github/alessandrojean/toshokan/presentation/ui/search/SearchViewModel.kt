@@ -60,6 +60,7 @@ class SearchViewModel @Inject constructor(
   fun onFiltersChanged(newFilters: SearchFilters) {
     if (newFilters is SearchFilters.Complete) {
       filters = newFilters.copy()
+      search()
     } else if (newFilters is SearchFilters.Incomplete) {
       viewModelScope.launch {
         filters = withContext(Dispatchers.IO) {
@@ -76,10 +77,10 @@ class SearchViewModel @Inject constructor(
             readAt = newFilters.readAt
           )
         }
+
+        search()
       }
     }
-
-    search()
   }
 
   fun onSearchTextChanged(newQuery: String) {

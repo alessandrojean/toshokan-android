@@ -92,7 +92,7 @@ dependencies {
 
   // Compose
   val composeVersion = rootProject.extra["compose_version"]
-  implementation("androidx.activity:activity-compose:1.6.0-alpha03")
+  implementation("androidx.activity:activity-compose:1.6.0-alpha05")
   implementation("androidx.compose.ui:ui:$composeVersion")
   implementation("androidx.compose.material3:material3:1.0.0-alpha13")
   implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
@@ -154,7 +154,7 @@ dependencies {
   // Lifecycle
   implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.1")
   implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.1")
-  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-rc01")
+  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-rc02")
 
   // Hilt
   val hiltVersion = rootProject.extra["hilt_version"]
@@ -179,6 +179,9 @@ dependencies {
 
   // Logcat
   implementation("com.squareup.logcat:logcat:0.1")
+
+  // Subsampling Scale Image View
+  implementation("com.github.tachiyomiorg:subsampling-scale-image-view:846abe0")
 }
 
 kapt {

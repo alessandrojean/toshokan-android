@@ -2,10 +2,14 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.components
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -21,18 +25,28 @@ import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.drawable.toBitmapOrNull
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Size
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ZoomableImage
+import io.github.alessandrojean.toshokan.util.extension.bottomPadding
+import io.github.alessandrojean.toshokan.util.extension.copy
+import io.github.alessandrojean.toshokan.util.extension.navigationBarsWithIme
+import io.github.alessandrojean.toshokan.util.extension.top
 
 @Composable
 fun BookCoverFullScreenDialog(
@@ -47,10 +61,16 @@ fun BookCoverFullScreenDialog(
   val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
   val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollFraction = 0f).value
 
-  val imagePainter = rememberAsyncImagePainter(model = book)
+  val imagePainter = rememberAsyncImagePainter(
+    model = ImageRequest.Builder(LocalContext.current)
+      .data(book)
+      .size(Size.ORIGINAL)
+      .build()
+  )
+  val imageState = imagePainter.state
 
-  val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-  val navigationBarHeightPx = with(LocalDensity.current) { navigationBarHeight.toPx() }
+//  val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues()
+//  val navigationBarHeightPx = with(LocalDensity.current) { navigationBarHeight.toPx() }
 
   Scaffold(
     containerColor = containerColor,
@@ -73,7 +93,7 @@ fun BookCoverFullScreenDialog(
           title = {},
           actions = {
             IconButton(
-              enabled = imagePainter.state is AsyncImagePainter.State.Success,
+              enabled = imageState is AsyncImagePainter.State.Success,
               onClick = onEditClick
             ) {
               Icon(
@@ -83,12 +103,10 @@ fun BookCoverFullScreenDialog(
             }
 
             IconButton(
-              enabled = imagePainter.state is AsyncImagePainter.State.Success,
+              enabled = imageState is AsyncImagePainter.State.Success,
               onClick = {
-                val imagePainterState = imagePainter.state
-
-                if (imagePainterState is AsyncImagePainter.State.Success) {
-                  onShareClick(imagePainterState.result.drawable.toBitmapOrNull())
+                if (imageState is AsyncImagePainter.State.Success) {
+                  onShareClick(imageState.result.drawable.toBitmapOrNull())
                 }
               }
             ) {
@@ -99,12 +117,10 @@ fun BookCoverFullScreenDialog(
             }
 
             IconButton(
-              enabled = imagePainter.state is AsyncImagePainter.State.Success,
+              enabled = imageState is AsyncImagePainter.State.Success,
               onClick = {
-                val imagePainterState = imagePainter.state
-
-                if (imagePainterState is AsyncImagePainter.State.Success) {
-                  onSaveClick(imagePainterState.result.drawable.toBitmapOrNull())
+                if (imageState is AsyncImagePainter.State.Success) {
+                  onSaveClick(imageState.result.drawable.toBitmapOrNull())
                 }
               }
             ) {
@@ -118,18 +134,26 @@ fun BookCoverFullScreenDialog(
       }
     },
     content = { innerPadding ->
+      val navigationBarsPadding = WindowInsets.navigationBars.bottomPadding
+
       Box(
         modifier = Modifier
           .fillMaxSize()
-          .padding(top = innerPadding.calculateTopPadding())
+          .padding(innerPadding)
       ) {
         ZoomableImage(
           modifier = Modifier
             .fillMaxSize()
             .align(Alignment.Center),
-          painter = imagePainter,
+          state = imageState,
           contentDescription = book?.title,
-          initialOffset = Offset(x = 0.0f, y = -navigationBarHeightPx / 2)
+          contentPadding = PaddingValues(
+            top = navigationBarsPadding / 2f,
+            bottom = navigationBarsPadding
+          ),
+          extraSpace = PaddingValues(
+            bottom = navigationBarsPadding
+          )
         )
       }
     }
