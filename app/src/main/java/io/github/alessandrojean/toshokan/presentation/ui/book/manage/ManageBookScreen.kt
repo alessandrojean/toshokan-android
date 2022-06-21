@@ -154,7 +154,7 @@ data class ManageBookScreen(
         tabs[pagerState.currentPage] is ManageBookTab.Cover &&
         internetConnection == ConnectionState.Available
       ) {
-        scope.launch { manageBookScreenModel.fetchCovers() }
+        manageBookScreenModel.fetchCovers()
       }
     }
 
