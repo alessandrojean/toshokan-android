@@ -11,10 +11,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -64,6 +67,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Reading
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePicker
@@ -95,9 +99,6 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
       initialValue = ModalBottomSheetValue.Hidden,
       skipHalfExpanded = true
     )
-
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     BackHandler(enabled = readingScreenModel.selectionMode) {
       readingScreenModel.clearSelection()
@@ -151,31 +152,25 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
                 scrollBehavior = scrollBehavior
               )
             } else {
-              Surface(color = topAppBarBackground) {
-                SmallTopAppBar(
-                  modifier = Modifier.statusBarsPadding(),
-                  colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                  ),
-                  scrollBehavior = scrollBehavior,
-                  navigationIcon = {
-                    IconButton(onClick = { navigator.pop() }) {
-                      Icon(
-                        imageVector = Icons.Outlined.ArrowBack,
-                        contentDescription = stringResource(R.string.action_back)
-                      )
-                    }
-                  },
-                  title = {
-                    Text(
-                      text = stringResource(R.string.readings),
-                      maxLines = 1,
-                      overflow = TextOverflow.Ellipsis
+              EnhancedSmallTopAppBar(
+                contentPadding = WindowInsets.statusBars.asPaddingValues(),
+                scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                  IconButton(onClick = { navigator.pop() }) {
+                    Icon(
+                      imageVector = Icons.Outlined.ArrowBack,
+                      contentDescription = stringResource(R.string.action_back)
                     )
                   }
-                )
-              }
+                },
+                title = {
+                  Text(
+                    text = stringResource(R.string.readings),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                  )
+                }
+              )
             }
           }
         },

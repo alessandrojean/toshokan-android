@@ -2,8 +2,10 @@ package io.github.alessandrojean.toshokan.presentation.ui.statistics
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.androidx.AndroidScreen
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 
 class StatisticsScreen : AndroidScreen() {
 
@@ -21,10 +24,8 @@ class StatisticsScreen : AndroidScreen() {
   override fun Content() {
     Scaffold(
       topBar = {
-        SmallTopAppBar(
-          modifier = Modifier.windowInsetsPadding(
-            WindowInsets.systemBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-          ),
+        EnhancedSmallTopAppBar(
+          contentPadding = WindowInsets.statusBars.asPaddingValues(),
           title = { Text(stringResource(R.string.statistics)) }
         )
       },

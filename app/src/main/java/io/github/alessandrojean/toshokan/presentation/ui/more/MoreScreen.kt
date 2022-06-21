@@ -2,8 +2,11 @@ package io.github.alessandrojean.toshokan.presentation.ui.more
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,6 +39,7 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.groups.GroupsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
@@ -52,23 +56,14 @@ class MoreScreen : AndroidScreen() {
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
 
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
-
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
-        Surface(color = topAppBarBackground) {
-          SmallTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            colors = TopAppBarDefaults.smallTopAppBarColors(
-              containerColor = Color.Transparent,
-              scrolledContainerColor = Color.Transparent
-            ),
-            scrollBehavior = scrollBehavior,
-            title = { Text(stringResource(R.string.more)) }
-          )
-        }
+        EnhancedSmallTopAppBar(
+          contentPadding = WindowInsets.statusBars.asPaddingValues(),
+          scrollBehavior = scrollBehavior,
+          title = { Text(stringResource(R.string.more)) }
+        )
       },
       content = { innerPadding ->
         LazyColumn(

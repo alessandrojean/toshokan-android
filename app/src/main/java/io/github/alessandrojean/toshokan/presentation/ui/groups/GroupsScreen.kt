@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -63,6 +65,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookGroup
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupDialog
@@ -101,9 +104,6 @@ class GroupsScreen : AndroidScreen() {
       listState = listState,
       onMove = { from, to -> reorderingItems.move(from.index, to.index) }
     )
-
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     BackHandler(enabled = selectionMode || uiState.reorderMode) {
       if (selectionMode) {
@@ -149,67 +149,61 @@ class GroupsScreen : AndroidScreen() {
               scrollBehavior = scrollBehavior
             )
           } else {
-            Surface(color = topAppBarBackground) {
-              SmallTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                  containerColor = Color.Transparent,
-                  scrolledContainerColor = Color.Transparent
-                ),
-                navigationIcon = {
-                  if (uiState.reorderMode) {
-                    IconButton(
-                      onClick = {
-                        groupsViewModel.exitReorderMode()
-                        reorderingItems.clear()
-                      }
-                    ) {
-                      Icon(
-                        Icons.Default.Close,
-                        contentDescription = stringResource(R.string.action_cancel)
-                      )
+            EnhancedSmallTopAppBar(
+              contentPadding = WindowInsets.statusBars.asPaddingValues(),
+              navigationIcon = {
+                if (uiState.reorderMode) {
+                  IconButton(
+                    onClick = {
+                      groupsViewModel.exitReorderMode()
+                      reorderingItems.clear()
                     }
-                  } else {
-                    IconButton(onClick = { navigator.pop() }) {
-                      Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = stringResource(R.string.action_back)
-                      )
-                    }
+                  ) {
+                    Icon(
+                      Icons.Default.Close,
+                      contentDescription = stringResource(R.string.action_cancel)
+                    )
                   }
-                },
-                title = { Text(stringResource(R.string.groups)) },
-                actions = {
-                  if (groups.size > 1 && !uiState.reorderMode) {
-                    IconButton(
-                      onClick = {
-                        reorderingItems.addAll(groups)
-                        groupsViewModel.enterReorderMode()
-                      }
-                    ) {
-                      Icon(
-                        imageVector = Icons.Outlined.Reorder,
-                        contentDescription = stringResource(R.string.action_reorder)
-                      )
-                    }
-                  } else if (uiState.reorderMode) {
-                    IconButton(
-                      onClick = {
-                        groupsViewModel.reorderItems(reorderingItems.map(BookGroup::id))
-                        groupsViewModel.exitReorderMode()
-                        reorderingItems.clear()
-                      }
-                    ) {
-                      Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = stringResource(R.string.action_finish)
-                      )
-                    }
+                } else {
+                  IconButton(onClick = { navigator.pop() }) {
+                    Icon(
+                      Icons.Default.ArrowBack,
+                      contentDescription = stringResource(R.string.action_back)
+                    )
                   }
-                },
-                scrollBehavior = scrollBehavior
-              )
-            }
+                }
+              },
+              title = { Text(stringResource(R.string.groups)) },
+              actions = {
+                if (groups.size > 1 && !uiState.reorderMode) {
+                  IconButton(
+                    onClick = {
+                      reorderingItems.addAll(groups)
+                      groupsViewModel.enterReorderMode()
+                    }
+                  ) {
+                    Icon(
+                      imageVector = Icons.Outlined.Reorder,
+                      contentDescription = stringResource(R.string.action_reorder)
+                    )
+                  }
+                } else if (uiState.reorderMode) {
+                  IconButton(
+                    onClick = {
+                      groupsViewModel.reorderItems(reorderingItems.map(BookGroup::id))
+                      groupsViewModel.exitReorderMode()
+                      reorderingItems.clear()
+                    }
+                  ) {
+                    Icon(
+                      imageVector = Icons.Outlined.Check,
+                      contentDescription = stringResource(R.string.action_finish)
+                    )
+                  }
+                }
+              },
+              scrollBehavior = scrollBehavior
+            )
           }
         }
       },

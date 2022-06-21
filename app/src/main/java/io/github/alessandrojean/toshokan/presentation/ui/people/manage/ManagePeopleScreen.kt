@@ -4,11 +4,14 @@ import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -52,6 +55,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Person
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
 import io.github.alessandrojean.toshokan.util.extension.toCountryDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toFlagEmoji
@@ -94,9 +98,6 @@ class ManagePeopleScreen(
       }
     }
 
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
-
     FullScreenItemPickerDialog<Pair<String, String>>(
       visible = showCountryPickerDialog,
       title = stringResource(R.string.country),
@@ -117,49 +118,43 @@ class ManagePeopleScreen(
         .nestedScroll(scrollBehavior.nestedScrollConnection)
         .navigationBarsPadding(),
       topBar = {
-        Surface(color = topAppBarBackground) {
-          SmallTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            colors = TopAppBarDefaults.smallTopAppBarColors(
-              containerColor = Color.Transparent,
-              scrolledContainerColor = Color.Transparent
-            ),
-            scrollBehavior = scrollBehavior,
-            navigationIcon = {
-              IconButton(
-                enabled = !managePeopleViewModel.writing,
-                onClick = { navigator.pop() }
-              ) {
-                Icon(
-                  Icons.Default.ArrowBack,
-                  contentDescription = stringResource(R.string.action_back)
-                )
-              }
-            },
-            title = {
-              Text(
-                text = if (mode == ManagePeopleMode.CREATE) {
-                  stringResource(R.string.create_person)
-                } else {
-                  person!!.name
-                }
-              )
-            },
-            actions = {
-              TextButton(
-                enabled = !managePeopleViewModel.writing,
-                onClick = {
-                  if (mode == ManagePeopleMode.CREATE) {
-                    managePeopleViewModel.create { navigator.pop() }
-                  } else {
-                    managePeopleViewModel.edit { navigator.pop() }
-                  }
-                },
-                content = { Text(stringResource(R.string.action_finish)) }
+        EnhancedSmallTopAppBar(
+          contentPadding = WindowInsets.statusBars.asPaddingValues(),
+          scrollBehavior = scrollBehavior,
+          navigationIcon = {
+            IconButton(
+              enabled = !managePeopleViewModel.writing,
+              onClick = { navigator.pop() }
+            ) {
+              Icon(
+                Icons.Default.ArrowBack,
+                contentDescription = stringResource(R.string.action_back)
               )
             }
-          )
-        }
+          },
+          title = {
+            Text(
+              text = if (mode == ManagePeopleMode.CREATE) {
+                stringResource(R.string.create_person)
+              } else {
+                person!!.name
+              }
+            )
+          },
+          actions = {
+            TextButton(
+              enabled = !managePeopleViewModel.writing,
+              onClick = {
+                if (mode == ManagePeopleMode.CREATE) {
+                  managePeopleViewModel.create { navigator.pop() }
+                } else {
+                  managePeopleViewModel.edit { navigator.pop() }
+                }
+              },
+              content = { Text(stringResource(R.string.action_finish)) }
+            )
+          }
+        )
       },
       content = { innerPadding ->
         Box(

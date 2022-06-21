@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -57,6 +59,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
@@ -82,9 +85,6 @@ class PublishersScreen : AndroidScreen() {
     }
 
     val publishers by publishersViewModel.publishers.collectAsStateWithLifecycle(emptyList())
-
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
 
     BackHandler(enabled = selectionMode) {
       publishersViewModel.clearSelection()
@@ -128,25 +128,19 @@ class PublishersScreen : AndroidScreen() {
               scrollBehavior = scrollBehavior
             )
           } else {
-            Surface(color = topAppBarBackground) {
-              SmallTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                  containerColor = Color.Transparent,
-                  scrolledContainerColor = Color.Transparent
-                ),
-                navigationIcon = {
-                  IconButton(onClick = { navigator.pop() }) {
-                    Icon(
-                      Icons.Default.ArrowBack,
-                      contentDescription = stringResource(R.string.action_back)
-                    )
-                  }
-                },
-                title = { Text(stringResource(R.string.publishers)) },
-                scrollBehavior = scrollBehavior
-              )
-            }
+            EnhancedSmallTopAppBar(
+              contentPadding = WindowInsets.statusBars.asPaddingValues(),
+              navigationIcon = {
+                IconButton(onClick = { navigator.pop() }) {
+                  Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = stringResource(R.string.action_back)
+                  )
+                }
+              },
+              title = { Text(stringResource(R.string.publishers)) },
+              scrollBehavior = scrollBehavior
+            )
           }
         }
       },

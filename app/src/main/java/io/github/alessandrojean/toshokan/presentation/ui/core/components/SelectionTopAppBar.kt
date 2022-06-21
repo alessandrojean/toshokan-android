@@ -1,6 +1,9 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -12,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -27,48 +31,46 @@ fun SelectionTopAppBar(
   onClearSelectionClick: () -> Unit = {},
   onEditClick: (() -> Unit)? = null,
   onDeleteClick: () -> Unit = {},
-  scrollBehavior: TopAppBarScrollBehavior
+  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
+    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+    scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+  ),
+  scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
-  Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
-    SmallTopAppBar(
-      modifier = Modifier
-        .statusBarsPadding()
-        .then(modifier),
-      colors = TopAppBarDefaults.smallTopAppBarColors(
-        containerColor = Color.Transparent,
-        scrolledContainerColor = Color.Transparent
-      ),
-      scrollBehavior = scrollBehavior,
-      navigationIcon = {
-        IconButton(onClick = onClearSelectionClick) {
+  EnhancedSmallTopAppBar(
+    modifier = modifier,
+    contentPadding = WindowInsets.statusBars.asPaddingValues(),
+    colors = colors,
+    scrollBehavior = scrollBehavior,
+    navigationIcon = {
+      IconButton(onClick = onClearSelectionClick) {
+        Icon(
+          Icons.Default.Close,
+          contentDescription = stringResource(R.string.action_cancel)
+        )
+      }
+    },
+    title = {
+      AnimatedContent(targetState = selectionCount) { targetCount ->
+        Text(targetCount.toString())
+      }
+    },
+    actions = {
+      if (selectionCount == 1 && onEditClick != null) {
+        IconButton(onClick = onEditClick) {
           Icon(
-            Icons.Default.Close,
-            contentDescription = stringResource(R.string.action_cancel)
-          )
-        }
-      },
-      title = {
-        AnimatedContent(targetState = selectionCount) { targetCount ->
-          Text(targetCount.toString())
-        }
-      },
-      actions = {
-        if (selectionCount == 1 && onEditClick != null) {
-          IconButton(onClick = onEditClick) {
-            Icon(
-              Icons.Outlined.Edit,
-              contentDescription = stringResource(R.string.action_edit)
-            )
-          }
-        }
-
-        IconButton(onClick = onDeleteClick) {
-          Icon(
-            Icons.Outlined.Delete,
-            contentDescription = stringResource(R.string.action_delete)
+            Icons.Outlined.Edit,
+            contentDescription = stringResource(R.string.action_edit)
           )
         }
       }
-    )
-  }
+
+      IconButton(onClick = onDeleteClick) {
+        Icon(
+          Icons.Outlined.Delete,
+          contentDescription = stringResource(R.string.action_delete)
+        )
+      }
+    }
+  )
 }

@@ -27,11 +27,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -92,6 +94,7 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.common.Barcode
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.service.barcode.BarcodeAnalyser
 import io.github.alessandrojean.toshokan.util.extension.bottomPadding
@@ -112,23 +115,18 @@ class BarcodeScannerScreen : AndroidScreen() {
 
     Scaffold(
       topBar = {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-          SmallTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            colors = TopAppBarDefaults.smallTopAppBarColors(
-              containerColor = Color.Transparent
-            ),
-            navigationIcon = {
-              IconButton(onClick = { navigator.pop() }) {
-                Icon(
-                  imageVector = Icons.Default.ArrowBack,
-                  contentDescription = stringResource(R.string.action_back)
-                )
-              }
-            },
-            title = { Text(stringResource(R.string.barcode_scanner)) }
-          )
-        }
+        EnhancedSmallTopAppBar(
+          contentPadding = WindowInsets.statusBars.asPaddingValues(),
+          navigationIcon = {
+            IconButton(onClick = { navigator.pop() }) {
+              Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = stringResource(R.string.action_back)
+              )
+            }
+          },
+          title = { Text(stringResource(R.string.barcode_scanner)) }
+        )
       },
       floatingActionButtonPosition = FabPosition.Center,
       floatingActionButton = {

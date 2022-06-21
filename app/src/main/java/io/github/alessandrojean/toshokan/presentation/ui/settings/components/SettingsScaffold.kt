@@ -1,6 +1,9 @@
 package io.github.alessandrojean.toshokan.presentation.ui.settings.components
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -23,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 
 @Composable
 fun SettingsScaffold(
@@ -35,40 +39,31 @@ fun SettingsScaffold(
   val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
   val listState = rememberLazyListState()
 
-  val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-  val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
-
   Scaffold(
     modifier = Modifier
       .nestedScroll(scrollBehavior.nestedScrollConnection)
       .navigationBarsPadding()
       .then(modifier),
     topBar = {
-      Surface(color = topAppBarBackground) {
-        SmallTopAppBar(
-          modifier = Modifier.statusBarsPadding(),
-          colors = TopAppBarDefaults.smallTopAppBarColors(
-            containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Transparent
-          ),
-          scrollBehavior = scrollBehavior,
-          navigationIcon = {
-            IconButton(onClick = onNavigationClick) {
-              Icon(
-                imageVector = Icons.Outlined.ArrowBack,
-                contentDescription = stringResource(R.string.action_back)
-              )
-            }
-          },
-          title = {
-            Text(
-              text = title,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
+      EnhancedSmallTopAppBar(
+        contentPadding = WindowInsets.statusBars.asPaddingValues(),
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+          IconButton(onClick = onNavigationClick) {
+            Icon(
+              imageVector = Icons.Outlined.ArrowBack,
+              contentDescription = stringResource(R.string.action_back)
             )
           }
-        )
-      }
+        },
+        title = {
+          Text(
+            text = title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+        }
+      )
     },
     content = { innerPadding ->
       LazyColumn(

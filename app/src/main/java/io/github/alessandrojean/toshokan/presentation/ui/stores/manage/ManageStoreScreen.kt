@@ -4,11 +4,14 @@ import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -48,6 +51,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Store
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 
 class ManageStoreScreen(
   private val mode: ManageStoreMode = ManageStoreMode.CREATE,
@@ -76,57 +80,48 @@ class ManageStoreScreen(
       }
     }
 
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
-
     Scaffold(
       modifier = Modifier
         .nestedScroll(scrollBehavior.nestedScrollConnection)
         .navigationBarsPadding(),
       topBar = {
-        Surface(color = topAppBarBackground) {
-          SmallTopAppBar(
-            modifier = Modifier.statusBarsPadding(),
-            colors = TopAppBarDefaults.smallTopAppBarColors(
-              containerColor = Color.Transparent,
-              scrolledContainerColor = Color.Transparent
-            ),
-            scrollBehavior = scrollBehavior,
-            navigationIcon = {
-              IconButton(
-                enabled = !manageStoreViewModel.writing,
-                onClick = { navigator.pop() }
-              ) {
-                Icon(
-                  Icons.Default.ArrowBack,
-                  contentDescription = stringResource(R.string.action_back)
-                )
-              }
-            },
-            title = {
-              Text(
-                text = if (mode == ManageStoreMode.CREATE) {
-                  stringResource(R.string.create_store)
-                } else {
-                  store!!.name
-                }
-              )
-            },
-            actions = {
-              TextButton(
-                enabled = !manageStoreViewModel.writing,
-                onClick = {
-                  if (mode == ManageStoreMode.CREATE) {
-                    manageStoreViewModel.create { navigator.pop() }
-                  } else {
-                    manageStoreViewModel.edit { navigator.pop() }
-                  }
-                },
-                content = { Text(stringResource(R.string.action_finish)) }
+        EnhancedSmallTopAppBar(
+          contentPadding = WindowInsets.statusBars.asPaddingValues(),
+          scrollBehavior = scrollBehavior,
+          navigationIcon = {
+            IconButton(
+              enabled = !manageStoreViewModel.writing,
+              onClick = { navigator.pop() }
+            ) {
+              Icon(
+                Icons.Default.ArrowBack,
+                contentDescription = stringResource(R.string.action_back)
               )
             }
-          )
-        }
+          },
+          title = {
+            Text(
+              text = if (mode == ManageStoreMode.CREATE) {
+                stringResource(R.string.create_store)
+              } else {
+                store!!.name
+              }
+            )
+          },
+          actions = {
+            TextButton(
+              enabled = !manageStoreViewModel.writing,
+              onClick = {
+                if (mode == ManageStoreMode.CREATE) {
+                  manageStoreViewModel.create { navigator.pop() }
+                } else {
+                  manageStoreViewModel.edit { navigator.pop() }
+                }
+              },
+              content = { Text(stringResource(R.string.action_finish)) }
+            )
+          }
+        )
       },
       content = { innerPadding ->
         Box(
