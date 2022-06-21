@@ -8,6 +8,8 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import logcat.LogPriority
+import logcat.logcat
 
 class BarcodeAnalyser(
   private val onBarcodeDetected: (List<Barcode>) -> Unit
@@ -39,7 +41,7 @@ class BarcodeAnalyser(
             }
           }
           .addOnFailureListener { exception ->
-            Log.d("BarcodeAnalyzer", "Something went wrong: ${exception.localizedMessage}")
+            logcat("BarcodeAnalyzer", LogPriority.ERROR) { exception.stackTraceToString() }
           }
           .addOnCompleteListener { image.close() }
       }
