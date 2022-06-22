@@ -1,10 +1,13 @@
 package io.github.alessandrojean.toshokan.repository
 
 import android.content.Context
+import android.icu.util.Currency
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.alessandrojean.toshokan.data.backup.models.ToshokanSheetBook
+import io.github.alessandrojean.toshokan.data.backup.models.ToshokanSheetStatus
 import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Book
@@ -17,12 +20,14 @@ import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Contributor
+import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.util.extension.TitleParts
+import io.github.alessandrojean.toshokan.util.extension.toSheetDate
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +48,10 @@ class BooksRepository @Inject constructor(
 
   fun findById(id: Long): CompleteBook? {
     return database.bookQueries.completeBook(id).executeAsOneOrNull()
+  }
+
+  fun findAllCodes(): List<String> {
+    return database.bookQueries.findAllCodes().executeAsList()
   }
 
   fun findByIdAsFlow(id: Long): Flow<CompleteBook?> {

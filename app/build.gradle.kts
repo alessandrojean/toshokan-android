@@ -44,6 +44,7 @@ android {
       "-opt-in=kotlin.RequiresOptIn",
       "-opt-in=kotlin.Experimental",
       "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+      "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
       "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
       "-opt-in=androidx.compose.material.ExperimentalMaterialApi",
       "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
@@ -147,6 +148,7 @@ dependencies {
 
   // Kotlinx.serialization
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.3.3")
 
   // Jsoup
   implementation("org.jsoup:jsoup:1.15.1")
@@ -182,6 +184,9 @@ dependencies {
 
   // Subsampling Scale Image View
   implementation("com.github.tachiyomiorg:subsampling-scale-image-view:846abe0")
+
+  // Okio
+  implementation("com.squareup.okio:okio:3.1.0")
 }
 
 kapt {

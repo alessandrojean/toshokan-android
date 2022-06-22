@@ -49,6 +49,11 @@ SELECT *
 FROM Book
 WHERE id IN ?;
 
+findAllCodes:
+SELECT code
+FROM Book
+WHERE code IS NOT NULL;
+
 allTitles:
 SELECT title
 FROM Book

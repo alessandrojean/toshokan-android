@@ -17,6 +17,10 @@ class StoresRepository @Inject constructor(
 
   val stores = database.storeQueries.selectAll().asFlow().mapToList()
 
+  fun selectAll(): List<Store> {
+    return database.storeQueries.selectAll().executeAsList()
+  }
+
   fun findById(storeId: Long): Store? {
     return database.storeQueries.findById(storeId).executeAsOneOrNull()
   }

@@ -13,9 +13,11 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.settings.backup.BackupSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsCategory
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.covers.CoversSettingsScreen
+import io.github.alessandrojean.toshokan.presentation.ui.settings.general.GeneralSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.library.LibrarySettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.search.SearchSettingsScreen
 
@@ -33,7 +35,7 @@ class SettingsScreen : AndroidScreen() {
         SettingsCategory(
           title = stringResource(R.string.settings_general),
           icon = Icons.Outlined.Tune,
-          onClick = {}
+          onClick = { navigator.push(GeneralSettingsScreen()) }
         )
       }
       item {
@@ -61,7 +63,7 @@ class SettingsScreen : AndroidScreen() {
         SettingsCategory(
           title = stringResource(R.string.settings_backup),
           icon = Icons.Outlined.SettingsBackupRestore,
-          onClick = {}
+          onClick = { navigator.push(BackupSettingsScreen()) }
         )
       }
       item {

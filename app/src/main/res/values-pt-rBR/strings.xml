@@ -220,11 +220,29 @@
   <string name="settings_backup">Backup e restauração</string>
   <string name="settings_advanced">Avançado</string>
 
+  <!-- General settings -->
+  <string name="pref_manage_notifications">Gerenciar notificações</string>
+
   <!-- Library settings -->
   <string name="pref_show_book_navigation">Mostrar a barra de navegação de volumes</string>
 
   <!-- Search settings -->
   <string name="pref_header_lookup_providers">Provedores</string>
+
+  <!-- Backup and restore settings -->
+  <string name="pref_restore_from_sheet">Restaurar da planilha</string>
+  <string name="pref_restore_from_sheet_summary">Restora sua biblioteca da versão web do Toshokan</string>
+  <string name="restoring_backup">Restaurando backup</string>
+  <string name="error_during_backup_restore">Houve um erro na restauração do backup</string>
+  <string name="restore_completed">Restauração concluída</string>
+  <string name="restore_duration">%02d min, %02d seg</string>
+  <string name="restore_completed_message">Concluído em %1$s</string>
+  <string name="restoring_backup_canceled">Restauração cancelada</string>
+
+  <!-- Notification channels -->
+  <string name="label_backup">Backup e restauração</string>
+  <string name="channel_progress">Progresso</string>
+  <string name="channel_complete">Completo</string>
 
   <!-- Barcode scanning -->
   <string name="barcode_scanner">Leitor de códigos de barras</string>

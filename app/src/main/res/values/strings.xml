@@ -247,11 +247,29 @@
   <string name="settings_backup">Backup and restore</string>
   <string name="settings_advanced">Advanced</string>
 
+  <!-- General settings -->
+  <string name="pref_manage_notifications">Manage notifications</string>
+
   <!-- Library settings -->
   <string name="pref_show_book_navigation">Show book volumes navigation bar</string>
 
   <!-- Search settings -->
   <string name="pref_header_lookup_providers">Providers</string>
+
+  <!-- Backup and restore settings -->
+  <string name="pref_restore_from_sheet">Restore from sheet</string>
+  <string name="pref_restore_from_sheet_summary">Restores your library from the web version of Toshokan</string>
+  <string name="restoring_backup">Restoring backup</string>
+  <string name="error_during_backup_restore">The backup restore has failed</string>
+  <string name="restore_completed">Restore completed</string>
+  <string name="restore_duration">%02d min, %02d sec</string>
+  <string name="restore_completed_message">Done in %1$s</string>
+  <string name="restoring_backup_canceled">Backup restore cancelled</string>
+
+  <!-- Notification channels -->
+  <string name="label_backup">Backup and restore</string>
+  <string name="channel_progress">Progress</string>
+  <string name="channel_complete">Complete</string>
 
   <!-- Barcode scanning -->
   <string name="barcode_scanner">Barcode scanner</string>

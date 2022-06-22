@@ -10,8 +10,11 @@ import dagger.hilt.android.HiltAndroidApp
 import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.data.coil.BookCoverFetcher
 import io.github.alessandrojean.toshokan.data.coil.BookCoverKeyer
+import io.github.alessandrojean.toshokan.data.notification.Notifications
 import logcat.AndroidLogcatLogger
+import logcat.LogPriority
 import logcat.LogPriority.VERBOSE
+import logcat.logcat
 import okhttp3.OkHttpClient
 import javax.inject.Inject
 
@@ -26,6 +29,8 @@ class ToshokanApp : Application(), ImageLoaderFactory {
 
     // Log all priorities in debug builds, no-op in release builds.
     AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = VERBOSE)
+
+    setupNotificationChannels()
   }
 
   override fun newImageLoader(): ImageLoader {
@@ -47,6 +52,14 @@ class ToshokanApp : Application(), ImageLoaderFactory {
     }
 
     return builder.build()
+  }
+
+  protected open fun setupNotificationChannels() {
+    try {
+      Notifications.createChannels(this)
+    } catch (e: Exception) {
+      logcat(LogPriority.ERROR) { "Failed to modify notification channels" }
+    }
   }
 
 }

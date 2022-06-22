@@ -210,6 +210,7 @@ fun BookInformation(
             bottomStart = buttonRowCorner
           ),
           contentPadding = buttonRowContentPadding,
+          enabled = book?.is_future == false,
           onClick = onReadingClick
         )
         ExpandedIconButton(

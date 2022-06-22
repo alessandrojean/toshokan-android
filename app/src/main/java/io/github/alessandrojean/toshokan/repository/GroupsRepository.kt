@@ -23,6 +23,10 @@ class GroupsRepository @Inject constructor(
     return database.groupQueries.nextSortValue().executeAsOne().expr?.toInt() ?: 0
   }
 
+  fun findAll(): List<BookGroup> {
+    return database.groupQueries.selectAll().executeAsList()
+  }
+
   fun findById(id: Long): BookGroup? {
     return database.groupQueries.findById(id).executeAsOneOrNull()
   }

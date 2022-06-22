@@ -1,9 +1,15 @@
 package io.github.alessandrojean.toshokan.util.extension
 
+import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.PowerManager
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import io.github.alessandrojean.toshokan.R
 import java.io.File
 
@@ -56,4 +62,53 @@ fun Context.toast(
     block.invoke(it)
     it.show()
   }
+}
+
+/**
+ * Helper method to create a notification builder.
+ *
+ * @param channelId the channel id.
+ * @param block the function that will execute inside the builder.
+ * @return a notification to be displayed or updated.
+ */
+fun Context.notificationBuilder(
+  channelId: String,
+  block: (NotificationCompat.Builder.() -> Unit)? = null
+): NotificationCompat.Builder {
+  // TODO: Set the accent color.
+  val builder = NotificationCompat.Builder(this, channelId)
+
+  block?.let {
+    builder.block()
+  }
+
+  return builder
+}
+
+val Context.notificationManager: NotificationManager
+  get() = getSystemService()!!
+
+val Context.powerManager: PowerManager
+  get() = getSystemService()!!
+
+/**
+ * Returns true if the given service class is running.
+ */
+fun Context.isServiceRunning(serviceClass: Class<*>): Boolean {
+  val className = serviceClass.name
+  val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+  @Suppress("DEPRECATION")
+  return manager.getRunningServices(Integer.MAX_VALUE)
+    .any { className == it.service.className }
+}
+
+
+/**
+ * Convenience method to acquire a partial wake lock.
+ */
+@SuppressLint("WakelockTimeout")
+fun Context.acquireWakeLock(tag: String): PowerManager.WakeLock {
+  val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "$tag:WakeLock")
+  wakeLock.acquire()
+  return wakeLock
 }

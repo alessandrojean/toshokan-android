@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.util.extension
 
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -38,4 +39,12 @@ fun Long.formatToLocaleDate(
   val dateFormat = DateFormat.getDateInstance(format, locale)
   return runCatching { dateFormat.format(this) }
     .getOrNull() ?: ""
+}
+
+private val SHEET_DATE_PARSER by lazy {
+  SimpleDateFormat("yyyy-MM-dd", Locale.US)
+}
+
+fun String.toSheetDate(): Long? {
+  return runCatching { SHEET_DATE_PARSER.parse(this)?.time }.getOrNull()
 }

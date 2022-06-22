@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- For background jobs -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -36,6 +43,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+          android:name=".data.notification.NotificationReceiver"
+          android:exported="false" />
+
+        <service
+          android:name=".data.backup.BackupRestoreService"
+          android:exported="false" />
 
     </application>
 
