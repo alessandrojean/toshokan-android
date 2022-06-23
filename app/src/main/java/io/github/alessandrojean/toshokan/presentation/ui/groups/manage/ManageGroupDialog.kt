@@ -1,7 +1,10 @@
 package io.github.alessandrojean.toshokan.presentation.ui.groups.manage
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.GroupWork
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +37,12 @@ fun ManageGroupDialog(
     onDismissRequest = {
       manageGroupViewModel.clearFields()
       onClose()
+    },
+    icon = {
+      Icon(
+        imageVector = Icons.Outlined.GroupWork,
+        contentDescription = null
+      )
     },
     title = {
       Text(

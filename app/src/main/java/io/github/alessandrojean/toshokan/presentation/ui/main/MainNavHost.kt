@@ -101,10 +101,10 @@ fun MainNavHost() {
       bottomBar = {
         AnimatedVisibility(
           visible = isBottomBarVisible,
-          enter = fadeIn() + slideInVertically(initialOffsetY = { it }) +
-            expandVertically(expandFrom = Alignment.Top, initialHeight = { 0 }, clip = false),
-          exit = fadeOut() + slideOutVertically(targetOffsetY = { it }) +
-            shrinkVertically(targetHeight = { 0 }, clip = false)
+          enter = fadeIn() + slideInVertically { it } +
+            expandVertically(expandFrom = Alignment.Top, clip = false),
+          exit = fadeOut() + slideOutVertically { it } +
+            shrinkVertically(clip = false)
         ) {
           Box(
             modifier = Modifier
