@@ -11,6 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -94,6 +95,7 @@ class LookupRepositoryImpl @Inject constructor(
           else -> acc
         }
       }
+      .flowOn(Dispatchers.IO)
   }
 
 //  override fun searchByIsbn(isbn: String): Flow<LookupResult> = channelFlow {

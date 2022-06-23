@@ -20,7 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -52,6 +55,7 @@ fun BookCoverBox(
     WindowInsets.statusBars
       .asPaddingValues()
       .calculateTopPadding()
+  var aspectRatio by remember { mutableStateOf(2f / 3f) }
 
   val coverPainter = rememberAsyncImagePainter(
     model = ImageRequest.Builder(LocalContext.current)
@@ -59,9 +63,10 @@ fun BookCoverBox(
       .crossfade(true)
       .allowHardware(false)
       .build(),
-    contentScale = ContentScale.Inside,
+    contentScale = ContentScale.Fit,
     onSuccess = { state ->
       onImageSuccess(state.result.drawable.toBitmapOrNull())
+      aspectRatio = state.painter.intrinsicSize.width / state.painter.intrinsicSize.height
     },
   )
 
@@ -93,8 +98,7 @@ fun BookCoverBox(
           bottom = (topBarHeightDp + bottomOffsetDp).dp,
           start = 32.dp,
           end = 32.dp
-        )
-        .clipToBounds(),
+        ),
       contentAlignment = Alignment.Center
     ) {
       if (coverPainter.state is AsyncImagePainter.State.Error || book?.cover_url.isNullOrBlank()) {
@@ -114,10 +118,12 @@ fun BookCoverBox(
             interactionSource = remember { MutableInteractionSource() },
             indication = null
           )
+          .aspectRatio(aspectRatio)
+          .fillMaxSize()
           .clip(MaterialTheme.shapes.large),
         painter = coverPainter,
         contentDescription = book?.title,
-        contentScale = ContentScale.Inside,
+        contentScale = ContentScale.Fit,
       )
     }
   }

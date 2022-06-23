@@ -36,7 +36,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
-import cafe.adriel.voyager.hilt.getViewModel
+import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -44,6 +44,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SearchTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
@@ -58,11 +59,14 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
 
   @Composable
   override fun Content() {
-    val viewModel = getViewModel<SearchViewModel>()
+    val screenModel = getScreenModel<SearchScreenModel, SearchScreenModel.Factory> { factory ->
+      factory.create(filters)
+    }
     val navigator = LocalNavigator.currentOrThrow
     val activity = LocalContext.current as AppCompatActivity
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
+    val state by screenModel.state.collectAsStateWithLifecycle()
 
     val systemUiController = rememberSystemUiController()
     val navigationBarColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
@@ -72,18 +76,14 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
         systemUiController.setNavigationBarColor(
           color = navigationBarColor
         )
-
-        filters?.let {
-          viewModel.onFiltersChanged(filters)
-        }
       }
     )
 
-    val allGroups by viewModel.allGroups.collectAsStateWithLifecycle(emptyList())
-    val allPersons by viewModel.allPersons.collectAsStateWithLifecycle(emptyList())
-    val allPublishers by viewModel.allPublishers.collectAsStateWithLifecycle(emptyList())
-    val allStores by viewModel.allStores.collectAsStateWithLifecycle(emptyList())
-    val allCollections by viewModel.allCollections.collectAsStateWithLifecycle(emptyList())
+    val allGroups by screenModel.allGroups.collectAsStateWithLifecycle(emptyList())
+    val allPersons by screenModel.allPersons.collectAsStateWithLifecycle(emptyList())
+    val allPublishers by screenModel.allPublishers.collectAsStateWithLifecycle(emptyList())
+    val allStores by screenModel.allStores.collectAsStateWithLifecycle(emptyList())
+    val allCollections by screenModel.allCollections.collectAsStateWithLifecycle(emptyList())
 
     var showGroupsPickerDialog by remember { mutableStateOf(false) }
     var showContributorsPickerDialog by remember { mutableStateOf(false) }
@@ -99,11 +99,11 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       nullable = true,
       visible = showGroupsPickerDialog,
       title = stringResource(R.string.groups),
-      selected = viewModel.filters.groups,
+      selected = screenModel.filters.groups,
       items = allGroups,
       itemKey = { it.id },
       itemText = { it.name },
-      onChoose = { viewModel.onGroupsChanged(it) },
+      onChoose = { screenModel.onGroupsChanged(it) },
       onDismiss = { showGroupsPickerDialog = false }
     )
 
@@ -112,11 +112,11 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       nullable = true,
       visible = showPublishersPickerDialog,
       title = stringResource(R.string.publishers),
-      selected = viewModel.filters.publishers,
+      selected = screenModel.filters.publishers,
       items = allPublishers,
       itemKey = { it.id },
       itemText = { it.name },
-      onChoose = { viewModel.onPublishersChanged(it) },
+      onChoose = { screenModel.onPublishersChanged(it) },
       onDismiss = { showPublishersPickerDialog = false }
     )
 
@@ -125,11 +125,11 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       nullable = true,
       visible = showStoresPickerDialog,
       title = stringResource(R.string.stores),
-      selected = viewModel.filters.stores,
+      selected = screenModel.filters.stores,
       items = allStores,
       itemKey = { it.id },
       itemText = { it.name },
-      onChoose = { viewModel.onStoresChanged(it) },
+      onChoose = { screenModel.onStoresChanged(it) },
       onDismiss = { showStoresPickerDialog = false }
     )
 
@@ -138,11 +138,11 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       nullable = true,
       visible = showContributorsPickerDialog,
       title = stringResource(R.string.contributors),
-      selected = viewModel.filters.contributors,
+      selected = screenModel.filters.contributors,
       items = allPersons,
       itemKey = { it.id },
       itemText = { it.name },
-      onChoose = { viewModel.onContributorsChanged(it) },
+      onChoose = { screenModel.onContributorsChanged(it) },
       onDismiss = { showContributorsPickerDialog = false }
     )
 
@@ -151,11 +151,11 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       nullable = true,
       visible = showCollectionsPickerDialog,
       title = stringResource(R.string.filter_collection),
-      selected = viewModel.filters.collections,
+      selected = screenModel.filters.collections,
       items = allCollections,
       itemKey = { it },
       itemText = { it },
-      onChoose = { viewModel.onCollectionsChanged(it) },
+      onChoose = { screenModel.onCollectionsChanged(it) },
       onDismiss = { showCollectionsPickerDialog = false }
     )
 
@@ -169,13 +169,13 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
         SearchTopAppBar(
           scrollBehavior = scrollBehavior,
           backgroundColor = navigationBarColor,
-          searchText = viewModel.filters.query,
+          searchText = screenModel.filters.query,
           placeholderText = stringResource(R.string.library_search_placeholder),
-          shouldRequestFocus = viewModel.state != SearchState.RESULTS && filters == null,
+          shouldRequestFocus = state !is SearchScreenModel.State.Results && filters == null,
           onNavigationClick = { navigator.pop() },
-          onClearClick = { viewModel.clearSearch() },
-          onSearchTextChanged = { viewModel.onSearchTextChanged(it) },
-          onSearchAction = { viewModel.search() },
+          onClearClick = { screenModel.clearSearch() },
+          onSearchTextChanged = { screenModel.onSearchTextChanged(it) },
+          onSearchAction = { screenModel.search() },
           bottomContent = {
             Divider(color = LocalContentColor.current.copy(alpha = DividerOpacity))
           }
@@ -184,10 +184,11 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       content = { innerPadding ->
         Crossfade(
           modifier = Modifier.fillMaxSize(),
-          targetState = viewModel.state
+          targetState = state
         ) { state ->
           when (state) {
-            SearchState.HISTORY -> {
+            SearchScreenModel.State.Empty,
+            is SearchScreenModel.State.History -> {
               NoItemsFound(
                 modifier = Modifier
                   .fillMaxSize()
@@ -195,7 +196,14 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
                 icon = Icons.Outlined.History
               )
             }
-            SearchState.NO_RESULTS_FOUND -> {
+            SearchScreenModel.State.Loading -> {
+              BoxedCircularProgressIndicator(
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding)
+              )
+            }
+            SearchScreenModel.State.NoResultsFound -> {
               NoItemsFound(
                 modifier = Modifier
                   .fillMaxSize()
@@ -204,7 +212,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
                 icon = Icons.Outlined.SearchOff
               )
             }
-            SearchState.RESULTS -> {
+            is SearchScreenModel.State.Results -> {
               SearchResultsGrid(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
@@ -213,7 +221,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
                   top = innerPadding.calculateTopPadding() + 4.dp,
                   bottom = innerPadding.calculateBottomPadding() + 4.dp
                 ),
-                results = viewModel.results,
+                results = state.results,
                 onResultClick = {
                   navigator.push(BookScreen(it.id))
                 }
@@ -233,22 +241,22 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
               .navigationBarsPadding()
               .imePadding(),
             shape = MaterialTheme.shapes.extraLarge,
-            isFuture = viewModel.filters.isFuture,
-            favoritesOnly = viewModel.filters.favoritesOnly,
-            collectionsSelected = viewModel.filters.collections.isNotEmpty(),
+            isFuture = screenModel.filters.isFuture,
+            favoritesOnly = screenModel.filters.favoritesOnly,
+            collectionsSelected = screenModel.filters.collections.isNotEmpty(),
             showCollections = allCollections.isNotEmpty(),
-            groupsSelected = viewModel.filters.groups.isNotEmpty(),
+            groupsSelected = screenModel.filters.groups.isNotEmpty(),
             showGroups = allGroups.isNotEmpty(),
-            contributorsSelected = viewModel.filters.contributors.isNotEmpty(),
+            contributorsSelected = screenModel.filters.contributors.isNotEmpty(),
             showContributors = allPersons.isNotEmpty(),
-            publishersSelected = viewModel.filters.publishers.isNotEmpty(),
+            publishersSelected = screenModel.filters.publishers.isNotEmpty(),
             showPublishers = allPublishers.isNotEmpty(),
-            storesSelected = viewModel.filters.stores.isNotEmpty(),
+            storesSelected = screenModel.filters.stores.isNotEmpty(),
             showStores = allStores.isNotEmpty(),
-            boughtAtSelected = viewModel.filters.boughtAt != null,
-            readAtSelected = viewModel.filters.readAt != null,
-            onIsFutureChanged = { viewModel.onIsFutureChanged(it) },
-            onFavoritesOnlyChanged = { viewModel.onFavoritesOnlyChanged(it) },
+            boughtAtSelected = screenModel.filters.boughtAt != null,
+            readAtSelected = screenModel.filters.readAt != null,
+            onIsFutureChanged = { screenModel.onIsFutureChanged(it) },
+            onFavoritesOnlyChanged = { screenModel.onFavoritesOnlyChanged(it) },
             onCollectionsClick = { showCollectionsPickerDialog = true },
             onGroupsClick = { showGroupsPickerDialog = true },
             onContributorsClick = { showContributorsPickerDialog = true },
@@ -258,16 +266,16 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
               showDateRangePicker(
                 activity = activity,
                 titleText = boughtAtPickerTitle,
-                range = viewModel.filters.boughtAt,
-                onRangeChoose = { viewModel.onBoughtAtChanged(it) }
+                range = screenModel.filters.boughtAt,
+                onRangeChoose = { screenModel.onBoughtAtChanged(it) }
               )
             },
             onReadAtClick = {
               showDateRangePicker(
                 activity = activity,
                 titleText = readAtPickerTitle,
-                range = viewModel.filters.readAt,
-                onRangeChoose = { viewModel.onReadAtChanged(it) }
+                range = screenModel.filters.readAt,
+                onRangeChoose = { screenModel.onReadAtChanged(it) }
               )
             }
           )

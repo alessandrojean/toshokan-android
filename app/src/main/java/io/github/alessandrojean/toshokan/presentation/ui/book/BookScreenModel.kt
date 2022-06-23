@@ -14,6 +14,8 @@ import dagger.hilt.android.qualifiers.ActivityContext
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.data.storage.ImageSaver
+import io.github.alessandrojean.toshokan.database.data.Book
+import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.repository.BooksRepository
@@ -24,7 +26,9 @@ import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toShareIntent
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toast
+import io.github.alessandrojean.toshokan.util.storage.DiskUtil
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
@@ -46,6 +50,10 @@ class BookScreenModel @AssistedInject constructor(
   val simpleBook = booksRepository.findSimpleById(bookId)
   val contributors = booksRepository.findBookContributorsAsFlow(bookId)
 
+  val neighbors by lazy {
+    findSeriesVolumes(booksRepository.findById(bookId))
+  }
+
   val showBookNavigation = preferencesManager.showBookNavigation().asFlow()
 
   fun findBookLinks(book: CompleteBook?): List<BookLink> {
@@ -64,7 +72,7 @@ class BookScreenModel @AssistedInject constructor(
     booksRepository.delete(bookId)
   }
 
-  fun findSeriesVolumes(book: CompleteBook?): Flow<BookNeighbors?> {
+  private fun findSeriesVolumes(book: CompleteBook?): Flow<BookNeighbors?> {
     if (book == null) {
       return flowOf(null)
     }
@@ -90,7 +98,7 @@ class BookScreenModel @AssistedInject constructor(
 
     val image = ImageSaver.Image(
       bitmap = bitmap,
-      fileName = "${context.appName.lowercase()}-book-${book.id}",
+      fileName = DiskUtil.hashKeyForDisk("${book.group_name}-${book.title}-${book.publisher_name}"),
       location = ImageSaver.Location.Cache
     )
 
@@ -113,7 +121,7 @@ class BookScreenModel @AssistedInject constructor(
 
     val image = ImageSaver.Image(
       bitmap = bitmap,
-      fileName = "${context.appName.lowercase()}-book-${book.id}",
+      fileName = DiskUtil.hashKeyForDisk("${book.group_name}-${book.title}-${book.publisher_name}"),
       location = ImageSaver.Location.Downloads
     )
 
@@ -126,6 +134,10 @@ class BookScreenModel @AssistedInject constructor(
   fun openLink(link: BookLink) {
     val intent = Intent(Intent.ACTION_VIEW, link.url.toUri())
     context.startActivity(intent)
+  }
+
+  fun deleteCover(coverUrl: String?) = coroutineScope.launch {
+    booksRepository.deleteCover(bookId, coverUrl)
   }
 
 }

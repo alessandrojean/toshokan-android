@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import kotlinx.coroutines.channels.awaitClose
@@ -80,8 +81,9 @@ fun networkCallback(callback: (ConnectionState) -> Unit): ConnectivityManager.Ne
 @Composable
 fun connectivityState(): State<ConnectionState> {
   val context = LocalContext.current
+  val connectivityFlow = remember { context.observeConnectivityAsFlow() }
 
-  return context.observeConnectivityAsFlow().collectAsStateWithLifecycle(
+  return connectivityFlow.collectAsStateWithLifecycle(
     initialValue = context.currentConnectivityState
   )
 }

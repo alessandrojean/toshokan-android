@@ -57,7 +57,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsSc
 
 @Composable
 fun MainNavHost() {
-  Navigator(TopLevelRoutes.Library.screen) { navigator ->
+  Navigator(remember { TopLevelRoutes.Library.screen }) { navigator ->
     var hideBottomNavigation by remember { mutableStateOf(false) }
     val isBottomBarVisible = TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
 

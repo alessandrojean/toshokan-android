@@ -5,6 +5,7 @@ import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Store
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
@@ -15,7 +16,7 @@ class StoresRepository @Inject constructor(
   private val database: ToshokanDatabase
 ) {
 
-  val stores = database.storeQueries.selectAll().asFlow().mapToList()
+  val stores = database.storeQueries.selectAll().asFlow().mapToList().flowOn(Dispatchers.IO)
 
   fun selectAll(): List<Store> {
     return database.storeQueries.selectAll().executeAsList()

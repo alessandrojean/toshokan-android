@@ -13,7 +13,7 @@ package io.github.alessandrojean.toshokan.data.backup
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- */s
+ */
 
 import android.app.Service
 import android.content.Context

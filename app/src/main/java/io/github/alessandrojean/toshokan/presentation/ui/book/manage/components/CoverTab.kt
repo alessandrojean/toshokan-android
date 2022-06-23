@@ -205,6 +205,7 @@ fun CoverCard(
   onClick: () -> Unit
 ) {
   var imageLoaded by remember { mutableStateOf(false) }
+  var aspectRatio by remember { mutableStateOf(2f / 3f) }
 
   val borderWidth by animateDpAsState(if (selected) 2.dp else 0.dp)
   val borderColor by animateColorAsState(
@@ -271,11 +272,16 @@ fun CoverCard(
             .crossfade(true)
             .build(),
           contentDescription = null,
-          contentScale = ContentScale.Inside,
+          contentScale = ContentScale.Fit,
           modifier = Modifier
+            .aspectRatio(aspectRatio)
+            .fillMaxWidth()
             .border(BorderStroke(borderWidth, borderColor), MaterialTheme.shapes.large)
             .clip(MaterialTheme.shapes.large),
-          onSuccess = { imageLoaded = true }
+          onSuccess = { state ->
+            imageLoaded = true
+            aspectRatio = state.painter.intrinsicSize.width / state.painter.intrinsicSize.height
+          }
         )
       }
 

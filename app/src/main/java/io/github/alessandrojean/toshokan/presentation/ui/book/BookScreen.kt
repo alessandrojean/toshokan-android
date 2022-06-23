@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -51,6 +52,8 @@ import kotlinx.coroutines.launch
 
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
+  override val key = "book_screen_$bookId"
+
   @Composable
   override fun Content() {
     val bookScreenModel = getScreenModel<BookScreenModel, BookScreenModel.Factory> { factory ->
@@ -59,7 +62,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     val book by bookScreenModel.book.collectAsStateWithLifecycle(null)
     val simpleBook by bookScreenModel.simpleBook.collectAsStateWithLifecycle(null)
     val bookContributors by bookScreenModel.contributors.collectAsStateWithLifecycle(emptyList())
-    val bookNeighbors by bookScreenModel.findSeriesVolumes(book).collectAsStateWithLifecycle(null)
+    val bookNeighbors by bookScreenModel.neighbors.collectAsStateWithLifecycle(null)
     val showBookNavigation by bookScreenModel.showBookNavigation.collectAsStateWithLifecycle(false)
     val navigator = LocalNavigator.currentOrThrow
     val context = LocalContext.current
@@ -94,7 +97,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     var showCoverFullScreenDialog by rememberSaveable { mutableStateOf(false) }
 
     val bottomBarTonalElevation = 24.dp
-    val dialogNavigationColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+    val dialogNavigationColor = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
 
     val linksBottomSheetState = rememberModalBottomSheetState(
       initialValue = ModalBottomSheetValue.Hidden,
@@ -232,6 +235,10 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
                 initialTab = ManageBookScreen.ManageBookTab.Cover
               )
             }
+          },
+          onDeleteClick = {
+            showCoverFullScreenDialog = false
+            bookScreenModel.deleteCover(book?.cover_url)
           },
           onDismiss = { showCoverFullScreenDialog = false }
         )

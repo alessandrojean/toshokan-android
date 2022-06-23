@@ -189,6 +189,12 @@ fun BookInformation(
           .padding(horizontal = 24.dp, vertical = 18.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
       ) {
+        val buttonColors = ButtonDefaults.textButtonColors(
+          containerColor = buttonRowContainerColor,
+          contentColor = LocalContentColor.current,
+          disabledContainerColor = buttonRowContainerColor.copy(alpha = 0.25f)
+        )
+
         ExpandedIconButton(
           modifier = Modifier.weight(1f),
           icon = if (bookRead) {
@@ -201,10 +207,7 @@ fun BookInformation(
           } else {
             stringResource(R.string.book_unread)
           },
-          colors = ButtonDefaults.textButtonColors(
-            containerColor = buttonRowContainerColor,
-            contentColor = LocalContentColor.current,
-          ),
+          colors = buttonColors,
           shape = RoundedCornerShape(
             topStart = buttonRowCorner,
             bottomStart = buttonRowCorner
@@ -217,10 +220,7 @@ fun BookInformation(
           modifier = Modifier.weight(1f),
           icon = Icons.Outlined.Edit,
           text = stringResource(R.string.action_edit),
-          colors = ButtonDefaults.textButtonColors(
-            containerColor = buttonRowContainerColor,
-            contentColor = LocalContentColor.current
-          ),
+          colors = buttonColors,
           shape = RectangleShape,
           contentPadding = buttonRowContentPadding,
           onClick = onEditClick
@@ -229,10 +229,7 @@ fun BookInformation(
           modifier = Modifier.weight(1f),
           icon = Icons.Outlined.Delete,
           text = stringResource(R.string.action_delete),
-          colors = ButtonDefaults.textButtonColors(
-            containerColor = buttonRowContainerColor,
-            contentColor = LocalContentColor.current
-          ),
+          colors = buttonColors,
           shape = RoundedCornerShape(
             topEnd = buttonRowCorner,
             bottomEnd = buttonRowCorner
@@ -416,11 +413,13 @@ fun BookInformation(
           }
         )
       }
-      BookMetadataRow(
-        label = stringResource(R.string.language),
-        value = isbnInformation?.language?.toLanguageDisplayName().orEmpty(),
-        enabled = false
-      )
+      isbnInformation?.language?.toLanguageDisplayName()?.let { language ->
+        BookMetadataRow(
+          label = stringResource(R.string.language),
+          value = language,
+          enabled = false
+        )
+      }
       BookMetadataRow(
         label = stringResource(R.string.group),
         value = book?.group_name.orEmpty(),

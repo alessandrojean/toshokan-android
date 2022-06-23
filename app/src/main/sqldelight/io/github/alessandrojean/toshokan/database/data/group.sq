@@ -19,6 +19,12 @@ SELECT *
 FROM BookGroup
 ORDER BY name COLLATE UNICODE ASC;
 
+selectNotEmpty:
+SELECT *
+FROM BookGroup
+WHERE (SELECT count(*) FROM Book WHERE Book.group_id = BookGroup.id) > 0
+ORDER BY sort ASC;
+
 findById:
 SELECT *
 FROM BookGroup

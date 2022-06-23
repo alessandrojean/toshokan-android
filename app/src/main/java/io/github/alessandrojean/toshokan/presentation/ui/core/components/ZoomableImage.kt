@@ -8,6 +8,10 @@ package io.github.alessandrojean.toshokan.presentation.ui.core.components
  * Licensed under the Apache License, Version 2.0 (the "License");
  */
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.FrameLayout
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -35,19 +39,10 @@ fun ZoomableImage(
   minScale: Float = 1f,
   maxScale: Float = 8f,
   contentPadding: PaddingValues = PaddingValues(all = 0.dp),
-  extraSpace: PaddingValues = PaddingValues(all = 0.dp),
 ) {
   val density = LocalDensity.current
   val (topPadding, bottomPadding) = with(density) {
     contentPadding.top.roundToPx() to contentPadding.bottom.roundToPx()
-  }
-  val (startExtra, topExtra, endExtra, bottomExtra) = with(density) {
-    arrayOf(
-      extraSpace.start.toPx(),
-      extraSpace.top.toPx(),
-      extraSpace.end.toPx(),
-      extraSpace.bottom.toPx()
-    )
   }
 
   AndroidView(
@@ -60,21 +55,45 @@ fun ZoomableImage(
       }
       .then(modifier),
     factory = { context ->
-      SubsamplingScaleImageView(context).apply {
-        this.minScale = minScale
-        this.maxScale = maxScale
-        setDoubleTapZoomScale((maxScale - minScale) / 2f)
-        setDoubleTapZoomStyle(SubsamplingScaleImageView.ZOOM_FOCUS_CENTER)
-        setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
-        setExtraSpace(startExtra, topExtra, endExtra, bottomExtra)
-        setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE)
-        updatePadding(bottom = bottomPadding, top = topPadding)
+      ZoomableImageView(context).apply {
+        clipToPadding = false
+        clipChildren = false
       }
     },
     update = { view ->
       if (state is AsyncImagePainter.State.Success) {
-        view.setImage(ImageSource.bitmap(state.result.drawable.toBitmap()))
+        view.setImage(state.result.drawable.toBitmap()) {
+          this.minScale = minScale
+          this.maxScale = maxScale
+          setDoubleTapZoomScale((maxScale - minScale) / 2f)
+        }
+
+        view.updatePadding(bottom = bottomPadding, top = topPadding)
       }
     }
   )
+}
+
+private class ZoomableImageView constructor(context: Context) : FrameLayout(context) {
+
+  private var imageView: SubsamplingScaleImageView? = null
+
+  fun setImage(bitmap: Bitmap, block: SubsamplingScaleImageView.() -> Unit = {}) {
+    if (imageView != null) {
+      removeView(imageView)
+    }
+
+    imageView = SubsamplingScaleImageView(context).apply {
+      setDoubleTapZoomStyle(SubsamplingScaleImageView.ZOOM_FOCUS_CENTER)
+      setPanLimit(SubsamplingScaleImageView.PAN_LIMIT_INSIDE)
+      setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE)
+
+      block()
+    }
+
+    addView(imageView, MATCH_PARENT, MATCH_PARENT)
+
+    imageView?.setImage(ImageSource.bitmap(bitmap))
+  }
+
 }

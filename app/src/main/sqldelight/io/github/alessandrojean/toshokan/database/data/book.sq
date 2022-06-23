@@ -59,6 +59,18 @@ SELECT title
 FROM Book
 ORDER BY title COLLATE UNICODE ASC;
 
+countGroupBooks:
+SELECT count(*)
+FROM Book
+WHERE group_id = :groupId AND is_future = :isFuture;
+
+groupBooks:
+SELECT *
+FROM Book
+WHERE group_id = :groupId AND is_future = :isFuture
+ORDER BY title COLLATE UNICODE ASC
+LIMIT :limit OFFSET :offset;
+
 completeBook:
 SELECT Book.*,
   BookGroup.name AS group_name,
@@ -155,6 +167,11 @@ SET is_favorite = CASE is_favorite
     ELSE 1
   END,
   updated_at = ?
+WHERE id = ?;
+
+clearCoverUrl:
+UPDATE Book
+SET cover_url = NULL
 WHERE id = ?;
 
 delete:

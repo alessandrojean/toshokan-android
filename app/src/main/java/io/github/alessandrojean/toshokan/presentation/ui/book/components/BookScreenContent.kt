@@ -1,6 +1,13 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.components
 
 import android.graphics.Bitmap
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Book
@@ -90,14 +98,14 @@ fun BookScreenContent(
   }
 
   val currentScrollBounded = min(scrollState.value.toFloat(), maxPoint)
-  val scrollPercentage = currentScrollBounded / maxPoint
+  val scrollPercentage = (currentScrollBounded / maxPoint).coerceIn(0f, 1f)
   val coverBottomOffsetDp = 18f
 
-  val topBarContainerColor by remember(scrollPercentage, scrolledTopBarContainerColor) {
-    derivedStateOf {
-      scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
-    }
-  }
+  val scrollPercentageAnimated by animateFloatAsState(scrollPercentage)
+
+  val topBarContainerColor by animateColorAsState(
+    targetValue = scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
+  )
 
   Scaffold(
     modifier = Modifier
@@ -131,7 +139,7 @@ fun BookScreenContent(
             },
             title = {
               Text(
-                modifier = Modifier.graphicsLayer(alpha = scrollPercentage),
+                modifier = Modifier.graphicsLayer { alpha = scrollPercentageAnimated },
                 text = book?.title.orEmpty(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -185,12 +193,17 @@ fun BookScreenContent(
           .fillMaxSize()
           .verticalScroll(scrollState)
       ) {
+        val coverOffset by animateDpAsState(
+          targetValue = ceil(100f * scrollPercentage).dp
+        )
+        val coverOpacity by animateFloatAsState(0.4f + 0.6f * (1.0f - scrollPercentage))
+
         BookCoverBox(
           modifier = Modifier
             .fillMaxWidth()
-            .offset(y = (ceil(100f * scrollPercentage)).dp)
+            .offset(y = coverOffset)
             .graphicsLayer {
-              alpha = 0.4f + 0.6f * (1f - scrollPercentage)
+              alpha = coverOpacity
             },
           book = simpleBook,
           bottomOffsetDp = coverBottomOffsetDp,

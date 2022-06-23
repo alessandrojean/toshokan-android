@@ -6,6 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.StateScreenModel
+import cafe.adriel.voyager.core.model.coroutineScope
+import cafe.adriel.voyager.hilt.ScreenModelFactory
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookGroup
@@ -20,29 +27,38 @@ import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-enum class SearchState {
-  HISTORY,
-  NO_RESULTS_FOUND,
-  RESULTS
-}
-
-@HiltViewModel
-class SearchViewModel @Inject constructor(
+class SearchScreenModel @AssistedInject constructor(
   private val booksRepository: BooksRepository,
   private val groupsRepository: GroupsRepository,
   private val peopleRepository: PeopleRepository,
   private val publishersRepository: PublishersRepository,
-  private val storesRepository: StoresRepository
-) : ViewModel() {
+  private val storesRepository: StoresRepository,
+  @Assisted filters: SearchFilters?
+) : StateScreenModel<SearchScreenModel.State>(State.Empty) {
+
+  @AssistedFactory
+  interface Factory : ScreenModelFactory {
+    fun create(@Assisted filters: SearchFilters?): SearchScreenModel
+  }
+
+  sealed class State {
+    object Empty : State()
+    object Loading : State()
+    data class History(val history: List<String>) : State()
+    data class Results(val results: List<Book>) : State()
+    object NoResultsFound : State()
+  }
 
   var filters by mutableStateOf(SearchFilters.Complete())
-    private set
-  val results = mutableStateListOf<Book>()
-  var state by mutableStateOf(SearchState.HISTORY)
     private set
 
   val allGroups = groupsRepository.groupsSorted
@@ -51,18 +67,26 @@ class SearchViewModel @Inject constructor(
   val allStores = storesRepository.stores
   val allCollections = booksRepository.findCollections()
 
+  private var searchJob: Job? = null
+
   fun clearSearch() {
-    state = SearchState.HISTORY
+    mutableState.value = State.Empty
     filters = SearchFilters.Complete()
-    results.clear()
+    searchJob?.cancel()
   }
 
-  fun onFiltersChanged(newFilters: SearchFilters) {
+  init {
+    filters?.let { onFiltersChanged(it) }
+  }
+
+  private fun onFiltersChanged(newFilters: SearchFilters) {
     if (newFilters is SearchFilters.Complete) {
       filters = newFilters.copy()
       search()
     } else if (newFilters is SearchFilters.Incomplete) {
-      viewModelScope.launch {
+      coroutineScope.launch {
+        mutableState.value = State.Loading
+
         filters = withContext(Dispatchers.IO) {
           SearchFilters.Complete(
             query = newFilters.query,
@@ -132,11 +156,21 @@ class SearchViewModel @Inject constructor(
     search()
   }
 
-  fun search() = viewModelScope.launch {
-    results.clear()
-    results.addAll(booksRepository.search(filters))
+  fun search() {
+    searchJob?.cancel()
 
-    state = if (results.isEmpty()) SearchState.NO_RESULTS_FOUND else SearchState.RESULTS
+    searchJob = coroutineScope.launch(Dispatchers.IO) {
+      booksRepository.search(filters)
+        .collect { results ->
+          withContext(Dispatchers.Main) {
+            mutableState.value = if (results.isEmpty()) {
+              State.NoResultsFound
+            } else {
+              State.Results(results)
+            }
+          }
+        }
+    }
   }
 
 }

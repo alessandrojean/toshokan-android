@@ -37,17 +37,23 @@ import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTona
 @Composable
 fun BookCard(
   modifier: Modifier = Modifier,
-  book: Book,
-  shape: Shape = MaterialTheme.shapes.large,
+  book: Book?,
+  shape: Shape = MaterialTheme.shapes.medium,
   onClick: () -> Unit
 ) {
+  val context = LocalContext.current
+
   var imageLoaded by remember { mutableStateOf(false) }
+  var aspectRatio by remember { mutableStateOf(2f / 3f) }
 
   Surface(
     modifier = Modifier
       .fillMaxWidth()
       .clip(shape)
-      .clickable(onClick = onClick)
+      .clickable(
+        enabled = book != null,
+        onClick = onClick
+      )
       .then(modifier),
     shape = shape
   ) {
@@ -79,14 +85,23 @@ fun BookCard(
         }
       }
       AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-          .data(book)
-          .crossfade(true)
-          .build(),
-        modifier = Modifier.clip(shape),
-        contentDescription = book.title,
-        contentScale = ContentScale.Inside,
-        onSuccess = { imageLoaded = true }
+        model = remember(book) {
+          ImageRequest.Builder(context)
+            .data(book)
+            .crossfade(true)
+            .size(400)
+            .build()
+        },
+        modifier = Modifier
+          .aspectRatio(aspectRatio)
+          .fillMaxWidth()
+          .clip(shape),
+        contentDescription = book?.title,
+        contentScale = ContentScale.Fit,
+        onSuccess = { state ->
+          imageLoaded = true
+          aspectRatio = state.painter.intrinsicSize.width / state.painter.intrinsicSize.height
+        }
       )
     }
   }

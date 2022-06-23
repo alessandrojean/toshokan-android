@@ -2,6 +2,11 @@ package io.github.alessandrojean.toshokan.repository
 
 import android.content.Context
 import android.icu.util.Currency
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import com.squareup.sqldelight.android.paging3.QueryPagingSource
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
@@ -31,6 +36,7 @@ import io.github.alessandrojean.toshokan.util.extension.toSheetDate
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
@@ -55,11 +61,11 @@ class BooksRepository @Inject constructor(
   }
 
   fun findByIdAsFlow(id: Long): Flow<CompleteBook?> {
-    return database.bookQueries.completeBook(id).asFlow().mapToOneOrNull()
+    return database.bookQueries.completeBook(id).asFlow().mapToOneOrNull().flowOn(Dispatchers.IO)
   }
 
   fun findSimpleById(id: Long): Flow<Book?> {
-    return database.bookQueries.findById(id).asFlow().mapToOneOrNull()
+    return database.bookQueries.findById(id).asFlow().mapToOneOrNull().flowOn(Dispatchers.IO)
   }
 
   fun findByCode(code: String): Book? {
@@ -67,7 +73,7 @@ class BooksRepository @Inject constructor(
   }
 
   fun findBookContributorsAsFlow(id: Long): Flow<List<BookContributor>> {
-    return database.bookCreditQueries.bookContributor(id).asFlow().mapToList()
+    return database.bookCreditQueries.bookContributor(id).asFlow().mapToList().flowOn(Dispatchers.IO)
   }
 
   fun findBookContributors(id: Long): List<BookContributor> {
@@ -77,6 +83,7 @@ class BooksRepository @Inject constructor(
   fun findReadings(id: Long, descending: Boolean = true): Flow<List<Reading>> {
     return database.readingQueries.findByBook(id).asFlow().mapToList()
       .map { if (!descending) it.reversed() else it }
+      .flowOn(Dispatchers.IO)
   }
 
   fun findCollections(): Flow<List<String>> {
@@ -86,6 +93,20 @@ class BooksRepository @Inject constructor(
           .filterValues { it.size > 1 }
           .keys.toList()
       }
+      .flowOn(Dispatchers.IO)
+  }
+
+  fun groupBooksPaginated(groupId: Long, isFuture: Boolean = false): Flow<PagingData<Book>> {
+    val pager = Pager(config = PagingConfig(pageSize = PAGE_SIZE)) {
+      QueryPagingSource(
+        countQuery = database.bookQueries.countGroupBooks(groupId, isFuture),
+        transacter = database.bookQueries,
+        dispatcher = Dispatchers.IO,
+        queryProvider = { limit, offset -> database.bookQueries.groupBooks(groupId, isFuture, limit, offset) }
+      )
+    }
+
+    return pager.flow.flowOn(Dispatchers.IO)
   }
 
   fun findLibraryBooks(isFuture: Boolean = false): Flow<Library> {
@@ -130,6 +151,7 @@ class BooksRepository @Inject constructor(
 
         Library(groups = groups.toMap())
       }
+      .flowOn(Dispatchers.IO)
   }
 
   fun findSeriesVolumes(title: TitleParts, publisherId: Long, groupId: Long): Flow<BookNeighbors?> {
@@ -152,10 +174,11 @@ class BooksRepository @Inject constructor(
           count = collection.size
         )
       }
+      .flowOn(Dispatchers.IO)
   }
 
-  suspend fun search(filters: SearchFilters.Complete): List<Book> = withContext(Dispatchers.IO) {
-    var results = database.bookQueries
+  fun search(filters: SearchFilters.Complete): Flow<List<Book>> {
+    return database.bookQueries
       .search(
         query = filters.query.ifBlank { null },
         isFuture = filters.isFuture,
@@ -173,13 +196,16 @@ class BooksRepository @Inject constructor(
         contributorsIsEmpty = filters.contributors.isEmpty(),
         contributors = filters.contributors.map(Person::id)
       )
-      .executeAsList()
-
-    if (filters.collections.isNotEmpty()) {
-      results = results.filter { it.title.toTitleParts().title in filters.collections }
-    }
-
-    results
+      .asFlow()
+      .mapToList()
+      .map { searchResults ->
+        if (filters.collections.isNotEmpty()) {
+          searchResults.filter { it.title.toTitleParts().title in filters.collections }
+        } else {
+          searchResults
+        }
+      }
+      .flowOn(Dispatchers.IO)
   }
 
   suspend fun insert(
@@ -339,6 +365,15 @@ class BooksRepository @Inject constructor(
     }
   }
 
+  suspend fun deleteCover(id: Long, coverUrl: String?) = withContext(Dispatchers.IO) {
+    if (coverCache.getCustomCoverFile(id).exists()) {
+      coverCache.deleteCustomCover(id)
+    } else {
+      database.bookQueries.clearCoverUrl(id)
+      coverCache.deleteFromCache(id, coverUrl, true)
+    }
+  }
+
   suspend fun toggleFavorite(id: Long) = withContext(Dispatchers.IO) {
     database.bookQueries.toggleFavorite(id = id, updated_at = Date().time)
   }
@@ -369,6 +404,10 @@ class BooksRepository @Inject constructor(
 
   suspend fun bulkDeleteReadings(ids: List<Long>) = withContext(Dispatchers.IO) {
     database.readingQueries.deleteBulk(ids)
+  }
+
+  companion object {
+    private const val PAGE_SIZE = 20
   }
 
 }

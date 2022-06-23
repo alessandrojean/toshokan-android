@@ -39,7 +39,11 @@ class CoverCache @Inject constructor(@ApplicationContext private val context: Co
   private val customCoverCacheDir = getCacheDir(CUSTOM_COVERS_DIR)
 
   fun getCoverFile(book: Book): File? {
-    return book.cover_url?.let {
+    return getCoverFile(book.cover_url)
+  }
+
+  fun getCoverFile(coverUrl: String?): File? {
+    return coverUrl?.let {
       File(cacheDir, DiskUtil.hashKeyForDisk(it))
     }
   }
@@ -65,14 +69,18 @@ class CoverCache @Inject constructor(@ApplicationContext private val context: Co
   }
 
   fun deleteFromCache(book: Book, deleteCustomCover: Boolean = false): Int {
+    return deleteFromCache(book.id, book.cover_url, deleteCustomCover)
+  }
+
+  fun deleteFromCache(id: Long, coverUrl: String?, deleteCustomCover: Boolean = false): Int {
     var deleted = 0
 
-    getCoverFile(book)?.let {
+    getCoverFile(coverUrl)?.let {
       if (it.exists() && it.delete()) ++deleted
     }
 
     if (deleteCustomCover) {
-      if (deleteCustomCover(book)) ++deleted
+      if (deleteCustomCover(id)) ++deleted
     }
 
     return deleted

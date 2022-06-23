@@ -48,7 +48,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -71,14 +74,17 @@ import kotlinx.coroutines.launch
 
 class LibraryScreen : AndroidScreen() {
 
+  override val key = "library_screen"
+
   @Composable
   override fun Content() {
     var showCreateBookSheet by remember { mutableStateOf(false) }
     val navigator = LocalNavigator.currentOrThrow
     val scope = rememberCoroutineScope()
 
-    val libraryViewModel = getViewModel<LibraryViewModel>()
-    val library by libraryViewModel.library.collectAsStateWithLifecycle(Library(emptyMap()))
+    val libraryScreenModel = getScreenModel<LibraryScreenModel>()
+//    val libraryPaginated by libraryViewModel.libraryPaginated.collectAsStateWithLifecycle(emptyList())
+    val state by libraryScreenModel.state.collectAsStateWithLifecycle()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
 
@@ -123,61 +129,64 @@ class LibraryScreen : AndroidScreen() {
       },
       content = { innerPadding ->
         Crossfade(
-          targetState = library.groups.isEmpty(),
+          targetState = state,
           modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
-        ) { isEmpty ->
-          if (isEmpty) {
-            NoItemsFound(
-              modifier = Modifier.fillMaxSize(),
-              icon = Icons.Outlined.Book
-            )
-          } else {
-            Column(
-              modifier = Modifier.fillMaxSize(),
-              horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-              // TODO: Fix the tab row width when having a few items.
-              ScrollableTabRow(
-                modifier = Modifier.fillMaxWidth(),
-                selectedTabIndex = pagerState.currentPage,
-                edgePadding = 12.dp,
-                containerColor = topAppBarBackground,
-                indicator = { tabPositions ->
-                  TabRowDefaults.Indicator(
-                    Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
-                  )
-                },
+        ) { state ->
+          when (state) {
+            LibraryScreenModel.State.Empty -> {
+              NoItemsFound(
+                modifier = Modifier.fillMaxSize(),
+                icon = Icons.Outlined.Book
+              )
+            }
+            is LibraryScreenModel.State.Library -> {
+              Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
               ) {
-                library.groups.keys.forEachIndexed { index, group ->
-                  Tab(
-                    text = { Text(group.name) },
-                    selected = pagerState.currentPage == index,
-                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                    unselectedContentColor = MaterialTheme.colorScheme.onBackground,
-                    onClick = {
-                      scope.launch { pagerState.animateScrollToPage(index) }
+                // TODO: Fix the tab row width when having a few items.
+                ScrollableTabRow(
+                  modifier = Modifier.fillMaxWidth(),
+                  selectedTabIndex = pagerState.currentPage,
+                  edgePadding = 12.dp,
+                  containerColor = topAppBarBackground,
+                  indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                      Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
+                    )
+                  },
+                ) {
+                  state.tabs.forEachIndexed { index, tab ->
+                    Tab(
+                      text = { Text(tab.group.name) },
+                      selected = pagerState.currentPage == index,
+                      selectedContentColor = MaterialTheme.colorScheme.primary,
+                      unselectedContentColor = MaterialTheme.colorScheme.onBackground,
+                      onClick = {
+                        scope.launch { pagerState.animateScrollToPage(index) }
+                      }
+                    )
+                  }
+                }
+                // TODO: Remove it when Material3 fixes the scrollable tab row divider width issue.
+                TabRowDefaults.Divider(
+                  modifier = Modifier.offset(y = (-1).dp)
+                )
+                HorizontalPager(
+                  state = pagerState,
+                  count = state.tabs.size,
+                  verticalAlignment = Alignment.Top,
+                ) { page ->
+                  LibraryGrid(
+                    modifier = Modifier.fillMaxSize(),
+                    books = state.tabs[page].books.collectAsLazyPagingItems(),
+                    onBookClick = { book ->
+                      navigator.push(BookScreen(book.id))
                     }
                   )
                 }
-              }
-              // TODO: Remove it when Material3 fixes the scrollable tab row divider width issue.
-              TabRowDefaults.Divider(
-                modifier = Modifier.offset(y = (-1).dp)
-              )
-              HorizontalPager(
-                state = pagerState,
-                count = library.groups.keys.size,
-                verticalAlignment = Alignment.Top,
-              ) { page ->
-                LibraryGrid(
-                  modifier = Modifier.fillMaxSize(),
-                  books = library.groups.values.toList()[page],
-                  onBookClick = { book ->
-                    navigator.push(BookScreen(book.id))
-                  }
-                )
               }
             }
           }

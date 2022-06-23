@@ -5,6 +5,8 @@ import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
@@ -15,9 +17,13 @@ class GroupsRepository @Inject constructor(
   private val database: ToshokanDatabase
 ) {
 
-  val groups = database.groupQueries.selectAll().asFlow().mapToList()
+  val groups = database.groupQueries.selectAll().asFlow().mapToList().flowOn(Dispatchers.IO)
 
-  val groupsSorted = database.groupQueries.selectSorted().asFlow().mapToList()
+  val groupsSorted = database.groupQueries.selectSorted().asFlow().mapToList().flowOn(Dispatchers.IO)
+
+  fun subscribeGroupsNotEmpty(): Flow<List<BookGroup>> {
+    return database.groupQueries.selectNotEmpty().asFlow().mapToList().flowOn(Dispatchers.IO)
+  }
 
   private fun nextSortValue(): Int {
     return database.groupQueries.nextSortValue().executeAsOne().expr?.toInt() ?: 0

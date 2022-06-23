@@ -135,6 +135,10 @@ dependencies {
   // Palette
   implementation("androidx.palette:palette-ktx:1.0.0")
 
+  // Paging3
+  implementation("androidx.paging:paging-runtime-ktx:3.1.1")
+  implementation("androidx.paging:paging-compose:1.0.0-alpha15")
+
   // Google ML Kit
   implementation("com.google.mlkit:barcode-scanning:17.0.2")
 
@@ -175,6 +179,7 @@ dependencies {
   val sqlDelightVersion = rootProject.extra["sqldelight_version"]
   implementation("com.squareup.sqldelight:android-driver:$sqlDelightVersion")
   implementation("com.squareup.sqldelight:coroutines-extensions-jvm:$sqlDelightVersion")
+  implementation("com.squareup.sqldelight:android-paging3-extensions:$sqlDelightVersion")
 
   // Compose Reorderable
   implementation("org.burnoutcrew.composereorderable:reorderable:0.8.1")
