@@ -35,7 +35,7 @@ fun GenericPreference(
         enabled = enabled,
         onClick = onClick
       )
-      .padding(horizontal = 16.dp, vertical = 12.dp)
+      .padding(16.dp)
       .then(modifier)
   ) {
     Text(text = title)

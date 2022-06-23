@@ -37,7 +37,7 @@ fun SwitchPreference(
         value = checked,
         onValueChange = { onCheckedChange.invoke(it) }
       )
-      .padding(horizontal = 16.dp, vertical = 12.dp)
+      .padding(16.dp)
       .then(modifier),
     verticalAlignment = Alignment.CenterVertically
   ) {
