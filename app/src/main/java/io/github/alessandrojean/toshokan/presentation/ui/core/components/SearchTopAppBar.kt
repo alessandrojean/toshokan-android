@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,10 +36,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import kotlinx.coroutines.android.awaitFrame
 
@@ -58,9 +61,9 @@ fun SearchTopAppBar(
   actions: @Composable RowScope.() -> Unit = {},
   keyboardType: KeyboardType = KeyboardType.Text
 ) {
-  var showClearButton by remember { mutableStateOf(false) }
   val keyboardController = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
+  val focusManager = LocalFocusManager.current
 
   Surface(
     color = backgroundColor,
@@ -86,9 +89,9 @@ fun SearchTopAppBar(
           OutlinedTextField(
             modifier = Modifier
               .fillMaxWidth()
+              .offset(x = (-16).dp)
               .focusRequester(focusRequester)
               .onFocusChanged { focusState ->
-                showClearButton = (focusState.isFocused)
                 if (focusState.isFocused) {
                   keyboardController?.show()
                 }
@@ -118,8 +121,7 @@ fun SearchTopAppBar(
             ),
             keyboardActions = KeyboardActions(
               onSearch = {
-                keyboardController?.hide()
-                focusRequester.freeFocus()
+                focusManager.clearFocus()
                 onSearchAction()
               }
             )
@@ -127,7 +129,7 @@ fun SearchTopAppBar(
         },
         actions = {
           AnimatedVisibility(
-            visible = showClearButton && searchText.isNotEmpty(),
+            visible = searchText.isNotEmpty(),
             enter = fadeIn(),
             exit = fadeOut()
           ) {

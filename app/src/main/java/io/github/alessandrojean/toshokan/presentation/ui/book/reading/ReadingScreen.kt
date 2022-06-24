@@ -77,6 +77,8 @@ import kotlinx.coroutines.launch
 
 class ReadingScreen(val bookId: Long) : AndroidScreen() {
 
+  override val key = "reading_screen_$bookId"
+
   @Composable
   override fun Content() {
     val readingScreenModel = getScreenModel<ReadingScreenModel, ReadingScreenModel.Factory> { factory ->

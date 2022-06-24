@@ -32,6 +32,7 @@
   <string name="action_share">Share</string>
   <string name="action_view_links">View links</string>
   <string name="action_save_image">Save image</string>
+  <string name="action_pick_file">Pick a file</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>

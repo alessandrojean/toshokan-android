@@ -79,6 +79,7 @@ class SheetBackupRestorer @AssistedInject constructor(
 
       val existingBooks = booksRepository.findAllCodes()
       // Backup only adds if it doesn't exist.
+      // TODO: Handle when there's more than one book with the same code, but different volumes.
       val booksToInsert = backup.library.filter { it.code.trim().removeDashes() !in existingBooks }
 
       restoreAmount = booksToInsert.size + 4

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumedWindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.union
@@ -75,3 +76,12 @@ fun Modifier.bringIntoViewOnFocus(scope: CoroutineScope): Modifier = composed {
       }
     }
 }
+
+@Composable
+operator fun PaddingValues.plus(increment: PaddingValues): PaddingValues =
+  PaddingValues(
+    top = this.top + increment.top,
+    bottom = this.bottom + increment.bottom,
+    start = this.start + increment.start,
+    end = this.end + increment.end
+  )

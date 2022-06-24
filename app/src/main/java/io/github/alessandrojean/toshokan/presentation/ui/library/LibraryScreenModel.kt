@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.library
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import cafe.adriel.voyager.core.model.ScreenModel
@@ -30,6 +31,8 @@ class LibraryScreenModel @Inject constructor(
     data class Library(val tabs: List<LibraryTab>) : State()
   }
 
+  val selection = mutableStateListOf<Long>()
+
   init {
     coroutineScope.launch {
       groupsRepository.subscribeGroupsNotEmpty().collect { groups ->
@@ -47,6 +50,18 @@ class LibraryScreenModel @Inject constructor(
         }
       }
     }
+  }
+
+  fun toggleSelected(id: Long) {
+    if (id in selection) {
+      selection.remove(id)
+    } else {
+      selection.add(id)
+    }
+  }
+
+  fun deleteBooks(selection: List<Long>) = coroutineScope.launch {
+    booksRepository.delete(selection)
   }
 
 }

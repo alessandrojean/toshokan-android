@@ -1,16 +1,22 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material3.Icon
@@ -25,37 +31,58 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 
 @Composable
 fun BookCard(
   modifier: Modifier = Modifier,
   book: Book?,
+  selected: Boolean = false,
   shape: Shape = MaterialTheme.shapes.medium,
-  onClick: () -> Unit
+  onClick: () -> Unit,
+  onLongClick: () -> Unit = {}
 ) {
   val context = LocalContext.current
 
   var imageLoaded by remember { mutableStateOf(false) }
   var aspectRatio by remember { mutableStateOf(2f / 3f) }
 
+  val selectedColor = MaterialTheme.colorScheme.surfaceTint
+
+  val borderWidth by animateDpAsState(if (selected) 2.dp else 0.dp)
+  val borderColor by animateColorAsState(
+    if (selected) selectedColor else Color.Transparent
+  )
+
   Surface(
     modifier = Modifier
       .fillMaxWidth()
       .clip(shape)
-      .clickable(
+      .combinedClickable(
         enabled = book != null,
-        onClick = onClick
+        onClick = onClick,
+        onLongClick = onLongClick
       )
       .then(modifier),
-    shape = shape
+    shape = shape,
+    color = if (selected) {
+      MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(4.dp)
+    } else {
+      MaterialTheme.colorScheme.surface
+    }
   ) {
     Box(
       modifier = Modifier
@@ -95,7 +122,18 @@ fun BookCard(
         modifier = Modifier
           .aspectRatio(aspectRatio)
           .fillMaxWidth()
-          .clip(shape),
+          .clip(shape)
+          .drawWithContent {
+            drawContent()
+            if (selected) {
+              drawRect(
+                color = selectedColor.copy(alpha = 0.35f),
+                topLeft = Offset.Zero,
+                size = size
+              )
+            }
+          }
+          .border(BorderStroke(borderWidth, borderColor), shape),
         contentDescription = book?.title,
         contentScale = ContentScale.Fit,
         onSuccess = { state ->

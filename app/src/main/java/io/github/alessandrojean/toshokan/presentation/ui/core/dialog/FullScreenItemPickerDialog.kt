@@ -43,6 +43,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -129,7 +130,6 @@ fun <T> FullScreenItemPickerDialog(
     )
     val selectedState = remember { selected.toMutableStateList() }
     var searchText by remember { mutableStateOf(initialSearch) }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     val filteredItems by remember(searchText) {
       derivedStateOf {
@@ -151,6 +151,9 @@ fun <T> FullScreenItemPickerDialog(
       onDismissRequest = onDismiss,
       properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+//      val keyboardController = LocalSoftwareKeyboardController.current
+      val focusManager = LocalFocusManager.current
+
       Scaffold(
         modifier = Modifier.heightIn(min = screenHeight),
         containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(tonalElevation),
@@ -224,7 +227,7 @@ fun <T> FullScreenItemPickerDialog(
               singleLine = true,
               keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
               keyboardActions = KeyboardActions(
-                onDone = { keyboardController?.hide() }
+                onDone = { focusManager.clearFocus() }
               )
             )
             Divider(

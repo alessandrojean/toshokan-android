@@ -1,6 +1,9 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
@@ -23,6 +26,7 @@ import io.github.alessandrojean.toshokan.R
 @Composable
 fun SelectionTopAppBar(
   modifier: Modifier = Modifier,
+  contentPadding: PaddingValues = WindowInsets.statusBars.asPaddingValues(),
   selectionCount: Int,
   onClearSelectionClick: () -> Unit = {},
   onEditClick: (() -> Unit)? = null,
@@ -31,26 +35,16 @@ fun SelectionTopAppBar(
     containerColor = MaterialTheme.colorScheme.surfaceVariant,
     scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant
   ),
-  scrollBehavior: TopAppBarScrollBehavior? = null
+  scrollBehavior: TopAppBarScrollBehavior? = null,
+  content: @Composable ColumnScope.() -> Unit = {}
 ) {
-  EnhancedSmallTopAppBar(
+  SelectionTopAppBar(
     modifier = modifier,
-    contentPadding = WindowInsets.statusBars.asPaddingValues(),
+    contentPadding = contentPadding,
     colors = colors,
     scrollBehavior = scrollBehavior,
-    navigationIcon = {
-      IconButton(onClick = onClearSelectionClick) {
-        Icon(
-          Icons.Default.Close,
-          contentDescription = stringResource(R.string.action_cancel)
-        )
-      }
-    },
-    title = {
-      AnimatedContent(targetState = selectionCount) { targetCount ->
-        Text(targetCount.toString())
-      }
-    },
+    selectionCount = selectionCount,
+    onClearSelectionClick = onClearSelectionClick,
     actions = {
       if (selectionCount == 1 && onEditClick != null) {
         IconButton(onClick = onEditClick) {
@@ -67,6 +61,44 @@ fun SelectionTopAppBar(
           contentDescription = stringResource(R.string.action_delete)
         )
       }
-    }
+    },
+    content = content
+  )
+}
+
+@Composable
+fun SelectionTopAppBar(
+  modifier: Modifier = Modifier,
+  contentPadding: PaddingValues = WindowInsets.statusBars.asPaddingValues(),
+  selectionCount: Int,
+  onClearSelectionClick: () -> Unit = {},
+  actions: @Composable RowScope.() -> Unit = {},
+  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
+    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+    scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+  ),
+  scrollBehavior: TopAppBarScrollBehavior? = null,
+  content: @Composable ColumnScope.() -> Unit = {}
+) {
+  EnhancedSmallTopAppBar(
+    modifier = modifier,
+    contentPadding = contentPadding,
+    colors = colors,
+    scrollBehavior = scrollBehavior,
+    navigationIcon = {
+      IconButton(onClick = onClearSelectionClick) {
+        Icon(
+          Icons.Default.Close,
+          contentDescription = stringResource(R.string.action_cancel)
+        )
+      }
+    },
+    title = {
+      AnimatedContent(targetState = selectionCount) { targetCount ->
+        Text(targetCount.toString())
+      }
+    },
+    actions = actions,
+    content = content
   )
 }

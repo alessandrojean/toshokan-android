@@ -43,7 +43,9 @@ class SearchScreenModel @AssistedInject constructor(
   private val publishersRepository: PublishersRepository,
   private val storesRepository: StoresRepository,
   @Assisted filters: SearchFilters?
-) : StateScreenModel<SearchScreenModel.State>(State.Empty) {
+) : StateScreenModel<SearchScreenModel.State>(
+  if (filters is SearchFilters.Incomplete) State.Loading else State.Empty
+) {
 
   @AssistedFactory
   interface Factory : ScreenModelFactory {
@@ -158,6 +160,8 @@ class SearchScreenModel @AssistedInject constructor(
 
   fun search() {
     searchJob?.cancel()
+
+    mutableState.value = State.Loading
 
     searchJob = coroutineScope.launch(Dispatchers.IO) {
       booksRepository.search(filters)

@@ -55,6 +55,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -207,9 +209,11 @@ fun CoverCard(
   var imageLoaded by remember { mutableStateOf(false) }
   var aspectRatio by remember { mutableStateOf(2f / 3f) }
 
+  val selectedColor = MaterialTheme.colorScheme.surfaceTint
+
   val borderWidth by animateDpAsState(if (selected) 2.dp else 0.dp)
   val borderColor by animateColorAsState(
-    if (selected) MaterialTheme.colorScheme.surfaceTint else Color.Transparent
+    if (selected) selectedColor else Color.Transparent
   )
 
   Card(
@@ -276,8 +280,18 @@ fun CoverCard(
           modifier = Modifier
             .aspectRatio(aspectRatio)
             .fillMaxWidth()
-            .border(BorderStroke(borderWidth, borderColor), MaterialTheme.shapes.large)
-            .clip(MaterialTheme.shapes.large),
+            .clip(MaterialTheme.shapes.large)
+            .drawWithContent {
+              drawContent()
+              if (selected) {
+                drawRect(
+                  color = selectedColor.copy(alpha = 0.35f),
+                  topLeft = Offset.Zero,
+                  size = size
+                )
+              }
+            }
+            .border(BorderStroke(borderWidth, borderColor), MaterialTheme.shapes.large),
           onSuccess = { state ->
             imageLoaded = true
             aspectRatio = state.painter.intrinsicSize.width / state.painter.intrinsicSize.height

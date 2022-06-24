@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
@@ -23,10 +25,12 @@ import kotlinx.coroutines.flow.Flow
 fun LibraryGrid(
   modifier: Modifier = Modifier,
   books: LazyPagingItems<Book>,
+  selection: SnapshotStateList<Long> = mutableStateListOf(),
   state: LazyGridState = rememberLazyGridState(),
   contentPadding: PaddingValues = PaddingValues(4.dp),
   columns: GridCells = GridCells.Adaptive(minSize = 96.dp),
   onBookClick: (Book) -> Unit,
+  onBookLongClick: (Book) -> Unit
 ) {
   if (books.itemCount > 0) {
     LazyVerticalGrid(
@@ -43,8 +47,12 @@ fun LibraryGrid(
         BookCard(
           modifier = Modifier.fillMaxWidth(),
           book = book,
+          selected = book?.id in selection,
           onClick = {
             book?.let { onBookClick.invoke(it) }
+          },
+          onLongClick = {
+            book?.let { onBookLongClick.invoke(it) }
           }
         )
       }
