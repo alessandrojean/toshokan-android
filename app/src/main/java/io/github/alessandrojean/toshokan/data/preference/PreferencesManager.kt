@@ -34,7 +34,7 @@ class PreferencesManager @Inject constructor(
 
   fun verboseLogging() = flowPrefs.getBoolean(
     PreferenceKeys.verboseLogging,
-    defaultValue = BuildConfig.DEBUG
+    defaultValue = BuildConfig.FLAVOR == "dev"
   )
 
 }

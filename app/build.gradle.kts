@@ -39,7 +39,8 @@ android {
     }
 
     named("release") {
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
 
@@ -51,6 +52,20 @@ android {
       signingConfig = debugType.signingConfig
       versionNameSuffix = debugType.versionNameSuffix
       applicationIdSuffix = debugType.applicationIdSuffix
+    }
+  }
+
+  flavorDimensions.add("default")
+
+  productFlavors {
+    create("standard") {
+      buildConfigField("boolean", "INCLUDE_UPDATER", "true")
+      dimension = "default"
+    }
+    create("dev") {
+      // Uncomment if you want the dev flavor to only include the English strings.
+      // resourceConfigurations.addAll(listOf("en", "xxhdpi"))
+      dimension = "default"
     }
   }
 
