@@ -39,9 +39,11 @@ fun HistoryList(
       .fillMaxSize()
       .then(modifier)
   ) {
-    items(history) { isbn ->
+    items(history, key = { it }) { isbn ->
       HistoryItem(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+          .fillMaxWidth()
+          .animateItemPlacement(),
         text = isbn,
         onClick = { onClick.invoke(isbn) },
         onRemoveClick = { onRemoveClick.invoke(isbn) }

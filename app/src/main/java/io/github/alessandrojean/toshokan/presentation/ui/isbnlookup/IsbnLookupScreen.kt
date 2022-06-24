@@ -75,7 +75,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val listState = rememberLazyListState()
     val navigator = LocalNavigator.currentOrThrow
-    val history by isbnLookupViewModel.history.collectAsStateWithLifecycle(emptySet())
+    val history by isbnLookupViewModel.history.collectAsStateWithLifecycle(emptyList())
 
     var showDuplicateDialog by remember { mutableStateOf(false) }
     var duplicateId by remember { mutableStateOf<Long?>(null) }
@@ -203,7 +203,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
             IsbnLookupState.HISTORY -> {
               HistoryList(
                 modifier = Modifier.fillMaxSize(),
-                history = history.toList(),
+                history = history,
                 contentPadding = innerPadding.copy(
                   bottom = innerPadding.bottom + WindowInsets.navigationBarsWithIme.bottomPadding
                 ),

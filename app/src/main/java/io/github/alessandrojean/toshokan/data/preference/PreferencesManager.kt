@@ -12,9 +12,9 @@ class PreferencesManager @Inject constructor(
   private val flowPrefs: FlowSharedPreferences
 ) {
 
-  fun isbnLookupSearchHistory() = flowPrefs.getStringSet(
+  fun isbnLookupSearchHistory() = flowPrefs.getString(
     PreferenceKeys.isbnLookupSearchHistory,
-    defaultValue = emptySet()
+    defaultValue = "[]"
   )
 
   fun showBookNavigation() = flowPrefs.getBoolean(

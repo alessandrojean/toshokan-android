@@ -31,7 +31,20 @@ object NetworkModule {
 
   @Singleton
   @Provides
-  fun provideHttpClient(preferencesManager: PreferencesManager): HttpClient {
+  fun provideJson(): Json {
+    return Json {
+      prettyPrint = true
+      ignoreUnknownKeys = true
+      isLenient = true
+    }
+  }
+
+  @Singleton
+  @Provides
+  fun provideHttpClient(
+    preferencesManager: PreferencesManager,
+    json: Json
+  ): HttpClient {
     return HttpClient {
       expectSuccess = true
 
@@ -49,13 +62,7 @@ object NetworkModule {
       }
 
       install(ContentNegotiation) {
-        json(
-          Json {
-            prettyPrint = true
-            ignoreUnknownKeys = true
-            isLenient = true
-          }
-        )
+        json(json)
       }
     }
   }

@@ -19,7 +19,11 @@ import io.github.alessandrojean.toshokan.util.observeConnectivityAsFlow
 import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 enum class IsbnLookupState {
@@ -37,7 +41,8 @@ class IsbnLookupViewModel @Inject constructor(
   application: Application,
   private val booksRepository: BooksRepository,
   private val lookupRepository: LookupRepository,
-  private val preferencesManager: PreferencesManager
+  private val preferencesManager: PreferencesManager,
+  private val json: Json
 ) : AndroidViewModel(application) {
 
   var searchQuery by mutableStateOf("")
@@ -46,6 +51,7 @@ class IsbnLookupViewModel @Inject constructor(
   var error by mutableStateOf<Throwable?>(null)
   var state by mutableStateOf(IsbnLookupState.EMPTY)
   val history = preferencesManager.isbnLookupSearchHistory().asFlow()
+    .map { jsonString -> json.decodeFromString<List<String>>(jsonString) }
 
   private val context
     get() = getApplication<Application>()
@@ -129,11 +135,11 @@ class IsbnLookupViewModel @Inject constructor(
       return
     }
 
-    val oldHistory = preferencesManager.isbnLookupSearchHistory().get().toList()
-    val newHistory = (listOf(searchQuery) + oldHistory)
-      .take(20)
-      .distinct()
-      .toSet()
+    val query = searchQuery.removeDashes()
+    val oldHistory = preferencesManager.isbnLookupSearchHistory().get()
+      .let { json.decodeFromString<List<String>>(it) }
+      .filter { it != query }
+    val newHistory = json.encodeToString((listOf(query) + oldHistory).take(20))
 
     viewModelScope.launch {
       preferencesManager.isbnLookupSearchHistory().setAndCommit(newHistory)
@@ -142,11 +148,13 @@ class IsbnLookupViewModel @Inject constructor(
 
   fun removeHistoryItem(item: String) {
     val newHistory = preferencesManager.isbnLookupSearchHistory().get()
+      .let { json.decodeFromString<List<String>>(it) }
       .filter { it != item }
+      .let { json.encodeToString(it) }
 
     viewModelScope.launch {
       preferencesManager.isbnLookupSearchHistory()
-        .setAndCommit(newHistory.toSet())
+        .setAndCommit(newHistory)
 
       if (newHistory.isEmpty()) {
         state = IsbnLookupState.EMPTY
