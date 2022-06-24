@@ -41,8 +41,7 @@ class IsbnLookupViewModel @Inject constructor(
   application: Application,
   private val booksRepository: BooksRepository,
   private val lookupRepository: LookupRepository,
-  private val preferencesManager: PreferencesManager,
-  private val json: Json
+  private val preferencesManager: PreferencesManager
 ) : AndroidViewModel(application) {
 
   var searchQuery by mutableStateOf("")
@@ -51,7 +50,6 @@ class IsbnLookupViewModel @Inject constructor(
   var error by mutableStateOf<Throwable?>(null)
   var state by mutableStateOf(IsbnLookupState.EMPTY)
   val history = preferencesManager.isbnLookupSearchHistory().asFlow()
-    .map { jsonString -> json.decodeFromString<List<String>>(jsonString) }
 
   private val context
     get() = getApplication<Application>()
@@ -136,10 +134,8 @@ class IsbnLookupViewModel @Inject constructor(
     }
 
     val query = searchQuery.removeDashes()
-    val oldHistory = preferencesManager.isbnLookupSearchHistory().get()
-      .let { json.decodeFromString<List<String>>(it) }
-      .filter { it != query }
-    val newHistory = json.encodeToString((listOf(query) + oldHistory).take(20))
+    val oldHistory = preferencesManager.isbnLookupSearchHistory().get().filter { it != query }
+    val newHistory = (listOf(query) + oldHistory).take(20)
 
     viewModelScope.launch {
       preferencesManager.isbnLookupSearchHistory().setAndCommit(newHistory)
@@ -147,10 +143,7 @@ class IsbnLookupViewModel @Inject constructor(
   }
 
   fun removeHistoryItem(item: String) {
-    val newHistory = preferencesManager.isbnLookupSearchHistory().get()
-      .let { json.decodeFromString<List<String>>(it) }
-      .filter { it != item }
-      .let { json.encodeToString(it) }
+    val newHistory = preferencesManager.isbnLookupSearchHistory().get().filter { it != item }
 
     viewModelScope.launch {
       preferencesManager.isbnLookupSearchHistory()
