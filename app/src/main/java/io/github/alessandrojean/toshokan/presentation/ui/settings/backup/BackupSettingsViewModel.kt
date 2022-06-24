@@ -20,6 +20,9 @@ class BackupSettingsViewModel @Inject constructor(
   @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+  val restoreRunning: Boolean
+    get() = BackupRestoreService.isRunning(context)
+
   fun restoreFromSheet(uri: Uri) {
     try {
       BackupRestoreService.start(context, uri)

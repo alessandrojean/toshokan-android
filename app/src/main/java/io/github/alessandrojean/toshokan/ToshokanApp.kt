@@ -11,9 +11,11 @@ import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.data.coil.BookCoverFetcher
 import io.github.alessandrojean.toshokan.data.coil.BookCoverKeyer
 import io.github.alessandrojean.toshokan.data.notification.Notifications
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogPriority.VERBOSE
+import logcat.LogcatLogger
 import logcat.logcat
 import okhttp3.OkHttpClient
 import javax.inject.Inject
@@ -23,12 +25,15 @@ class ToshokanApp : Application(), ImageLoaderFactory {
 
   @Inject lateinit var okHttpClient: OkHttpClient
   @Inject lateinit var coverCache: CoverCache
+  @Inject lateinit var preferences: PreferencesManager
 
   override fun onCreate() {
     super.onCreate()
 
     // Log all priorities in debug builds, no-op in release builds.
-    AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = VERBOSE)
+    if (!LogcatLogger.isInstalled && preferences.verboseLogging().get()) {
+      LogcatLogger.install(AndroidLogcatLogger(VERBOSE))
+    }
 
     setupNotificationChannels()
   }
@@ -54,7 +59,7 @@ class ToshokanApp : Application(), ImageLoaderFactory {
     return builder.build()
   }
 
-  protected open fun setupNotificationChannels() {
+  private fun setupNotificationChannels() {
     try {
       Notifications.createChannels(this)
     } catch (e: Exception) {

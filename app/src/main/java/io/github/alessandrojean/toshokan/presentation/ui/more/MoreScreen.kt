@@ -30,6 +30,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.groups.GroupsScreen
+import io.github.alessandrojean.toshokan.presentation.ui.more.about.AboutScreen
 import io.github.alessandrojean.toshokan.presentation.ui.people.PeopleScreen
 import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.SettingsScreen
@@ -104,7 +105,7 @@ class MoreScreen : AndroidScreen() {
             SettingsCategory(
               title = stringResource(R.string.about),
               icon = Icons.Outlined.Info,
-              onClick = {}
+              onClick = { navigator.push(AboutScreen()) }
             )
           }
         }

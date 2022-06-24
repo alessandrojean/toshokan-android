@@ -41,6 +41,23 @@ fun Long.formatToLocaleDate(
     .getOrNull() ?: ""
 }
 
+fun Long.formatToLocaleDateTime(
+  locale: Locale = Locale.getDefault(),
+  dateStyle: Int = DateFormat.MEDIUM,
+  timeStyle: Int = DateFormat.SHORT,
+  timeZone: TimeZone = TimeZone.getDefault()
+): String? {
+  if (this == 0L) {
+    return null
+  }
+
+  val dateTimeFormat = DateFormat.getDateTimeInstance(dateStyle, timeStyle, locale).apply {
+    this.timeZone = timeZone
+  }
+
+  return runCatching { dateTimeFormat.format(this) }.getOrNull()
+}
+
 private val SHEET_DATE_PARSER by lazy {
   SimpleDateFormat("yyyy-MM-dd", Locale.US)
 }

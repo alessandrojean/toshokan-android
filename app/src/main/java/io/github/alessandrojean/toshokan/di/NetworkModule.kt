@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.BuildConfig
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -30,13 +31,13 @@ object NetworkModule {
 
   @Singleton
   @Provides
-  fun provideHttpClient(): HttpClient {
+  fun provideHttpClient(preferencesManager: PreferencesManager): HttpClient {
     return HttpClient {
       expectSuccess = true
 
       install(HttpCache)
 
-      if (BuildConfig.DEBUG) {
+      if (preferencesManager.verboseLogging().get()) {
         install(Logging) {
           logger = object : Logger {
             override fun log(message: String) {
@@ -61,14 +62,17 @@ object NetworkModule {
 
   @Singleton
   @Provides
-  fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+  fun provideOkHttpClient(
+    @ApplicationContext context: Context,
+    preferencesManager: PreferencesManager
+  ): OkHttpClient {
     val builder =  OkHttpClient.Builder()
       .connectTimeout(30, TimeUnit.SECONDS)
       .readTimeout(30, TimeUnit.SECONDS)
       .callTimeout(2, TimeUnit.MINUTES)
       .cache(Cache(File(context.cacheDir, "network_cache"), 5L * 1024 * 1024 /* 5 MiB */))
 
-    if (BuildConfig.DEBUG) {
+    if (preferencesManager.verboseLogging().get()) {
       val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.HEADERS
       }

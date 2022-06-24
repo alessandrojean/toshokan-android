@@ -13,9 +13,10 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.settings.advanced.AdvancedSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.backup.BackupSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsCategory
-import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsScaffold
+import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsListScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.covers.CoversSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.general.GeneralSettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.library.LibrarySettingsScreen
@@ -27,7 +28,7 @@ class SettingsScreen : AndroidScreen() {
   override fun Content() {
     val navigator = LocalNavigator.currentOrThrow
 
-    SettingsScaffold(
+    SettingsListScaffold(
       title = stringResource(R.string.settings),
       onNavigationClick = { navigator.pop() }
     ) {
@@ -70,7 +71,7 @@ class SettingsScreen : AndroidScreen() {
         SettingsCategory(
           title = stringResource(R.string.settings_advanced),
           icon = Icons.Outlined.Code,
-          onClick = {}
+          onClick = { navigator.push(AdvancedSettingsScreen()) }
         )
       }
     }

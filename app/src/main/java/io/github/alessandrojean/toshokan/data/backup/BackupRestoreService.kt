@@ -24,6 +24,7 @@ import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.data.backup.AbstractBackupRestorer.SheetRestoreException
 import io.github.alessandrojean.toshokan.data.notification.Notifications
 import io.github.alessandrojean.toshokan.util.extension.acquireWakeLock
 import io.github.alessandrojean.toshokan.util.extension.isServiceRunning
@@ -33,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationException
 import logcat.LogPriority
 import logcat.logcat
 import javax.inject.Inject
@@ -130,7 +132,13 @@ class BackupRestoreService : Service() {
 
     val handler = CoroutineExceptionHandler { _, exception ->
       logcat(LogPriority.ERROR) { exception.stackTraceToString() }
-      notifier.showRestoreError(exception.message)
+
+      val message = when (exception) {
+        is SerializationException -> getString(R.string.error_backup_deserialization)
+        else -> exception.message
+      }
+
+      notifier.showRestoreError(message)
       stopSelf(startId)
     }
 

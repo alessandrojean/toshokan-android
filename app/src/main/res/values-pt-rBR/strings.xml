@@ -235,10 +235,22 @@
   <string name="pref_restore_from_sheet_summary">Restora sua biblioteca da versão web do Toshokan</string>
   <string name="restoring_backup">Restaurando backup</string>
   <string name="error_during_backup_restore">Houve um erro na restauração do backup</string>
+  <string name="error_backup_no_books">Nenhum livro encontrado no arquivo de backup</string>
+  <string name="error_backup_no_books_to_restore">Nenhum livro encontrado para restaurar no arquivo de backup</string>
+  <string name="error_backup_deserialization">Erro ao ler o conteúdo do arquivo de backup</string>
   <string name="restore_completed">Restauração concluída</string>
   <string name="restore_duration">%02d min, %02d seg</string>
   <string name="restore_completed_message">Concluído em %1$s</string>
   <string name="restoring_backup_canceled">Restauração cancelada</string>
+
+  <string name="pref_verbose_logging">Registro de eventos verboso</string>
+  <string name="pref_verbose_logging_summary">Imprime registros detalhados no registro de eventos do sistema (reduz o desempenho do aplicativo)</string>
+  <string name="requires_app_restart">Reinicie o aplicativo para aplicar as mudanças</string>
+
+  <!-- About -->
+  <string name="version">Versão</string>
+  <string name="github">GitHub</string>
+  <string name="open_source_licenses">Licenças de código aberto</string>
 
   <!-- Notification channels -->
   <string name="label_backup">Backup e restauração</string>

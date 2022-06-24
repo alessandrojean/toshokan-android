@@ -10,4 +10,6 @@ object PreferenceKeys {
 
   const val disabledCoverProviders = "disabled_cover_providers"
 
+  const val verboseLogging = "verbose_logging"
+
 }

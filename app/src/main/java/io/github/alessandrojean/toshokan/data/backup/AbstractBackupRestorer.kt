@@ -17,6 +17,7 @@ package io.github.alessandrojean.toshokan.data.backup
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.StringRes
 import kotlinx.coroutines.Job
 
 abstract class AbstractBackupRestorer(
@@ -51,6 +52,6 @@ abstract class AbstractBackupRestorer(
     notifier.showRestoreProgress(title, progress, amount)
   }
 
-  class SheetRestoreException(cause: Throwable) : Exception(cause.localizedMessage.orEmpty(), cause)
+  class SheetRestoreException(message: String) : Exception(message)
 
 }

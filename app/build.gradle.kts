@@ -6,17 +6,24 @@ plugins {
   id("dagger.hilt.android.plugin")
   kotlin("plugin.serialization") version "1.6.10"
   id("com.squareup.sqldelight")
+  id("com.mikepenz.aboutlibraries.plugin")
 }
 
 android {
-  compileSdk = 32
+  compileSdk = AndroidConfig.compileSdk
 
   defaultConfig {
     applicationId = "io.github.alessandrojean.toshokan"
-    minSdk = 24
-    targetSdk = 32
+    minSdk = AndroidConfig.minSdk
+    targetSdk = AndroidConfig.targetSdk
     versionCode = 1
     versionName = "1.0.0"
+
+    buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
+    buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
+    buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
+    buildConfigField("boolean", "INCLUDE_UPDATER", "false")
+    buildConfigField("boolean", "PREVIEW", "false")
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -26,9 +33,24 @@ android {
   }
 
   buildTypes {
+    named("debug") {
+      versionNameSuffix = "-${getCommitCount()}"
+      applicationIdSuffix = ".debug"
+    }
+
     named("release") {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+    }
+
+    create("preview") {
+      initWith(getByName("release"))
+      buildConfigField("boolean", "PREVIEW", "true")
+
+      val debugType = getByName("debug")
+      signingConfig = debugType.signingConfig
+      versionNameSuffix = debugType.versionNameSuffix
+      applicationIdSuffix = debugType.applicationIdSuffix
     }
   }
 
@@ -38,7 +60,7 @@ android {
   }
 
   kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = JavaVersion.VERSION_1_8.toString()
 //    useIR = true
     freeCompilerArgs = freeCompilerArgs + listOf(
       "-opt-in=kotlin.RequiresOptIn",
@@ -113,7 +135,7 @@ dependencies {
   implementation("com.google.android.material:compose-theme-adapter-3:1.0.11")
 
   // Accompanist
-  val accompanistVersion = "0.24.9-beta"
+  val accompanistVersion = "0.24.12-rc"
   implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
@@ -192,6 +214,11 @@ dependencies {
 
   // Okio
   implementation("com.squareup.okio:okio:3.1.0")
+
+  // About Libraries
+  val aboutLibVersion = rootProject.extra["aboutlib_version"]
+  implementation("com.mikepenz:aboutlibraries-core:$aboutLibVersion")
+  implementation("com.mikepenz:aboutlibraries-compose:$aboutLibVersion")
 }
 
 kapt {

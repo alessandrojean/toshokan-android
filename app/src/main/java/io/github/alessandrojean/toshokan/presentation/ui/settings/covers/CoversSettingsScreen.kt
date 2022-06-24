@@ -23,7 +23,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsHeader
-import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsScaffold
+import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsListScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SwitchPreference
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
@@ -49,7 +49,7 @@ class CoversSettingsScreen : AndroidScreen() {
 
     val actionOpenInBrowser = stringResource(R.string.action_open_in_browser)
 
-    SettingsScaffold(
+    SettingsListScaffold(
       title = stringResource(R.string.settings_covers),
       onNavigationClick = { navigator.pop() }
     ) {

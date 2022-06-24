@@ -62,25 +62,34 @@ class SheetBackupRestorer @AssistedInject constructor(
 
   companion object {
     const val BACKUP_EXTENSION = "proto.gz"
+    const val BACKUP_MIME = "application/gzip"
   }
 
   private val parser = ProtoBuf
 
   @Throws(SheetRestoreException::class)
   override suspend fun performRestore(uri: Uri): Boolean = withContext(Dispatchers.IO) {
-//    if (!uri.toString().endsWith(BACKUP_EXTENSION)) {
-//      return@withContext false
-//    }
-
     val result = runCatching {
+      if (context.contentResolver.getType(uri) != BACKUP_MIME) {
+        return@withContext false
+      }
+
       val backupString = context.contentResolver.openInputStream(uri)!!.source().gzip().buffer()
         .use { it.readByteArray() }
       val backup = parser.decodeFromByteArray<ToshokanSheet>(backupString)
+
+      if (backup.library.isEmpty()) {
+        throw SheetRestoreException(context.getString(R.string.error_backup_no_books))
+      }
 
       val existingBooks = booksRepository.findAllCodes()
       // Backup only adds if it doesn't exist.
       // TODO: Handle when there's more than one book with the same code, but different volumes.
       val booksToInsert = backup.library.filter { it.code.trim().removeDashes() !in existingBooks }
+
+      if (booksToInsert.isEmpty()) {
+        throw SheetRestoreException(context.getString(R.string.error_backup_no_books_to_restore))
+      }
 
       restoreAmount = booksToInsert.size + 4
 
@@ -94,7 +103,7 @@ class SheetBackupRestorer @AssistedInject constructor(
 
     result.exceptionOrNull()?.let {
       logcat(LogPriority.ERROR) { it.stackTraceToString() }
-      throw SheetRestoreException(it)
+      throw it
     }
 
     result.isSuccess
