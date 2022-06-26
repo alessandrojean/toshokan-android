@@ -4,6 +4,7 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Person
+import io.github.alessandrojean.toshokan.util.extension.currentTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -38,7 +39,7 @@ class PeopleRepository @Inject constructor(
     instagramProfile: String = "",
     twitterProfile: String = ""
   ): Long? = withContext(Dispatchers.IO) {
-    val now = Date().time
+    val now = currentTime
 
     database.personQueries.insert(
       name = name,
@@ -71,7 +72,7 @@ class PeopleRepository @Inject constructor(
       website = website,
       instagram_profile = instagramProfile,
       twitter_profile = twitterProfile,
-      updated_at = Date().time
+      updated_at = currentTime
     )
   }
 

@@ -1,11 +1,13 @@
 package io.github.alessandrojean.toshokan.data.preference
 
+import android.icu.util.Currency
 import com.fredporciuncula.flow.preferences.FlowSharedPreferences
 import com.fredporciuncula.flow.preferences.Serializer
 import io.github.alessandrojean.toshokan.BuildConfig
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,19 +16,6 @@ class PreferencesManager @Inject constructor(
   private val flowPrefs: FlowSharedPreferences,
   private val json: Json
 ) {
-
-  class JsonSerializer<T : Any>(
-    private val json: Json,
-    private val jsonSerializer: KSerializer<T>
-  ) : Serializer<T> {
-    override fun deserialize(serialized: String): T {
-      return json.decodeFromString(jsonSerializer, serialized)
-    }
-
-    override fun serialize(value: T): String {
-      return json.encodeToString(jsonSerializer, value)
-    }
-  }
 
   fun isbnLookupSearchHistory() = flowPrefs.getObject(
     PreferenceKeys.isbnLookupSearchHistory,
@@ -52,6 +41,12 @@ class PreferencesManager @Inject constructor(
   fun verboseLogging() = flowPrefs.getBoolean(
     PreferenceKeys.verboseLogging,
     defaultValue = BuildConfig.FLAVOR == "dev"
+  )
+
+  fun currency() = flowPrefs.getObject(
+    PreferenceKeys.currency,
+    serializer = CurrencySerializer(),
+    defaultValue = Currency.getInstance(Locale.getDefault())
   )
 
 }

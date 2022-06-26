@@ -71,6 +71,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePic
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
+import io.github.alessandrojean.toshokan.util.extension.currentTime
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
 import kotlinx.coroutines.launch
@@ -117,10 +118,7 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
           modifier = Modifier.fillMaxWidth(),
           onTodayDateClick = {
             scope.launch { modalBottomSheetState.hide() }
-            readingScreenModel.createReading(
-              MaterialDatePicker.todayInUtcMilliseconds()
-                .toLocalCalendar()?.timeInMillis
-            )
+            readingScreenModel.createReading(currentTime)
           },
           onOtherDateClick = {
             scope.launch { modalBottomSheetState.hide() }

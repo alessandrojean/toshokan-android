@@ -14,6 +14,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookS
 import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScreenModel
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreenModel
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreenModel
+import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreenModel
 
 @Module
 @InstallIn(ActivityComponent::class)
@@ -52,5 +53,9 @@ abstract class ScreenModelModule {
   @ScreenModelKey(LibraryScreenModel::class)
   abstract fun bindLibraryScreenModel(libraryScreenModel: LibraryScreenModel): ScreenModel
 
+  @Binds
+  @IntoMap
+  @ScreenModelKey(StatisticsScreenModel::class)
+  abstract fun bindStatisticsScreenModel(statisticsScreenModel: StatisticsScreenModel): ScreenModel
 
 }

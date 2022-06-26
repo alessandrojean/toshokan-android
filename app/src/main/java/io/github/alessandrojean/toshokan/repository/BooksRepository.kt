@@ -9,6 +9,7 @@ import androidx.paging.PagingSource
 import com.squareup.sqldelight.android.paging3.QueryPagingSource
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
+import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.alessandrojean.toshokan.data.backup.models.ToshokanSheetBook
@@ -19,9 +20,11 @@ import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.PeriodStatistics
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Reading
+import io.github.alessandrojean.toshokan.database.data.Statistics
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Contributor
@@ -32,6 +35,7 @@ import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.util.extension.TitleParts
+import io.github.alessandrojean.toshokan.util.extension.currentTime
 import io.github.alessandrojean.toshokan.util.extension.toSheetDate
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.Dispatchers
@@ -107,6 +111,22 @@ class BooksRepository @Inject constructor(
     }
 
     return pager.flow.flowOn(Dispatchers.IO)
+  }
+
+  fun subscribeToStatistics(currency: Currency): Flow<Statistics> {
+    return database.bookQueries.statistics(currency).asFlow().mapToOne().flowOn(Dispatchers.IO)
+  }
+
+  fun subscribeToPeriodStatistics(currency: Currency, start: Long, end: Long): Flow<PeriodStatistics> {
+    return database.bookQueries
+      .periodStatistics(
+        currency = currency,
+        startPeriod = start,
+        endPeriod = end
+      )
+      .asFlow()
+      .mapToOne()
+      .flowOn(Dispatchers.IO)
   }
 
   fun findLibraryBooks(isFuture: Boolean = false): Flow<Library> {
@@ -226,7 +246,7 @@ class BooksRepository @Inject constructor(
     dimensionHeight: Float,
     contributors: List<Contributor>
   ): Long? = withContext(Dispatchers.IO) {
-    val now = Date().time
+    val now = currentTime
     var bookId: Long? = null
 
     database.transaction {
@@ -304,7 +324,7 @@ class BooksRepository @Inject constructor(
     dimensionHeight: Float,
     contributors: List<Contributor>
   ) = withContext(Dispatchers.IO) {
-    val now = Date().time
+    val now = currentTime
 
     database.transaction {
       database.bookQueries.update(

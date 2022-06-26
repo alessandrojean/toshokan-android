@@ -9,6 +9,15 @@ fun String.parseLocaleValueOrNull(locale: Locale = Locale.getDefault()): Float? 
   return runCatching { numberFormat.parse(this)?.toFloat()  }.getOrNull()
 }
 
+fun Long.toLocaleString(
+  locale: Locale = Locale.getDefault(),
+  options: NumberFormat.() -> Unit = {}
+): String {
+  return this.toFloat().toLocaleString(locale) {
+    maximumFractionDigits = 0
+  }
+}
+
 fun Float.toLocaleString(
   locale: Locale = Locale.getDefault(),
   options: NumberFormat.() -> Unit = {}

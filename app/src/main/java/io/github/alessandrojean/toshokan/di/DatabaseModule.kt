@@ -10,8 +10,14 @@ import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.adapter.BookCreditRoleAdapter
 import io.github.alessandrojean.toshokan.database.adapter.CurrencyAdapter
+import io.github.alessandrojean.toshokan.database.adapter.ZonedDateTimeAdapter
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookCredit
+import io.github.alessandrojean.toshokan.database.data.BookGroup
+import io.github.alessandrojean.toshokan.database.data.Person
+import io.github.alessandrojean.toshokan.database.data.Publisher
+import io.github.alessandrojean.toshokan.database.data.Reading
+import io.github.alessandrojean.toshokan.database.data.Store
 import javax.inject.Singleton
 
 @Module
@@ -35,7 +41,7 @@ object DatabaseModule {
       driver = sqlDriver,
       BookAdapter = Book.Adapter(
         paid_price_currencyAdapter = CurrencyAdapter(),
-        label_price_currencyAdapter = CurrencyAdapter()
+        label_price_currencyAdapter = CurrencyAdapter(),
       ),
       BookCreditAdapter = BookCredit.Adapter(
         roleAdapter = BookCreditRoleAdapter()

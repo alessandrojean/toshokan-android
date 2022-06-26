@@ -15,6 +15,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import io.github.alessandrojean.toshokan.data.cache.CoverCache
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Publisher
@@ -47,6 +48,7 @@ class ManageBookScreenModel @AssistedInject constructor(
   private val storesRepository: StoresRepository,
   private val coverRepository: CoverRepository,
   private val coverCache: CoverCache,
+  preferencesManager: PreferencesManager,
   @Assisted val lookupBook: LookupBookResult? = null,
   @Assisted val existingBookId: Long? = null
 ) : ScreenModel {
@@ -75,9 +77,9 @@ class ManageBookScreenModel @AssistedInject constructor(
   var store by mutableStateOf<Store?>(null)
   var groupText by mutableStateOf("")
   var group by mutableStateOf<BookGroup?>(null)
-  var labelPriceCurrency by mutableStateOf<Currency>(Currency.getInstance(Locale.getDefault()))
+  var labelPriceCurrency by mutableStateOf<Currency>(preferencesManager.currency().get())
   var labelPriceValue by mutableStateOf("")
-  var paidPriceCurrency by mutableStateOf<Currency>(Currency.getInstance(Locale.getDefault()))
+  var paidPriceCurrency by mutableStateOf<Currency>(preferencesManager.currency().get())
   var paidPriceValue by mutableStateOf("")
   var boughtAt by mutableStateOf<Long?>(Date().time)
   var isFuture by mutableStateOf(false)

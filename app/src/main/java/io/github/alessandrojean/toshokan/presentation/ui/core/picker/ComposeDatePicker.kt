@@ -1,6 +1,9 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.picker
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.util.Pair
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
@@ -8,6 +11,8 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.DateRange
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
+import io.github.alessandrojean.toshokan.util.extension.toLocalEpochMilli
+import io.github.alessandrojean.toshokan.util.extension.toUtcEpochMilli
 
 fun showDatePicker(
   activity: AppCompatActivity,
@@ -21,11 +26,12 @@ fun showDatePicker(
 
   val picker = MaterialDatePicker.Builder.datePicker()
     .setTitleText(titleText)
-    .setSelection(date ?: MaterialDatePicker.todayInUtcMilliseconds())
+    .setSelection(date?.toLocalEpochMilli() ?: MaterialDatePicker.todayInUtcMilliseconds())
     .setCalendarConstraints(constraints)
     .build()
 
-  picker.addOnPositiveButtonClickListener { onDateChoose(it.toLocalCalendar()?.timeInMillis) }
+  // TODO: Test UTC stuff.
+  picker.addOnPositiveButtonClickListener { onDateChoose(it.toUtcEpochMilli()) }
   picker.show(activity.supportFragmentManager, picker.toString())
 }
 
@@ -33,10 +39,13 @@ fun showDateRangePicker(
   activity: AppCompatActivity,
   titleText: String,
   range: DateRange? = null,
-  onRangeChoose: (DateRange?) -> Unit
+  onRangeChoose: (DateRange?) -> Unit,
+  builderBlock: CalendarConstraints.Builder.() -> CalendarConstraints.Builder = {
+    setValidator(DateValidatorPointBackward.now())
+  }
 ) {
   val constraints = CalendarConstraints.Builder()
-    .setValidator(DateValidatorPointBackward.now())
+    .builderBlock()
     .build()
 
   val today = MaterialDatePicker.todayInUtcMilliseconds()

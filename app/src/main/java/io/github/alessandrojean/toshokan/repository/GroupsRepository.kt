@@ -4,6 +4,7 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.BookGroup
+import io.github.alessandrojean.toshokan.util.extension.currentTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -42,7 +43,7 @@ class GroupsRepository @Inject constructor(
   }
 
   suspend fun insert(name: String): Long? = withContext(Dispatchers.IO) {
-    val now = Date().time
+    val now = currentTime
 
     database.groupQueries.insert(
       id = null,
@@ -59,7 +60,7 @@ class GroupsRepository @Inject constructor(
     database.groupQueries.updateName(
       id = id,
       name = name,
-      updated_at = Date().time
+      updated_at = currentTime
     )
   }
 
@@ -67,7 +68,7 @@ class GroupsRepository @Inject constructor(
     database.groupQueries.updateSort(
       id = id,
       sort = sort,
-      updated_at = Date().time
+      updated_at = currentTime
     )
   }
 

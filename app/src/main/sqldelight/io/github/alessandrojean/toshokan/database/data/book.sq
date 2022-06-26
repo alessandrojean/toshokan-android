@@ -126,6 +126,36 @@ lastInsertedId:
 SELECT max(id)
 FROM Book;
 
+statistics:
+SELECT count(id) AS count,
+  (SELECT sum(paid_price_value) FROM Book
+    WHERE paid_price_currency = :currency
+      AND is_future = 0) AS total_expense,
+  (SELECT sum(label_price_value) FROM Book
+    WHERE label_price_currency = :currency
+    AND is_future = 0) AS real_total_expense,
+  (SELECT count(DISTINCT book_id) FROM Reading) AS read_count
+FROM Book
+WHERE is_future = 0;
+
+periodStatistics:
+SELECT count(id) AS bought_count,
+  (SELECT sum(paid_price_value) FROM Book
+    WHERE paid_price_currency = :currency
+      AND bought_at IS NOT NULL
+      AND bought_at >= :startPeriod
+      AND bought_at <= :endPeriod
+      AND is_future = 0) AS total_expense,
+  (SELECT count(DISTINCT book_id) FROM Reading
+    WHERE read_at IS NOT NULL
+      AND read_at >= :startPeriod
+      AND read_at <= :endPeriod) AS read_count
+FROM Book
+WHERE bought_at IS NOT NULL
+  AND bought_at >= :startPeriod
+  AND bought_at <= :endPeriod
+  AND is_future = 0;
+
 insert:
 INSERT INTO Book(
   code,

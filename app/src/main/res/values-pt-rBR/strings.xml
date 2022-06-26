@@ -31,6 +31,9 @@
   <string name="action_view_links">Ver links</string>
   <string name="action_save_image">Salvar imagem</string>
   <string name="action_pick_file">Escolha um arquivo</string>
+  <string name="action_change_period">Escolher o período</string>
+  <string name="action_show_value">Mostrar o valor</string>
+  <string name="action_hide_value">Ocultar o valor</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>
@@ -109,6 +112,20 @@
   <string name="filter_read_at">Período de leitura</string>
   <string name="filter_collection">Coleções</string>
 
+  <!-- Statistics -->
+  <string name="statistics">Estatísticas</string>
+  <string name="overview">Visão geral</string>
+  <string name="by_period">Por período</string>
+  <string name="count">Contagem</string>
+  <string name="read">Leitura</string>
+  <string name="total_expense">Gasto total</string>
+  <string name="total_savings">Economia total</string>
+  <string name="period_expense">Gasto no período</string>
+  <string name="bought_count">Comprados</string>
+  <string name="read_count">Lidos</string>
+  <string name="period_current">Mês atual (%s)</string>
+  <string name="period_full_month_pattern">MMMM \'de\' yyyy</string>
+
   <!-- Books -->
   <string name="information">Informações</string>
   <string name="contributors">Contribuidores</string>
@@ -152,9 +169,6 @@
   <string name="today">Hoje</string>
   <string name="other_date">Outra data</string>
   <string name="links">Links</string>
-
-  <!-- Statistics -->
-  <string name="statistics">Estatísticas</string>
 
   <!-- More -->
   <string name="more">Mais</string>
@@ -223,6 +237,8 @@
 
   <!-- General settings -->
   <string name="pref_manage_notifications">Gerenciar notificações</string>
+  <string name="pref_currency">Moeda principal</string>
+  <string name="pref_currency_summary">Usado nas estatísticas e valores monetários</string>
 
   <!-- Library settings -->
   <string name="pref_show_book_navigation">Mostrar a barra de navegação de volumes</string>

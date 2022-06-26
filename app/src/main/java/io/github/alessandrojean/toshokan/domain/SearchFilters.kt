@@ -7,6 +7,8 @@ import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
+import io.github.alessandrojean.toshokan.util.extension.toLocalEpochMilli
+import io.github.alessandrojean.toshokan.util.extension.toUtcEpochMilli
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import java.io.Serializable
@@ -47,12 +49,12 @@ data class DateRange(
   val end: Long
 ): Parcelable, Serializable {
 
-  fun toSelection(): Pair<Long, Long> = Pair(start, end)
+  fun toSelection(): Pair<Long, Long> = Pair(start.toLocalEpochMilli(), end.toLocalEpochMilli())
 
   companion object {
     fun fromSelection(selection: Pair<Long, Long>) = DateRange(
-      start = selection.first.toLocalCalendar()!!.timeInMillis,
-      end = selection.second.toLocalCalendar()!!.timeInMillis
+      start = selection.first.toUtcEpochMilli(),
+      end = selection.second.toUtcEpochMilli()
     )
   }
 

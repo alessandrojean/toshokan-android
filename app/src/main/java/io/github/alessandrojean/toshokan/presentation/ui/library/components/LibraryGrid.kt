@@ -58,12 +58,4 @@ fun LibraryGrid(
       }
     }
   }
-
-//    items(books, key = { it.id }) { book ->
-//      BookCard(
-//        modifier = Modifier.fillMaxWidth(),
-//        book = book,
-//        onClick = { onBookClick.invoke(book) }
-//      )
-//    }
 }

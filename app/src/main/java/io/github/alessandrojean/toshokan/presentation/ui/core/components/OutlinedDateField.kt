@@ -7,6 +7,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
@@ -14,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePicker
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
+import io.github.alessandrojean.toshokan.util.extension.toLocalEpochMilli
 
 @Composable
 fun OutlinedDateField(
@@ -26,6 +28,10 @@ fun OutlinedDateField(
   onValueChange: (Long?) -> Unit,
 ) {
   val activity = LocalContext.current as AppCompatActivity
+
+  val localValue = remember(value) {
+    value?.formatToLocaleDate().orEmpty()
+  }
 
   OutlinedTextField(
     modifier = modifier
@@ -40,7 +46,7 @@ fun OutlinedDateField(
         }
       },
     readOnly = true,
-    value = value?.formatToLocaleDate().orEmpty(),
+    value = localValue,
     isError = isError,
     label = label,
     placeholder = placeholder,
