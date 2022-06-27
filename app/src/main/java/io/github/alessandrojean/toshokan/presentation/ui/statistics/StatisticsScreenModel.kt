@@ -33,6 +33,7 @@ class StatisticsScreenModel @Inject constructor(
   val currency = preferencesManager.currency().get()
 
   var showValue by mutableStateOf(false)
+    private set
 
   var startPeriod by mutableStateOf(firstDayOfCurrentMonth)
     private set
@@ -76,6 +77,10 @@ class StatisticsScreenModel @Inject constructor(
 
       finalFlow.collect { mutableState.value = it }
     }
+  }
+
+  fun toggleShowValue() {
+    showValue = !showValue
   }
 
 }

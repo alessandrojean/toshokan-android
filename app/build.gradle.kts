@@ -55,6 +55,10 @@ android {
     }
   }
 
+  sourceSets {
+    getByName("preview").res.srcDirs("src/debug/res")
+  }
+
   flavorDimensions.add("default")
 
   productFlavors {
@@ -120,6 +124,7 @@ dependencies {
 
   // Core
   implementation("androidx.core:core-ktx:1.8.0")
+  implementation("androidx.core:core-splashscreen:1.0.0-rc01")
   implementation("androidx.appcompat:appcompat:1.4.2")
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 

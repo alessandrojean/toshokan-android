@@ -23,7 +23,7 @@ class AdvancedSettingsScreen : AndroidScreen() {
   override fun Content() {
     val viewModel = getViewModel<AdvancedSettingsViewModel>()
     val navigator = LocalNavigator.currentOrThrow
-    val activity = LocalContext.current as AppCompatActivity
+    val activity = LocalContext.current as? AppCompatActivity
 
     val verboseLogging by viewModel.verboseLogging.asFlow()
       .collectAsStateWithLifecycle(initialValue = BuildConfig.DEBUG)
@@ -39,7 +39,7 @@ class AdvancedSettingsScreen : AndroidScreen() {
           checked = verboseLogging,
           onCheckedChange = {
             viewModel.onVerboseLoggingChanged(it)
-            activity.toast(R.string.requires_app_restart)
+            activity?.toast(R.string.requires_app_restart)
           }
         )
       }

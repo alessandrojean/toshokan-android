@@ -27,7 +27,7 @@ fun OutlinedDateField(
   placeholder: @Composable (() -> Unit)? = null,
   onValueChange: (Long?) -> Unit,
 ) {
-  val activity = LocalContext.current as AppCompatActivity
+  val activity = LocalContext.current as? AppCompatActivity
 
   val localValue = remember(value) {
     value?.formatToLocaleDate().orEmpty()
@@ -36,7 +36,7 @@ fun OutlinedDateField(
   OutlinedTextField(
     modifier = modifier
       .onFocusChanged {
-        if (it.isFocused) {
+        if (it.isFocused && activity != null) {
           showDatePicker(
             activity = activity,
             date = value,
@@ -54,12 +54,14 @@ fun OutlinedDateField(
     trailingIcon = {
       IconButton(
         onClick = {
-          showDatePicker(
-            activity = activity,
-            date = value,
-            titleText = dialogTitle,
-            onDateChoose = onValueChange
-          )
+          activity?.let {
+            showDatePicker(
+              activity = it,
+              date = value,
+              titleText = dialogTitle,
+              onDateChoose = onValueChange
+            )
+          }
         }
       ) {
         Icon(

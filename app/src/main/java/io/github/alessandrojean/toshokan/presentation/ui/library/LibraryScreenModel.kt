@@ -3,7 +3,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.library
 import androidx.compose.runtime.mutableStateListOf
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import io.github.alessandrojean.toshokan.database.data.Book
@@ -11,8 +10,6 @@ import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

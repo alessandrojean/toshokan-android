@@ -19,16 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.androidx.AndroidScreen
-import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -55,7 +50,8 @@ class StatisticsScreen : AndroidScreen() {
   override fun Content() {
     val screenModel = getScreenModel<StatisticsScreenModel>()
     val state by screenModel.state.collectAsStateWithLifecycle()
-    val activity = LocalContext.current as AppCompatActivity
+    val context = LocalContext.current
+    val activity = context as? AppCompatActivity
     val navigator = LocalNavigator.currentOrThrow
 
     Scaffold(
@@ -67,7 +63,7 @@ class StatisticsScreen : AndroidScreen() {
             IconToggleButton(
               modifier = Modifier.semantics {},
               checked = screenModel.showValue,
-              onCheckedChange = { screenModel.showValue = it },
+              onCheckedChange = { screenModel.toggleShowValue() },
               colors = IconButtonDefaults.iconToggleButtonColors(
                 contentColor = LocalContentColor.current,
                 checkedContentColor = LocalContentColor.current
@@ -117,21 +113,23 @@ class StatisticsScreen : AndroidScreen() {
                 startPeriod = screenModel.startPeriod,
                 endPeriod = screenModel.endPeriod,
                 showValue = screenModel.showValue,
-                onShowValueClick = { screenModel.showValue = !screenModel.showValue },
+                onShowValueClick = { screenModel.toggleShowValue() },
                 onChangePeriodClick = {
-                  showDateRangePicker(
-                    activity = activity,
-                    titleText = activity.getString(R.string.by_period),
-                    builderBlock = {
-                      val lastDay = lastDayOfCurrentMonth.toLocalEpochMilli()
-                      val validator = DateValidatorPointBackward.before(lastDay)
-                      setValidator(validator)
-                    },
-                    range = DateRange(screenModel.startPeriod, screenModel.endPeriod),
-                    onRangeChoose = { period ->
-                      period?.let { screenModel.onPeriodChange(it.start, it.end) }
-                    }
-                  )
+                  activity?.let {
+                    showDateRangePicker(
+                      activity = it,
+                      titleText = context.getString(R.string.by_period),
+                      builderBlock = {
+                        val lastDay = lastDayOfCurrentMonth.toLocalEpochMilli()
+                        val validator = DateValidatorPointBackward.before(lastDay)
+                        setValidator(validator)
+                      },
+                      range = DateRange(screenModel.startPeriod, screenModel.endPeriod),
+                      onRangeChoose = { period ->
+                        period?.let { screenModel.onPeriodChange(it.start, it.end) }
+                      }
+                    )
+                  }
                 },
                 onPeriodBoughtClick = {
                   navigator.push {

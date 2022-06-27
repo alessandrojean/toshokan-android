@@ -87,7 +87,7 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
     }
     val readings by readingScreenModel.readings.collectAsStateWithLifecycle(emptyList())
     val navigator = LocalNavigator.currentOrThrow
-    val activity = LocalContext.current as AppCompatActivity
+    val activity = LocalContext.current as? AppCompatActivity
     val scope = rememberCoroutineScope()
     val dialogTitle = stringResource(R.string.read_at)
 
@@ -122,11 +122,13 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
           },
           onOtherDateClick = {
             scope.launch { modalBottomSheetState.hide() }
-            showDatePicker(
-              activity = activity,
-              titleText = dialogTitle,
-              onDateChoose = { readingScreenModel.createReading(it) }
-            )
+            activity?.let {
+              showDatePicker(
+                activity = it,
+                titleText = dialogTitle,
+                onDateChoose = { readingScreenModel.createReading(it) }
+              )
+            }
           },
           onUnknownDateClick = {
             scope.launch { modalBottomSheetState.hide() }

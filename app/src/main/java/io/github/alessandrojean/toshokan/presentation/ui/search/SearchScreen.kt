@@ -63,7 +63,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       factory.create(filters)
     }
     val navigator = LocalNavigator.currentOrThrow
-    val activity = LocalContext.current as AppCompatActivity
+    val activity = LocalContext.current as? AppCompatActivity
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
     val state by screenModel.state.collectAsStateWithLifecycle()
@@ -263,20 +263,24 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
             onPublishersClick = { showPublishersPickerDialog = true },
             onStoresClick = { showStoresPickerDialog = true },
             onBoughtAtClick = {
-              showDateRangePicker(
-                activity = activity,
-                titleText = boughtAtPickerTitle,
-                range = screenModel.filters.boughtAt,
-                onRangeChoose = { screenModel.onBoughtAtChanged(it) }
-              )
+              activity?.let {
+                showDateRangePicker(
+                  activity = it,
+                  titleText = boughtAtPickerTitle,
+                  range = screenModel.filters.boughtAt,
+                  onRangeChoose = { screenModel.onBoughtAtChanged(it) }
+                )
+              }
             },
             onReadAtClick = {
-              showDateRangePicker(
-                activity = activity,
-                titleText = readAtPickerTitle,
-                range = screenModel.filters.readAt,
-                onRangeChoose = { screenModel.onReadAtChanged(it) }
-              )
+              activity?.let {
+                showDateRangePicker(
+                  activity = it,
+                  titleText = readAtPickerTitle,
+                  range = screenModel.filters.readAt,
+                  onRangeChoose = { screenModel.onReadAtChanged(it) }
+                )
+              }
             }
           )
         }
