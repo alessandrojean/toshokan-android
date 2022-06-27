@@ -63,7 +63,6 @@ fun StatisticCard(
   title: String,
   value: String,
   icon: ImageVector,
-  sensitive: Boolean = false,
   showValue: Boolean = true,
   contentPadding: PaddingValues = PaddingValues(),
   onClick: (() -> Unit)? = null,
@@ -140,7 +139,9 @@ fun StatisticCard(
                 .width(valueWidth ?: 0.dp)
                 .height(valueHeight ?: 0.dp)
                 .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(
+                  MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(2.dp)
+                )
             )
           }
         }

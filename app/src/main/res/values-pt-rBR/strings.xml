@@ -236,6 +236,10 @@
   <string name="settings_advanced">Avançado</string>
 
   <!-- General settings -->
+  <string name="pref_theme">Tema</string>
+  <string name="pref_theme_follow_system">Seguir o sistema</string>
+  <string name="pref_theme_dark">Escuro</string>
+  <string name="pref_theme_light">Claro</string>
   <string name="pref_manage_notifications">Gerenciar notificações</string>
   <string name="pref_currency">Moeda principal</string>
   <string name="pref_currency_summary">Usado nas estatísticas e valores monetários</string>

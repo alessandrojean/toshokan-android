@@ -5,14 +5,16 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.consumedWindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -85,3 +87,33 @@ operator fun PaddingValues.plus(increment: PaddingValues): PaddingValues =
     start = this.start + increment.start,
     end = this.end + increment.end
   )
+
+val LazyListState.isLastItemVisible: Boolean
+  get () = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+
+val LazyListState.isFirstItemVisible: Boolean
+  get () = firstVisibleItemIndex == 0
+
+val LazyListState.isAllItemsVisible: Boolean
+  get () = layoutInfo.visibleItemsInfo.size == layoutInfo.totalItemsCount
+
+data class LazyListScrollContext(
+  val isTop: Boolean,
+  val isBottom: Boolean,
+  val isAllItemsVisible: Boolean
+)
+
+@Composable
+fun rememberLazyListScrollContext(listState: LazyListState): LazyListScrollContext {
+  val scrollContext by remember {
+    derivedStateOf {
+      LazyListScrollContext(
+        isTop = listState.isFirstItemVisible,
+        isBottom = listState.isLastItemVisible,
+        isAllItemsVisible = listState.isAllItemsVisible
+      )
+    }
+  }
+
+  return scrollContext
+}

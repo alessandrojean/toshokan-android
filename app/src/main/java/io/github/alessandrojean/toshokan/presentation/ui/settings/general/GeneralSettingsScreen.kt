@@ -4,6 +4,7 @@ import android.content.Intent
 import android.icu.util.Currency
 import android.os.Build
 import android.provider.Settings
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,8 +17,10 @@ import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.data.preference.PreferencesManager.Theme
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.GenericPreference
+import io.github.alessandrojean.toshokan.presentation.ui.settings.components.ListPreference
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsListScaffold
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import java.text.Collator
@@ -44,6 +47,7 @@ class GeneralSettingsScreen : AndroidScreen() {
     val currency by viewModel.currency.collectAsStateWithLifecycle(
       initialValue = Currency.getInstance(currentLocale)
     )
+    val theme by viewModel.theme.collectAsStateWithLifecycle(Theme.FOLLOW_SYSTEM)
 
     FullScreenItemPickerDialog(
       visible = showCurrencyPicker,
@@ -68,6 +72,20 @@ class GeneralSettingsScreen : AndroidScreen() {
       title = stringResource(R.string.settings_general),
       onNavigationClick = { navigator.pop() }
     ) {
+      item("theme") {
+        ListPreference(
+          title = stringResource(R.string.pref_theme),
+          summary = stringResource(theme.title),
+          selected = theme,
+          options = remember { Theme.themes },
+          optionKey = { it.name },
+          optionText = { context.getString(it.title) },
+          onSelectedChange = {
+            viewModel.onThemeChanged(it)
+          }
+        )
+      }
+
       item("currency") {
         GenericPreference(
           title = stringResource(R.string.pref_currency),

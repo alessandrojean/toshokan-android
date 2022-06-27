@@ -124,7 +124,12 @@ dependencies {
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 
   // Lifecycle
-  implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.1")
+  val lifecycleVersion = "2.5.0-rc02"
+  implementation("androidx.lifecycle:lifecycle-process:$lifecycleVersion")
+  implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
+  implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycleVersion")
+  implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
+  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
 
   // Test
   testImplementation("junit:junit:4.+")
@@ -196,11 +201,6 @@ dependencies {
 
   // Jsoup
   implementation("org.jsoup:jsoup:1.15.1")
-
-  // Lifecycle
-  implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.1")
-  implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.1")
-  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-rc02")
 
   // Hilt
   val hiltVersion = rootProject.extra["hilt_version"]

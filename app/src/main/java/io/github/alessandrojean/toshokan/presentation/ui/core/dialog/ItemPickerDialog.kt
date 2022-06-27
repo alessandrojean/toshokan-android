@@ -1,11 +1,11 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.dialog
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,8 +22,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,19 +35,19 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DialogButtonBoxPadding
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DialogTitlePadding
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
+import io.github.alessandrojean.toshokan.util.extension.rememberLazyListScrollContext
 
 @Composable
-inline fun <reified T> ItemPickerDialog(
+fun <T> ItemPickerDialog(
   visible: Boolean,
   title: String,
   selected: T? = null,
   items: List<T> = emptyList(),
-  noinline itemKey: (T) -> Any,
-  noinline itemText: (T) -> String = { it.toString() },
-  chooseText: String = stringResource(R.string.action_select),
-  noinline onChoose: (T) -> Unit,
+  itemKey: (T) -> Any,
+  itemText: (T) -> String = { it.toString() },
   dismissText: String = stringResource(R.string.action_cancel),
-  noinline onDismiss: () -> Unit
+  onChoose: (T) -> Unit,
+  onDismiss: () -> Unit
 ) {
   ItemPickerDialog(
     visible = visible,
@@ -57,7 +57,7 @@ inline fun <reified T> ItemPickerDialog(
     itemKey = itemKey,
     itemText = itemText,
     role = Role.RadioButton,
-    chooseText = chooseText,
+    chooseText = stringResource(R.string.action_select),
     onChoose = { onChoose(it.first()) },
     dismissText = dismissText,
     onDismiss = onDismiss
@@ -65,17 +65,17 @@ inline fun <reified T> ItemPickerDialog(
 }
 
 @Composable
-inline fun <reified T> ItemPickerDialog(
+fun <T> ItemPickerDialog(
   visible: Boolean,
   title: String,
   selected: List<T> = emptyList(),
   items: List<T> = emptyList(),
-  noinline itemKey: (T) -> Any,
-  noinline itemText: (T) -> String = { it.toString() },
+  itemKey: (T) -> Any,
+  itemText: (T) -> String = { it.toString() },
   chooseText: String = stringResource(R.string.action_select),
-  noinline onChoose: (List<T>) -> Unit,
+  onChoose: (List<T>) -> Unit,
   dismissText: String = stringResource(R.string.action_cancel),
-  noinline onDismiss: () -> Unit
+  onDismiss: () -> Unit
 ) {
   ItemPickerDialog(
     visible = visible,
@@ -93,18 +93,18 @@ inline fun <reified T> ItemPickerDialog(
 }
 
 @Composable
-inline fun <reified T> ItemPickerDialog(
+fun <T> ItemPickerDialog(
   visible: Boolean,
   title: String,
   selected: List<T> = emptyList(),
   items: List<T> = emptyList(),
-  noinline itemKey: (T) -> Any,
-  noinline itemText: (T) -> String = { it.toString() },
+  itemKey: (T) -> Any,
+  itemText: (T) -> String = { it.toString() },
   role: Role = Role.Checkbox,
   chooseText: String = stringResource(R.string.action_select),
-  noinline onChoose: (List<T>) -> Unit,
+  onChoose: (List<T>) -> Unit,
   dismissText: String = stringResource(R.string.action_cancel),
-  noinline onDismiss: () -> Unit
+  onDismiss: () -> Unit
 ) {
   if (visible) {
     val listState = rememberLazyListState(
@@ -114,11 +114,12 @@ inline fun <reified T> ItemPickerDialog(
         0
       }
     )
-    val selectedState = remember { mutableStateListOf(*selected.toTypedArray()) }
+    val selectedState = remember { selected.toMutableStateList() }
+    val scrollContext = rememberLazyListScrollContext(listState)
 
     Dialog(onDismissRequest = onDismiss) {
       Surface(
-        modifier = Modifier.fillMaxHeight(0.85f),
+        modifier = Modifier.padding(vertical = 64.dp),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 6.dp
@@ -133,42 +134,43 @@ inline fun <reified T> ItemPickerDialog(
             color =  MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.headlineSmall
           )
-          Divider(
-            modifier = Modifier.fillMaxWidth(),
-            color = LocalContentColor.current.copy(alpha = DividerOpacity)
-          )
-          Box(
+          AnimatedVisibility(!scrollContext.isAllItemsVisible && !scrollContext.isTop) {
+            Divider(
+              modifier = Modifier.fillMaxWidth(),
+              color = LocalContentColor.current.copy(alpha = DividerOpacity)
+            )
+          }
+          LazyColumn(
+            state = listState,
             modifier = Modifier
-              .weight(weight = 1f, fill = false)
-              .align(Alignment.Start)
+              .fillMaxWidth()
+              .weight(1f, fill = false)
+              .selectableGroup()
           ) {
-            LazyColumn(
-              state = listState,
-              modifier = Modifier
-                .fillMaxWidth()
-                .selectableGroup()
-            ) {
-              items(items, key = itemKey) { itemOption ->
-                ItemOption(
-                  modifier = Modifier.fillMaxWidth(),
-                  text = itemText(itemOption),
-                  selected = selectedState.contains(itemOption),
-                  role = role,
-                  onClick = {
-                    if (role == Role.Checkbox) {
-                      selectedState += itemOption
-                    } else if (role == Role.RadioButton) {
-                      selectedState[0] = itemOption
-                    }
+            items(items, key = itemKey) { itemOption ->
+              ItemOption(
+                modifier = Modifier.fillMaxWidth(),
+                text = itemText(itemOption),
+                selected = selectedState.contains(itemOption),
+                role = role,
+                onClick = {
+                  if (role == Role.Checkbox) {
+                    selectedState += itemOption
+                  } else if (role == Role.RadioButton) {
+                    selectedState[0] = itemOption
+                    onChoose(selectedState)
+                    onDismiss()
                   }
-                )
-              }
+                }
+              )
             }
           }
-          Divider(
-            modifier = Modifier.fillMaxWidth(),
-            color = LocalContentColor.current.copy(alpha = DividerOpacity)
-          )
+          AnimatedVisibility(!scrollContext.isAllItemsVisible && !scrollContext.isBottom) {
+            Divider(
+              modifier = Modifier.fillMaxWidth(),
+              color = LocalContentColor.current.copy(alpha = DividerOpacity)
+            )
+          }
           Box(
             modifier = Modifier
               .fillMaxWidth()
@@ -181,14 +183,16 @@ inline fun <reified T> ItemPickerDialog(
               TextButton(onClick = onDismiss) {
                 Text(dismissText)
               }
-              TextButton(
-                enabled = selected.isNotEmpty(),
-                onClick = {
-                  onChoose(selectedState.toList().filterNotNull())
-                  onDismiss()
+              if (role == Role.Checkbox) {
+                TextButton(
+                  enabled = selected.isNotEmpty(),
+                  onClick = {
+                    onChoose(selectedState.toList().filterNotNull())
+                    onDismiss()
+                  }
+                ) {
+                  Text(chooseText)
                 }
-              ) {
-                Text(chooseText)
               }
             }
           }

@@ -1,9 +1,12 @@
 package io.github.alessandrojean.toshokan.data.preference
 
 import android.icu.util.Currency
+import android.os.Build
+import androidx.annotation.StringRes
 import com.fredporciuncula.flow.preferences.FlowSharedPreferences
 import com.fredporciuncula.flow.preferences.Serializer
 import io.github.alessandrojean.toshokan.BuildConfig
+import io.github.alessandrojean.toshokan.R
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -47,6 +50,30 @@ class PreferencesManager @Inject constructor(
     PreferenceKeys.currency,
     serializer = CurrencySerializer(),
     defaultValue = Currency.getInstance(Locale.getDefault())
+  )
+
+  enum class Theme(@StringRes val title: Int) {
+    FOLLOW_SYSTEM(R.string.pref_theme_follow_system),
+    DARK(R.string.pref_theme_dark),
+    LIGHT(R.string.pref_theme_light);
+
+    companion object {
+      val themes: List<Theme>
+        get () = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          values().toList()
+        } else {
+          listOf(DARK, LIGHT)
+        }
+    }
+  }
+
+  fun theme() = flowPrefs.getEnum(
+    PreferenceKeys.theme,
+    defaultValue = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      Theme.FOLLOW_SYSTEM
+    } else {
+      Theme.LIGHT
+    }
   )
 
 }

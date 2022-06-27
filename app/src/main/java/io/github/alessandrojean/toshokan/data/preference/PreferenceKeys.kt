@@ -4,6 +4,8 @@ object PreferenceKeys {
 
   const val isbnLookupSearchHistory = "isbn_lookup_search_history_v2"
 
+  const val theme = "theme"
+
   const val currency = "currency"
 
   const val showBookNavigation = "show_book_navigation"

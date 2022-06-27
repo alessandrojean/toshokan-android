@@ -2,6 +2,9 @@ package io.github.alessandrojean.toshokan
 
 import android.app.Application
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -12,6 +15,8 @@ import io.github.alessandrojean.toshokan.data.coil.BookCoverFetcher
 import io.github.alessandrojean.toshokan.data.coil.BookCoverKeyer
 import io.github.alessandrojean.toshokan.data.notification.Notifications
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
+import io.github.alessandrojean.toshokan.util.extension.asImmediateFlow
+import kotlinx.coroutines.flow.launchIn
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogPriority.VERBOSE
@@ -36,6 +41,18 @@ class ToshokanApp : Application(), ImageLoaderFactory {
     }
 
     setupNotificationChannels()
+
+    preferences.theme()
+      .asImmediateFlow {
+        AppCompatDelegate.setDefaultNightMode(
+          when (it) {
+            PreferencesManager.Theme.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+            PreferencesManager.Theme.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+            PreferencesManager.Theme.FOLLOW_SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+          }
+        )
+      }
+      .launchIn(ProcessLifecycleOwner.get().lifecycleScope)
   }
 
   override fun newImageLoader(): ImageLoader {

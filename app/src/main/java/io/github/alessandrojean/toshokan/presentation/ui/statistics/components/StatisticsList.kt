@@ -138,7 +138,6 @@ fun StatisticsList(
         title = stringResource(R.string.total_expense),
         value = totalExpense,
         icon = Icons.Outlined.Paid,
-        sensitive = true,
         showValue = showValue,
         onClick = onShowValueClick
       )
@@ -149,7 +148,6 @@ fun StatisticsList(
         title = stringResource(R.string.total_savings),
         value = totalSavings,
         icon = Icons.Outlined.Savings,
-        sensitive = true,
         showValue = showValue,
         onClick = onShowValueClick
       )
@@ -181,7 +179,6 @@ fun StatisticsList(
         title = stringResource(R.string.period_expense),
         value = periodExpense,
         icon = Icons.Outlined.Paid,
-        sensitive = true,
         showValue = showValue,
         onClick = onShowValueClick
       )

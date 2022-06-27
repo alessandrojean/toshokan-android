@@ -15,6 +15,7 @@ fun Long.toLocaleString(
 ): String {
   return this.toFloat().toLocaleString(locale) {
     maximumFractionDigits = 0
+    options()
   }
 }
 
