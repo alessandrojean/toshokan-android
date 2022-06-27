@@ -41,6 +41,7 @@ fun BookCollectionBottomPagination(
   modifier: Modifier = Modifier,
   tonalElevation: Dp = 12.dp,
   visible: Boolean = true,
+  enabled: Boolean = true,
   bookNeighbors: BookNeighbors?,
   onCollectionClick: () -> Unit,
   onFirstClick: () -> Unit,
@@ -60,7 +61,10 @@ fun BookCollectionBottomPagination(
     ) {
       Divider(color = LocalContentColor.current.copy(alpha = DividerOpacity))
       BottomAppBar(tonalElevation = tonalElevation) {
-        IconButton(onClick = onCollectionClick) {
+        IconButton(
+          enabled = enabled,
+          onClick = onCollectionClick
+        ) {
           BadgedBox(
             badge = {
               Badge {
@@ -77,7 +81,7 @@ fun BookCollectionBottomPagination(
         Spacer(modifier = Modifier.weight(1f))
         IconButton(
           onClick = onFirstClick,
-          enabled = bookNeighbors?.first != null &&
+          enabled = enabled && bookNeighbors?.first != null &&
             bookNeighbors.first.id != bookNeighbors.current?.id
         ) {
           Icon(
@@ -87,7 +91,7 @@ fun BookCollectionBottomPagination(
         }
         IconButton(
           onClick = onPreviousClick,
-          enabled = bookNeighbors?.previous != null
+          enabled = enabled && bookNeighbors?.previous != null
         ) {
           Icon(
             imageVector = Icons.Outlined.ChevronLeft,
@@ -96,7 +100,7 @@ fun BookCollectionBottomPagination(
         }
         IconButton(
           onClick = onNextClick,
-          enabled = bookNeighbors?.next != null
+          enabled = enabled && bookNeighbors?.next != null
         ) {
           Icon(
             imageVector = Icons.Outlined.ChevronRight,
@@ -105,7 +109,7 @@ fun BookCollectionBottomPagination(
         }
         IconButton(
           onClick = onLastClick,
-          enabled = bookNeighbors?.last != null &&
+          enabled = enabled && bookNeighbors?.last != null &&
             bookNeighbors.last.id != bookNeighbors.current?.id
         ) {
           Icon(

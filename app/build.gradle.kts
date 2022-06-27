@@ -160,7 +160,7 @@ dependencies {
 
   // Material Design
   implementation("com.google.android.material:material:1.7.0-alpha02")
-  implementation("com.google.android.material:compose-theme-adapter-3:1.0.11")
+  implementation("com.google.android.material:compose-theme-adapter-3:1.0.13")
 
   // Accompanist
   val accompanistVersion = "0.24.12-rc"
@@ -170,6 +170,7 @@ dependencies {
   implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-swiperefresh:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
+  implementation("com.google.accompanist:accompanist-placeholder-material:$accompanistVersion")
 
   // Androidx CameraX
   val cameraxVersion = "1.1.0-rc01"

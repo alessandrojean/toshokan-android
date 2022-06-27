@@ -19,7 +19,7 @@ sealed class SearchFilters {
     val query: String = "",
     val isFuture: Boolean? = false,
     val favoritesOnly: Boolean = false,
-    val collections: List<String> = emptyList(),
+    val collections: List<Collection> = emptyList(),
     val groups: @RawValue List<BookGroup> = emptyList(),
     val publishers: @RawValue List<Publisher> = emptyList(),
     val contributors: @RawValue List<Person> = emptyList(),
@@ -58,4 +58,25 @@ data class DateRange(
     )
   }
 
+}
+
+@Parcelize
+data class Collection(
+  val title: String,
+  val count: Int = 0
+) : Parcelable, Serializable {
+
+  override fun equals(other: Any?): Boolean {
+    if (other !is Collection) {
+      return false
+    }
+
+    return other.title == title
+  }
+
+  override fun hashCode(): Int {
+    var result = title.hashCode()
+    result = 31 * result + count
+    return result
+  }
 }

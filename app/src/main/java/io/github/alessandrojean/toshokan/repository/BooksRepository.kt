@@ -27,6 +27,7 @@ import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.database.data.Statistics
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
+import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.Library
@@ -90,12 +91,14 @@ class BooksRepository @Inject constructor(
       .flowOn(Dispatchers.IO)
   }
 
-  fun findCollections(): Flow<List<String>> {
+  fun subscribeToCollections(): Flow<List<Collection>> {
     return database.bookQueries.allTitles().asFlow().mapToList()
       .map { allTitles ->
-        allTitles.groupBy { it.toTitleParts().title }
-          .filterValues { it.size > 1 }
-          .keys.toList()
+        allTitles.groupBy { it.title.toTitleParts().title }
+          .filterValues { collection ->
+            collection.size > 1 && collection.all { collection[0].group_id == it.group_id }
+          }
+          .map { (key, value) -> Collection(key, value.size) }
       }
       .flowOn(Dispatchers.IO)
   }
@@ -220,7 +223,8 @@ class BooksRepository @Inject constructor(
       .mapToList()
       .map { searchResults ->
         if (filters.collections.isNotEmpty()) {
-          searchResults.filter { it.title.toTitleParts().title in filters.collections }
+          val allTitles = filters.collections.map { it.title }
+          searchResults.filter { it.title.toTitleParts().title in allTitles }
         } else {
           searchResults
         }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import androidx.core.net.toUri
-import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.hilt.ScreenModelFactory
 import dagger.assisted.Assisted
@@ -20,15 +20,16 @@ import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.service.link.BookLink
+import io.github.alessandrojean.toshokan.service.link.LinkCategory
 import io.github.alessandrojean.toshokan.service.link.LinkRepository
-import io.github.alessandrojean.toshokan.util.extension.appName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toShareIntent
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toast
 import io.github.alessandrojean.toshokan.util.storage.DiskUtil
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
@@ -38,30 +39,81 @@ class BookScreenModel @AssistedInject constructor(
   preferencesManager: PreferencesManager,
   private val imageSaver: ImageSaver,
   private val linkRepository: LinkRepository,
-  @Assisted private val bookId: Long
-) : ScreenModel {
+  @Assisted private var bookId: Long
+) : StateScreenModel<BookScreenModel.State>(State.Loading) {
 
   @AssistedFactory
   interface Factory : ScreenModelFactory {
     fun create(@Assisted bookId: Long): BookScreenModel
   }
 
-  val book = booksRepository.findByIdAsFlow(bookId)
-  val simpleBook = booksRepository.findSimpleById(bookId)
-  val contributors = booksRepository.findBookContributorsAsFlow(bookId)
-
-  val neighbors by lazy {
-    findSeriesVolumes(booksRepository.findById(bookId))
+  sealed class State {
+    object Loading : State()
+    object NotFound : State()
+    data class Result(
+      val book: CompleteBook?,
+      val simpleBook: Book?,
+      val contributors: List<BookContributor> = emptyList(),
+      val neighbors: BookNeighbors?,
+      val links: Map<LinkCategory, List<BookLink>> = emptyMap()
+    ) : State()
   }
 
   val showBookNavigation = preferencesManager.showBookNavigation().asFlow()
+  private var observeJob: Job? = null
 
-  fun findBookLinks(book: CompleteBook?): List<BookLink> {
+  init {
+    observeBook()
+  }
+
+  fun navigate(otherBookId: Long) {
+    bookId = otherBookId
+    observeBook()
+  }
+
+  private fun observeBook() {
+    observeJob?.cancel()
+
+    observeJob = coroutineScope.launch {
+      val book = booksRepository.findById(bookId)
+
+      if (book == null) {
+        mutableState.value = State.NotFound
+        return@launch
+      }
+
+      val combinedFlows = combine(
+        booksRepository.findByIdAsFlow(bookId),
+        booksRepository.findSimpleById(bookId),
+        booksRepository.findBookContributorsAsFlow(bookId),
+        booksRepository.findSeriesVolumes(book.title.toTitleParts(), book.publisher_id, book.group_id)
+      ) { bookDb, simpleBook, contributors, neighbors ->
+        if (bookDb != null && simpleBook != null) {
+          State.Result(
+            book = bookDb,
+            simpleBook = simpleBook,
+            contributors = contributors,
+            neighbors = neighbors,
+            links = findBookLinks(bookDb)
+          )
+        } else {
+          State.Loading
+        }
+      }
+
+      combinedFlows.collect { mutableState.value = it }
+    }
+  }
+
+  private fun findBookLinks(book: CompleteBook?): Map<LinkCategory, List<BookLink>> {
     if (book == null) {
-      return emptyList()
+      return emptyMap()
     }
 
-    return linkRepository.generateBookLinks(book)
+    return linkRepository
+      .generateBookLinks(book)
+      .sortedBy { context.getString(it.name) }
+      .groupBy { it.category }
   }
 
   fun toggleFavorite() = coroutineScope.launch {

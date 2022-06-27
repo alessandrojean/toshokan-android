@@ -6,11 +6,22 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -25,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.palette.graphics.Palette
 import cafe.adriel.voyager.androidx.AndroidScreen
@@ -34,6 +47,7 @@ import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
@@ -43,6 +57,8 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.components.BookScr
 import io.github.alessandrojean.toshokan.presentation.ui.book.components.LinkBottomSheet
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScreen
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
@@ -52,25 +68,49 @@ import kotlinx.coroutines.launch
 
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
-  override val key = "book_screen_$bookId"
+  override val key = "book_screen"
 
   @Composable
   override fun Content() {
     val bookScreenModel = getScreenModel<BookScreenModel, BookScreenModel.Factory> { factory ->
       factory.create(bookId)
     }
-    val book by bookScreenModel.book.collectAsStateWithLifecycle(null)
-    val simpleBook by bookScreenModel.simpleBook.collectAsStateWithLifecycle(null)
-    val bookContributors by bookScreenModel.contributors.collectAsStateWithLifecycle(emptyList())
-    val bookNeighbors by bookScreenModel.neighbors.collectAsStateWithLifecycle(null)
+    val state by bookScreenModel.state.collectAsStateWithLifecycle()
+    val resultState = state as? BookScreenModel.State.Result
     val showBookNavigation by bookScreenModel.showBookNavigation.collectAsStateWithLifecycle(false)
     val navigator = LocalNavigator.currentOrThrow
-    val context = LocalContext.current
 
-    val bookLinks = remember(book) {
-      bookScreenModel.findBookLinks(book)
-        .sortedBy { context.getString(it.name) }
-        .groupBy { it.category }
+    if (state == BookScreenModel.State.NotFound) {
+      Scaffold(
+        modifier = Modifier
+          .fillMaxSize()
+          .navigationBarsPadding(),
+        topBar = {
+          EnhancedSmallTopAppBar(
+            title = {},
+            contentPadding = WindowInsets.statusBars.asPaddingValues(),
+            navigationIcon = {
+              IconButton(onClick = { navigator.pop() }) {
+                Icon(
+                  painter = rememberVectorPainter(Icons.Outlined.ArrowBack),
+                  contentDescription = stringResource(R.string.action_back)
+                )
+              }
+            }
+          )
+        },
+        content = { innerPadding ->
+          NoItemsFound(
+            modifier = Modifier
+              .fillMaxSize()
+              .padding(innerPadding),
+            icon = Icons.Outlined.SearchOff,
+            text = stringResource(R.string.error_book_not_found)
+          )
+        }
+      )
+
+      return
     }
 
     val isSystemInDarkTheme = isSystemInDarkTheme()
@@ -104,8 +144,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       skipHalfExpanded = true
     )
 
-    LaunchedEffect(book?.cover_url) {
-      if (book?.cover_url.orEmpty().isBlank()) {
+    LaunchedEffect(resultState?.book?.cover_url) {
+      if (resultState?.book?.cover_url.orEmpty().isBlank()) {
         palette = null
       }
     }
@@ -137,7 +177,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           linksBottomSheetState.isVisible ->
             colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
           showCoverFullScreenDialog -> dialogNavigationColor
-          bookNeighbors == null || !showBookNavigation ->
+          resultState?.neighbors == null || !showBookNavigation ->
             colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
           else -> colorScheme.surfaceWithTonalElevation(bottomBarTonalElevation)
         }
@@ -158,7 +198,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           scrimColor = colorScheme.surface.copy(alpha = 0.9f),
           sheetContent = {
             LinkBottomSheet(
-              links = bookLinks,
+              links = (state as? BookScreenModel.State.Result)?.links ?: emptyMap(),
               onLinkClick = {
                 bookScreenModel.openLink(it)
                 scope.launch { linksBottomSheetState.hide() }
@@ -167,12 +207,12 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           }
         ) {
           BookScreenContent(
-            book = book,
-            simpleBook = simpleBook,
-            bookContributors = bookContributors,
-            bookNeighbors = bookNeighbors,
+            book = resultState?.book,
+            simpleBook = resultState?.simpleBook,
+            bookContributors = resultState?.contributors.orEmpty(),
+            bookNeighbors = resultState?.neighbors,
             showBookNavigation = showBookNavigation,
-            showLinksButton = bookLinks.isNotEmpty(),
+            showLinksButton = resultState?.links.orEmpty().isNotEmpty(),
             bottomBarTonalElevation = bottomBarTonalElevation,
             onNavigateBackClick = { navigator.pop() },
             onCoverClick = { showCoverFullScreenDialog = true },
@@ -181,30 +221,34 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             },
             onReadingClick = { navigator.push(ReadingScreen(bookId)) },
             onEditClick = {
-              if (book != null) {
+              if (resultState?.book != null) {
                 navigator.push(
-                  ManageBookScreen(existingBookId = book!!.id)
+                  ManageBookScreen(existingBookId = resultState.book.id)
                 )
               }
             },
             onDeleteClick = { showDeleteDialog = true },
             onPaginationCollectionClick = {
               val searchFilters = SearchFilters.Incomplete(
-                collections = listOf(book!!.title.toTitleParts().title)
+                collections = listOfNotNull(resultState?.book?.title?.toTitleParts()?.title)
               )
               navigator.push(SearchScreen(searchFilters))
             },
             onPaginationFirstClick = {
-              navigator.replace(BookScreen(bookNeighbors!!.first!!.id))
+//              navigator.replace(BookScreen(bookNeighbors!!.first!!.id))
+              bookScreenModel.navigate(resultState!!.neighbors!!.first!!.id)
             },
             onPaginationLastClick = {
-              navigator.replace(BookScreen(bookNeighbors!!.last!!.id))
+//              navigator.replace(BookScreen(bookNeighbors!!.last!!.id))
+              bookScreenModel.navigate(resultState!!.neighbors!!.last!!.id)
             },
             onPaginationPreviousClick = {
-              navigator.replace(BookScreen(bookNeighbors!!.previous!!.id))
+//              navigator.replace(BookScreen(bookNeighbors!!.previous!!.id))
+              bookScreenModel.navigate(resultState!!.neighbors!!.previous!!.id)
             },
             onPaginationNextClick = {
-              navigator.replace(BookScreen(bookNeighbors!!.next!!.id))
+//              navigator.replace(BookScreen(bookNeighbors!!.next!!.id))
+              bookScreenModel.navigate(resultState!!.neighbors!!.next!!.id)
             },
             onFavoriteChange = { bookScreenModel.toggleFavorite() },
             onImageSuccess = { drawableBitmap ->
@@ -218,27 +262,27 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
 
       AnimatedVisibility(
         modifier = Modifier.fillMaxSize(),
-        visible = showCoverFullScreenDialog && book != null,
+        visible = showCoverFullScreenDialog && resultState?.book != null,
         enter = fadeIn(),
         exit = fadeOut()
       ) {
         BookCoverFullScreenDialog(
-          book = simpleBook,
-          onShareClick = { bitmap -> bookScreenModel.shareImage(bitmap, book!!) },
-          onSaveClick = { bitmap -> bookScreenModel.saveImage(bitmap, book!!) },
+          book = resultState!!.simpleBook!!,
+          onShareClick = { bitmap -> bookScreenModel.shareImage(bitmap, resultState.book!!) },
+          onSaveClick = { bitmap -> bookScreenModel.saveImage(bitmap, resultState.book!!) },
           onEditClick = {
             showCoverFullScreenDialog = false
             
             navigator.push {
               ManageBookScreen(
-                existingBookId = book!!.id,
+                existingBookId = resultState.book!!.id,
                 initialTab = ManageBookScreen.ManageBookTab.Cover
               )
             }
           },
           onDeleteClick = {
             showCoverFullScreenDialog = false
-            bookScreenModel.deleteCover(book?.cover_url)
+            bookScreenModel.deleteCover(resultState.book?.cover_url)
           },
           onDismiss = { showCoverFullScreenDialog = false }
         )

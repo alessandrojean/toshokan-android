@@ -197,6 +197,9 @@
   <string name="today">Today</string>
   <string name="other_date">Other date</string>
   <string name="links">Links</string>
+  <string name="book_added_to_favorites">Book added to favorites</string>
+  <string name="book_removed_from_favorites">Book removed from favorites</string>
+  <string name="error_book_not_found">Book not found</string>
 
   <!-- More -->
   <string name="more">More</string>

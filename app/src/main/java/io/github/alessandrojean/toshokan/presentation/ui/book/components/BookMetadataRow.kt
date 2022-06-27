@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.alessandrojean.toshokan.util.extension.placeholder
 
 @Composable
 fun BookMetadataRow(
@@ -30,7 +31,7 @@ fun BookMetadataRow(
       .then(modifier)
   ) {
     Text(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.placeholder(value.isEmpty()),
       text = label,
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -38,8 +39,8 @@ fun BookMetadataRow(
       overflow = TextOverflow.Ellipsis
     )
     Text(
-      modifier = Modifier.fillMaxWidth(),
-      text = value,
+      modifier = Modifier.placeholder(value.isEmpty()),
+      text = value.ifEmpty { "Metadata value" },
       maxLines = 1,
       overflow = TextOverflow.Ellipsis
     )

@@ -55,7 +55,7 @@ FROM Book
 WHERE code IS NOT NULL;
 
 allTitles:
-SELECT title
+SELECT title, group_id
 FROM Book
 ORDER BY title COLLATE UNICODE ASC;
 

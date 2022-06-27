@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import io.github.alessandrojean.toshokan.util.extension.placeholder
 
 @Composable
 fun BookInformationRow(
@@ -19,13 +20,15 @@ fun BookInformationRow(
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Text(
+      modifier = Modifier.placeholder(value.isEmpty()),
       text = label,
       style = MaterialTheme.typography.bodyMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
     )
     Text(
-      text = value,
+      modifier = Modifier.placeholder(value.isEmpty()),
+      text = value.ifEmpty { "Information" },
       style = MaterialTheme.typography.bodyMedium
     )
   }

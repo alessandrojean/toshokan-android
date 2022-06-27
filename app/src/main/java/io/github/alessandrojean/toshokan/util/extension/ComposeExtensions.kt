@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -21,6 +22,12 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.fade
+import com.google.accompanist.placeholder.material.fade
+import com.google.accompanist.placeholder.material.placeholder
+import io.github.alessandrojean.toshokan.presentation.extensions.selection
+import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -116,4 +123,12 @@ fun rememberLazyListScrollContext(listState: LazyListState): LazyListScrollConte
   }
 
   return scrollContext
+}
+
+fun Modifier.placeholder(visible: Boolean): Modifier = composed {
+  Modifier.placeholder(
+    visible = visible,
+    color = MaterialTheme.colorScheme.selection,
+    highlight = PlaceholderHighlight.fade()
+  )
 }

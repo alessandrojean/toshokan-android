@@ -30,6 +30,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,11 +40,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,6 +60,8 @@ import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
+import io.github.alessandrojean.toshokan.util.extension.bottom
+import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -97,17 +103,28 @@ fun BookScreenContent(
     }
   }
 
-  val currentScrollBounded = min(scrollState.value.toFloat(), maxPoint)
-  val scrollPercentage = (currentScrollBounded / maxPoint).coerceIn(0f, 1f)
+  val currentScrollBounded by remember {
+    derivedStateOf { min(scrollState.value.toFloat(), maxPoint) }
+  }
+  val scrollPercentage by remember {
+    derivedStateOf { (currentScrollBounded / maxPoint).coerceIn(0f, 1f) }
+  }
   val coverBottomOffsetDp = 18f
 
-  val topBarContainerColor = scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
+  val topBarContainerColor by remember(scrolledTopBarContainerColor) {
+    derivedStateOf { scrolledTopBarContainerColor.copy(alpha = scrollPercentage) }
+  }
+
+  val snackbarHostState = remember { SnackbarHostState() }
+  val scope = rememberCoroutineScope()
+  val context = LocalContext.current
 
   Scaffold(
     modifier = Modifier
       .nestedScroll(scrollBehavior.nestedScrollConnection)
       .then(modifier),
     containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
+    snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -144,7 +161,19 @@ fun BookScreenContent(
             actions = {
               IconToggleButton(
                 checked = book?.is_favorite == true,
-                onCheckedChange = onFavoriteChange,
+                onCheckedChange = { newValue ->
+                  onFavoriteChange(newValue)
+                  scope.launch {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(
+                      message = if (newValue) {
+                        context.getString(R.string.book_added_to_favorites)
+                      } else {
+                        context.getString(R.string.book_removed_from_favorites)
+                      }
+                    )
+                  }
+                },
                 enabled = book != null,
                 colors = IconButtonDefaults.iconToggleButtonColors(
                   contentColor = LocalContentColor.current,
@@ -211,7 +240,7 @@ fun BookScreenContent(
           modifier = Modifier
             .offset(y = (-coverBottomOffsetDp).dp)
             .fillMaxWidth(),
-          bottomPadding = innerPadding.calculateBottomPadding(),
+          bottomPadding = innerPadding.bottom,
           bottomBarVisible = bookNeighbors != null && showBookNavigation,
           book = book,
           contributors = bookContributors,
@@ -227,6 +256,7 @@ fun BookScreenContent(
         modifier = Modifier.navigationBarsPadding(),
         tonalElevation = bottomBarTonalElevation,
         visible = showBookNavigation,
+        enabled = book != null,
         bookNeighbors = bookNeighbors,
         onCollectionClick = onPaginationCollectionClick,
         onFirstClick = onPaginationFirstClick,

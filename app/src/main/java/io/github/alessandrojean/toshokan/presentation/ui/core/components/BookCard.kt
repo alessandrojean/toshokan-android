@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,8 +58,9 @@ fun BookCard(
 ) {
   val context = LocalContext.current
 
-  var imageLoaded by remember { mutableStateOf(false) }
-  var aspectRatio by remember { mutableStateOf(2f / 3f) }
+  val idKey = book?.id?.toString() ?: "null"
+  var imageLoaded by rememberSaveable(key = "book_loaded_$idKey") { mutableStateOf(false) }
+  var aspectRatio by rememberSaveable(key = "book_aspect_$idKey") { mutableStateOf(2f / 3f) }
 
   val selectedColor = MaterialTheme.colorScheme.surfaceTint
 

@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -90,6 +93,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.InformationTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.OrganizationTab
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
@@ -205,62 +209,56 @@ data class ManageBookScreen(
       Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-          Surface(color = topAppBarBackground) {
-            Column {
-              SmallTopAppBar(
-                modifier = Modifier.statusBarsPadding(),
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                  containerColor = Color.Transparent,
-                  scrolledContainerColor = Color.Transparent
-                ),
-                scrollBehavior = scrollBehavior,
-                navigationIcon = {
-                  IconButton(
-                    enabled = !manageBookScreenModel.writing,
-                    onClick = { navigator.pop() }
-                  ) {
-                    Icon(
-                      imageVector = Icons.Outlined.ArrowBack,
-                      contentDescription = stringResource(R.string.action_back)
-                    )
-                  }
+          EnhancedSmallTopAppBar(
+            title = {
+              Text(
+                text = if (existingBookId != null) {
+                  stringResource(R.string.edit_book)
+                } else {
+                  stringResource(R.string.create_book)
                 },
-                title = {
-                  Text(
-                    text = if (existingBookId != null) {
-                      stringResource(R.string.edit_book)
-                    } else {
-                      stringResource(R.string.create_book)
-                    },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                  )
-                },
-                actions = {
-                  TextButton(
-                    enabled = !manageBookScreenModel.informationTabInvalid &&
-                      !manageBookScreenModel.contributorsTabInvalid &&
-                      !manageBookScreenModel.informationTabInvalid &&
-                      !manageBookScreenModel.writing,
-                    onClick = {
-                      if (manageBookScreenModel.mode == ManageBookScreenModel.Mode.CREATING) {
-                        manageBookScreenModel.create { bookId ->
-                          if (bookId != null) {
-                            navigator.popUntil { it is LibraryScreen }
-                            navigator.push(BookScreen(bookId))
-                          }
-                        }
-                      } else {
-                        manageBookScreenModel.edit {
-                          navigator.pop()
-                        }
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+            },
+            scrollBehavior = scrollBehavior,
+            navigationIcon = {
+              IconButton(
+                enabled = !manageBookScreenModel.writing,
+                onClick = { navigator.pop() }
+              ) {
+                Icon(
+                  imageVector = Icons.Outlined.ArrowBack,
+                  contentDescription = stringResource(R.string.action_back)
+                )
+              }
+            },
+            contentPadding = WindowInsets.statusBars.asPaddingValues(),
+            actions = {
+              TextButton(
+                enabled = !manageBookScreenModel.informationTabInvalid &&
+                  !manageBookScreenModel.contributorsTabInvalid &&
+                  !manageBookScreenModel.informationTabInvalid &&
+                  !manageBookScreenModel.writing,
+                onClick = {
+                  if (manageBookScreenModel.mode == ManageBookScreenModel.Mode.CREATING) {
+                    manageBookScreenModel.create { bookId ->
+                      if (bookId != null) {
+                        navigator.popUntil { it is LibraryScreen }
+                        navigator.push(BookScreen(bookId))
                       }
                     }
-                  ) {
-                    Text(stringResource(R.string.action_finish))
+                  } else {
+                    manageBookScreenModel.edit {
+                      navigator.pop()
+                    }
                   }
                 }
-              )
+              ) {
+                Text(stringResource(R.string.action_finish))
+              }
+            },
+            content = {
               ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 edgePadding = 12.dp,
@@ -295,7 +293,7 @@ data class ManageBookScreen(
                 }
               }
             }
-          }
+          )
         },
         content = { innerPadding ->
           HorizontalPager(

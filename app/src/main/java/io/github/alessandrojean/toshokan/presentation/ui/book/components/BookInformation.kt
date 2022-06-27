@@ -69,6 +69,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.Expande
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
+import io.github.alessandrojean.toshokan.util.extension.placeholder
 import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
@@ -170,13 +171,18 @@ fun BookInformation(
       Text(
         modifier = Modifier
           .padding(horizontal = 24.dp)
-          .semantics { heading() },
-        text = book?.title.orEmpty(),
+          .semantics { heading() }
+          .placeholder(book == null),
+        text = book?.title.orEmpty().ifEmpty { "Book title" },
         style = MaterialTheme.typography.titleLarge
       )
       Text(
-        modifier = Modifier.padding(horizontal = 24.dp),
-        text = bookAuthors.joinToString(", ") { it.person_name },
+        modifier = Modifier
+          .padding(start = 24.dp, end = 24.dp, top = 2.dp)
+          .placeholder(book == null),
+        text = bookAuthors
+          .joinToString(", ") { it.person_name }
+          .ifEmpty { "Book authors" },
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         style = MaterialTheme.typography.bodyLarge.copy(
@@ -223,6 +229,7 @@ fun BookInformation(
           colors = buttonColors,
           shape = RectangleShape,
           contentPadding = buttonRowContentPadding,
+          enabled = book != null,
           onClick = onEditClick
         )
         ExpandedIconButton(
@@ -235,6 +242,7 @@ fun BookInformation(
             bottomEnd = buttonRowCorner
           ),
           contentPadding = buttonRowContentPadding,
+          enabled = book != null,
           onClick = onDeleteClick,
         )
       }
@@ -304,7 +312,7 @@ fun BookInformation(
           .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
       ) {
-        if (book?.code.orEmpty().isNotBlank()) {
+        if (book?.code.orEmpty().isNotBlank() || book == null) {
           BookInformationRow(
             label = stringResource(R.string.code),
             value = book?.code.orEmpty()
@@ -319,60 +327,62 @@ fun BookInformation(
           value = book?.updated_at?.formatToLocaleDate() ?: ""
         )
       }
-      Text(
-        modifier = Modifier
-          .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp)
-          .semantics { heading() },
-        text = stringResource(R.string.contributors),
-        style = MaterialTheme.typography.titleLarge
-      )
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .animateContentSize()
-      ) {
-        visibleContributors.forEach { contributor ->
-          BookContributorRow(
-            contributor = contributor,
-            onClick = {
-              val searchFilters = SearchFilters.Incomplete(
-                contributors = listOf(contributor.person_id)
-              )
-              navigator.push(SearchScreen(searchFilters))
-            }
-          )
-        }
-        if (contributorsToggleable) {
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(contributorsButtonHeight.dp)
-          ) {
-            if (!contributorsExpanded) {
-              BookContributorRow(contributor = contributors[minContributors])
-            }
+      if (contributors.isNotEmpty()) {
+        Text(
+          modifier = Modifier
+            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp)
+            .semantics { heading() },
+          text = stringResource(R.string.contributors),
+          style = MaterialTheme.typography.titleLarge
+        )
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+        ) {
+          visibleContributors.forEach { contributor ->
+            BookContributorRow(
+              contributor = contributor,
+              onClick = {
+                val searchFilters = SearchFilters.Incomplete(
+                  contributors = listOf(contributor.person_id)
+                )
+                navigator.push(SearchScreen(searchFilters))
+              }
+            )
+          }
+          if (contributorsToggleable) {
             Box(
               modifier = Modifier
-                .fillMaxSize()
-                .background(
-                  Brush.verticalGradient(
-                    0.0f to Color.Transparent,
-                    0.2f to synopsisBackground.copy(alpha = 0.5f),
-                    0.8f to synopsisBackground
-                  )
-                )
-                .toggleable(
-                  value = contributorsExpanded,
-                  onValueChange = { contributorsExpanded = it },
-                  role = Role.Checkbox,
-                ),
-              contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .height(contributorsButtonHeight.dp)
             ) {
-              Icon(
-                modifier = Modifier.graphicsLayer(rotationX = contributorsIconRotation),
-                imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = null
-              )
+              if (!contributorsExpanded) {
+                BookContributorRow(contributor = contributors[minContributors])
+              }
+              Box(
+                modifier = Modifier
+                  .fillMaxSize()
+                  .background(
+                    Brush.verticalGradient(
+                      0.0f to Color.Transparent,
+                      0.2f to synopsisBackground.copy(alpha = 0.5f),
+                      0.8f to synopsisBackground
+                    )
+                  )
+                  .toggleable(
+                    value = contributorsExpanded,
+                    onValueChange = { contributorsExpanded = it },
+                    role = Role.Checkbox,
+                  ),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  modifier = Modifier.graphicsLayer(rotationX = contributorsIconRotation),
+                  imageVector = Icons.Outlined.ExpandMore,
+                  contentDescription = null
+                )
+              }
             }
           }
         }

@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -52,7 +53,7 @@ fun NoItemsFound(
   ) {
     if (icon != null) {
       Icon(
-        imageVector = icon,
+        painter = rememberVectorPainter(icon),
         contentDescription = null,
         tint = LocalContentColor.current.copy(alpha = 0.15f),
         modifier = Modifier
