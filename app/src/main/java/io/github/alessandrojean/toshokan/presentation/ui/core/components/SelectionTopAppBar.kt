@@ -14,14 +14,19 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.extensions.selection
+import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 
 @Composable
 fun SelectionTopAppBar(
@@ -32,18 +37,78 @@ fun SelectionTopAppBar(
   onEditClick: (() -> Unit)? = null,
   onDeleteClick: () -> Unit = {},
   colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
-    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-    scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+    containerColor = MaterialTheme.colorScheme.selection,
+    scrolledContainerColor = MaterialTheme.colorScheme.selection
   ),
   scrollBehavior: TopAppBarScrollBehavior? = null,
   content: @Composable ColumnScope.() -> Unit = {}
 ) {
-  SelectionTopAppBar(
+  EnhancedSmallTopAppBar(
     modifier = modifier,
     contentPadding = contentPadding,
     colors = colors,
     scrollBehavior = scrollBehavior,
+    appBar = {
+      BaseSelectionTopAppBar(
+        selectionCount = selectionCount,
+        scrollBehavior = scrollBehavior,
+        onEditClick = onEditClick,
+        onDeleteClick = onDeleteClick,
+        onClearSelectionClick = onClearSelectionClick
+      )
+    },
+    content = content
+  )
+}
+
+@Composable
+fun SelectionTopAppBar(
+  modifier: Modifier = Modifier,
+  contentPadding: PaddingValues = WindowInsets.statusBars.asPaddingValues(),
+  selectionCount: Int,
+  onClearSelectionClick: () -> Unit = {},
+  actions: @Composable RowScope.() -> Unit = {},
+  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
+    containerColor = MaterialTheme.colorScheme.selection,
+    scrolledContainerColor = MaterialTheme.colorScheme.selection
+  ),
+  scrollBehavior: TopAppBarScrollBehavior? = null,
+  content: @Composable ColumnScope.() -> Unit = {}
+) {
+  EnhancedSmallTopAppBar(
+    modifier = modifier,
+    contentPadding = contentPadding,
+    colors = colors,
+    scrollBehavior = scrollBehavior,
+    appBar = {
+      BaseSelectionTopAppBar(
+        selectionCount = selectionCount,
+        scrollBehavior = scrollBehavior,
+        actions = actions,
+        onClearSelectionClick = onClearSelectionClick
+      )
+    },
+    content = content
+  )
+}
+
+@Composable
+fun BaseSelectionTopAppBar(
+  modifier: Modifier = Modifier,
+  selectionCount: Int,
+  scrollBehavior: TopAppBarScrollBehavior? = null,
+  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
+    containerColor = Color.Transparent,
+    scrolledContainerColor = Color.Transparent
+  ),
+  onClearSelectionClick: () -> Unit = {},
+  onEditClick: (() -> Unit)? = null,
+  onDeleteClick: () -> Unit = {},
+) {
+  BaseSelectionTopAppBar(
+    modifier = modifier,
     selectionCount = selectionCount,
+    scrollBehavior = scrollBehavior,
     onClearSelectionClick = onClearSelectionClick,
     actions = {
       if (selectionCount == 1 && onEditClick != null) {
@@ -62,29 +127,29 @@ fun SelectionTopAppBar(
         )
       }
     },
-    content = content
+    colors = colors
   )
 }
 
 @Composable
-fun SelectionTopAppBar(
+fun BaseSelectionTopAppBar(
   modifier: Modifier = Modifier,
-  contentPadding: PaddingValues = WindowInsets.statusBars.asPaddingValues(),
   selectionCount: Int,
-  onClearSelectionClick: () -> Unit = {},
-  actions: @Composable RowScope.() -> Unit = {},
-  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
-    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-    scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant
-  ),
   scrollBehavior: TopAppBarScrollBehavior? = null,
-  content: @Composable ColumnScope.() -> Unit = {}
+  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
+    containerColor = Color.Transparent,
+    scrolledContainerColor = Color.Transparent
+  ),
+  actions: @Composable RowScope.() -> Unit = {},
+  onClearSelectionClick: () -> Unit = {},
 ) {
-  EnhancedSmallTopAppBar(
+  SmallTopAppBar(
     modifier = modifier,
-    contentPadding = contentPadding,
-    colors = colors,
-    scrollBehavior = scrollBehavior,
+    title = {
+      AnimatedContent(targetState = selectionCount) { targetCount ->
+        Text(targetCount.toString())
+      }
+    },
     navigationIcon = {
       IconButton(onClick = onClearSelectionClick) {
         Icon(
@@ -93,12 +158,8 @@ fun SelectionTopAppBar(
         )
       }
     },
-    title = {
-      AnimatedContent(targetState = selectionCount) { targetCount ->
-        Text(targetCount.toString())
-      }
-    },
     actions = actions,
-    content = content
+    scrollBehavior = scrollBehavior,
+    colors = colors
   )
 }

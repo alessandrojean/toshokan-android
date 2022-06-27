@@ -34,3 +34,6 @@ fun Color.withTonalElevation(tonalElevation: Dp): Color {
   val alpha = ((4.5f * ln(tonalElevation.value + 1)) + 2f) / 100f
   return MaterialTheme.colorScheme.primary.copy(alpha = alpha).compositeOver(this)
 }
+
+val ColorScheme.selection
+  @Composable get () = surfaceVariant.withTonalElevation(2.dp)

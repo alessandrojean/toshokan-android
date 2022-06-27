@@ -1,8 +1,10 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -24,6 +26,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -47,8 +50,8 @@ fun BookCollectionBottomPagination(
 ) {
   AnimatedVisibility(
     visible = bookNeighbors != null && visible,
-    enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-    exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+    enter = expandVertically(expandFrom = Alignment.Bottom),
+    exit = shrinkVertically(shrinkTowards = Alignment.Bottom)
   ) {
     Column(
       modifier = Modifier

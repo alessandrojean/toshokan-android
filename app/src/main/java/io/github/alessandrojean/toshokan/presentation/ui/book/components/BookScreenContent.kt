@@ -101,11 +101,7 @@ fun BookScreenContent(
   val scrollPercentage = (currentScrollBounded / maxPoint).coerceIn(0f, 1f)
   val coverBottomOffsetDp = 18f
 
-  val scrollPercentageAnimated by animateFloatAsState(scrollPercentage)
-
-  val topBarContainerColor by animateColorAsState(
-    targetValue = scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
-  )
+  val topBarContainerColor = scrolledTopBarContainerColor.copy(alpha = scrollPercentage)
 
   Scaffold(
     modifier = Modifier
@@ -139,7 +135,7 @@ fun BookScreenContent(
             },
             title = {
               Text(
-                modifier = Modifier.graphicsLayer { alpha = scrollPercentageAnimated },
+                modifier = Modifier.graphicsLayer { alpha = scrollPercentage },
                 text = book?.title.orEmpty(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

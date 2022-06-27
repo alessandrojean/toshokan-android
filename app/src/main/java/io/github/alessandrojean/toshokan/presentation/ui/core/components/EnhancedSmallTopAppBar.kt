@@ -36,6 +36,36 @@ fun EnhancedSmallTopAppBar(
   contentPadding: PaddingValues = PaddingValues(),
   content: @Composable ColumnScope.() -> Unit = {}
 ) {
+  EnhancedSmallTopAppBar(
+    modifier = modifier,
+    colors = colors,
+    contentPadding = contentPadding,
+    scrollBehavior = scrollBehavior,
+    appBar = {
+      SmallTopAppBar(
+        title = title,
+        navigationIcon = navigationIcon,
+        actions = actions,
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+          containerColor = Color.Transparent,
+          scrolledContainerColor = Color.Transparent
+        )
+      )
+    },
+    content = content
+  )
+}
+
+@Composable
+fun EnhancedSmallTopAppBar(
+  modifier: Modifier = Modifier,
+  colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(),
+  contentPadding: PaddingValues = PaddingValues(),
+  scrollBehavior: TopAppBarScrollBehavior? = null,
+  appBar: @Composable () -> Unit,
+  content: @Composable ColumnScope.() -> Unit = {}
+) {
   val containerColor by colors.containerColor(scrollBehavior?.scrollFraction ?: 0f)
 
   Surface(
@@ -47,17 +77,7 @@ fun EnhancedSmallTopAppBar(
         .fillMaxWidth()
         .padding(contentPadding)
     ) {
-      SmallTopAppBar(
-        title = title,
-        navigationIcon = navigationIcon,
-        actions = actions,
-        scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults.smallTopAppBarColors(
-          containerColor = Color.Transparent,
-          scrolledContainerColor = Color.Transparent
-        )
-      )
-
+      appBar()
       content()
     }
   }

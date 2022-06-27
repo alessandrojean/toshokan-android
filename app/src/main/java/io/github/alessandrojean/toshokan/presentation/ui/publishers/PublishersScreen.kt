@@ -55,6 +55,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Publisher
+import io.github.alessandrojean.toshokan.presentation.extensions.selection
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
@@ -107,7 +108,10 @@ class PublishersScreen : AndroidScreen() {
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
-        Crossfade(targetState = selectionMode) { selection ->
+        Crossfade(
+          modifier = Modifier.background(MaterialTheme.colorScheme.background),
+          targetState = selectionMode
+        ) { selection ->
           if (selection) {
             SelectionTopAppBar(
               selectionCount = uiState.selected.size,
@@ -249,7 +253,7 @@ class PublishersScreen : AndroidScreen() {
         )
         .background(
           color = if (selected) {
-            MaterialTheme.colorScheme.surfaceVariant
+            MaterialTheme.colorScheme.selection
           } else {
             MaterialTheme.colorScheme.surface
           }

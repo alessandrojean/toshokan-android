@@ -64,6 +64,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Reading
+import io.github.alessandrojean.toshokan.presentation.extensions.selection
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
@@ -142,7 +143,10 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
           .nestedScroll(scrollBehavior.nestedScrollConnection)
           .navigationBarsPadding(),
         topBar = {
-          Crossfade(targetState = readingScreenModel.selectionMode) { selectionMode ->
+          Crossfade(
+            modifier = Modifier.background(MaterialTheme.colorScheme.background),
+            targetState = readingScreenModel.selectionMode
+          ) { selectionMode ->
             if (selectionMode) {
               SelectionTopAppBar(
                 selectionCount = readingScreenModel.selection.size,
@@ -331,7 +335,7 @@ class ReadingScreen(val bookId: Long) : AndroidScreen() {
           onLongClick = onLongClick
         )
         .background(
-          if (selected) MaterialTheme.colorScheme.surfaceVariant
+          if (selected) MaterialTheme.colorScheme.selection
           else MaterialTheme.colorScheme.surface
         )
         .padding(16.dp)

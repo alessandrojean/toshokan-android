@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -66,10 +67,12 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
+import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.barcodescanner.BarcodeScannerScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.components.BookDeleteDialog
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.BaseSelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.SelectionTopAppBar
@@ -128,12 +131,12 @@ class LibraryScreen : AndroidScreen() {
 
     val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors(
       containerColor = if (selectionMode) {
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(2.dp)
       } else {
         MaterialTheme.colorScheme.surface
       },
       scrolledContainerColor = if (selectionMode){
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(2.dp)
       } else {
         MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp)
       }
@@ -149,36 +152,6 @@ class LibraryScreen : AndroidScreen() {
     }
 
     val internetConnection by connectivityState()
-
-    val scrollableTabs: @Composable ColumnScope.() -> Unit = @Composable {
-      if (state is LibraryScreenModel.State.Library) {
-        // TODO: Fix the tab row width when having a few items.
-        ScrollableTabRow(
-          modifier = Modifier.fillMaxWidth(),
-          selectedTabIndex = pagerState.currentPage,
-          edgePadding = 12.dp,
-          containerColor = Color.Transparent,
-          indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-              Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
-            )
-          },
-        ) {
-          (state as LibraryScreenModel.State.Library).tabs.forEachIndexed { index, tab ->
-            Tab(
-              text = { Text(tab.group.name) },
-              selected = pagerState.currentPage == index,
-              selectedContentColor = MaterialTheme.colorScheme.primary,
-              unselectedContentColor = MaterialTheme.colorScheme.onBackground,
-              onClick = {
-                scope.launch { pagerState.animateScrollToPage(index) }
-              }
-            )
-          }
-        }
-      }
-    }
-
     var showDeleteWarning by rememberSaveable { mutableStateOf(false) }
 
     BookDeleteDialog(
@@ -194,41 +167,73 @@ class LibraryScreen : AndroidScreen() {
     Scaffold(
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
-        Crossfade(targetState = selectionMode) { selectionMode ->
-          if (selectionMode) {
-            SelectionTopAppBar(
-              colors = topAppBarBackgroundColors,
-              selectionCount = screenModel.selection.size,
-              onClearSelectionClick = { screenModel.selection.clear() },
-              onEditClick = {
-                navigator.push {
-                  ManageBookScreen(
-                    existingBookId = screenModel.selection.first()
-                  )
-                }
+        EnhancedSmallTopAppBar(
+          colors = topAppBarBackgroundColors,
+          contentPadding = WindowInsets.statusBars.asPaddingValues(),
+          scrollBehavior = scrollBehavior,
+          appBar = {
+            Crossfade(targetState = selectionMode) { selectionMode ->
+              if (selectionMode) {
+                BaseSelectionTopAppBar(
+                  selectionCount = screenModel.selection.size,
+                  onClearSelectionClick = { screenModel.selection.clear() },
+                  onEditClick = {
+                    navigator.push {
+                      ManageBookScreen(
+                        existingBookId = screenModel.selection.first()
+                      )
+                    }
 
-                screenModel.selection.clear()
+                    screenModel.selection.clear()
+                  },
+                  onDeleteClick = { showDeleteWarning = true }
+                )
+              } else {
+                SmallTopAppBar(
+                  colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                  ),
+                  scrollBehavior = scrollBehavior,
+                  title = { Text(stringResource(R.string.library)) },
+                  actions = {
+                    IconButton(onClick = { navigator.push(SearchScreen()) }) {
+                      Icon(
+                        Icons.Default.Search,
+                        contentDescription = stringResource(R.string.action_search)
+                      )
+                    }
+                  }
+                )
+              }
+            }
+          }
+        ) {
+          if (state is LibraryScreenModel.State.Library) {
+            // TODO: Fix the tab row width when having a few items.
+            ScrollableTabRow(
+              modifier = Modifier.fillMaxWidth(),
+              selectedTabIndex = pagerState.currentPage,
+              edgePadding = 12.dp,
+              containerColor = Color.Transparent,
+              indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                  Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage])
+                )
               },
-              onDeleteClick = { showDeleteWarning = true },
-              scrollBehavior = scrollBehavior,
-              content = scrollableTabs
-            )
-          } else {
-            EnhancedSmallTopAppBar(
-              colors = topAppBarBackgroundColors,
-              contentPadding = WindowInsets.statusBars.asPaddingValues(),
-              scrollBehavior = scrollBehavior,
-              title = { Text(stringResource(R.string.library)) },
-              actions = {
-                IconButton(onClick = { navigator.push(SearchScreen()) }) {
-                  Icon(
-                    Icons.Default.Search,
-                    contentDescription = stringResource(R.string.action_search)
-                  )
-                }
-              },
-              content = scrollableTabs
-            )
+            ) {
+              (state as LibraryScreenModel.State.Library).tabs.forEachIndexed { index, tab ->
+                Tab(
+                  text = { Text(tab.group.name) },
+                  selected = pagerState.currentPage == index,
+                  selectedContentColor = MaterialTheme.colorScheme.primary,
+                  unselectedContentColor = MaterialTheme.colorScheme.onBackground,
+                  onClick = {
+                    scope.launch { pagerState.animateScrollToPage(index) }
+                  }
+                )
+              }
+            }
           }
         }
       },
