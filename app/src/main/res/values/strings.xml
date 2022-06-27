@@ -285,6 +285,7 @@
   <string name="restore_completed">Restore completed</string>
   <string name="restore_duration">%02d min, %02d sec</string>
   <string name="restore_completed_message">Done in %1$s</string>
+  <string name="restore_in_progress">Restore is already in progress</string>
   <string name="restoring_backup_canceled">Backup restore cancelled</string>
 
   <!-- Advanced settings -->

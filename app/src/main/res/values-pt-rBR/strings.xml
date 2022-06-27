@@ -257,6 +257,7 @@
   <string name="restore_completed">Restauração concluída</string>
   <string name="restore_duration">%02d min, %02d seg</string>
   <string name="restore_completed_message">Concluído em %1$s</string>
+  <string name="restore_in_progress">Uma restauração já está em andamento</string>
   <string name="restoring_backup_canceled">Restauração cancelada</string>
 
   <string name="pref_verbose_logging">Registro de eventos verboso</string>

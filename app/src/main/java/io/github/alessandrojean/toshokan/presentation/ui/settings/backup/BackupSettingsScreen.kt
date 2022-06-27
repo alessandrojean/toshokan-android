@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.settings.backup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getViewModel
@@ -12,6 +13,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.data.backup.SheetBackupRestorer
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.GenericPreference
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsListScaffold
+import io.github.alessandrojean.toshokan.util.extension.toast
 
 class BackupSettingsScreen : AndroidScreen() {
 
@@ -19,6 +21,7 @@ class BackupSettingsScreen : AndroidScreen() {
   override fun Content() {
     val viewModel = getViewModel<BackupSettingsViewModel>()
     val navigator = LocalNavigator.currentOrThrow
+    val context = LocalContext.current
 
     val sheetBackupPickerLauncher = rememberLauncherForActivityResult(
       contract = ActivityResultContracts.GetContent(),
@@ -37,8 +40,13 @@ class BackupSettingsScreen : AndroidScreen() {
         GenericPreference(
           title = stringResource(R.string.pref_restore_from_sheet),
           summary = stringResource(R.string.pref_restore_from_sheet_summary),
-          enabled = !viewModel.restoreRunning,
-          onClick = { sheetBackupPickerLauncher.launch(SheetBackupRestorer.BACKUP_MIME) }
+          onClick = {
+            if (!viewModel.restoreRunning) {
+              sheetBackupPickerLauncher.launch(SheetBackupRestorer.BACKUP_MIME)
+            } else {
+              context.toast(R.string.restore_in_progress)
+            }
+          }
         )
       }
     }
