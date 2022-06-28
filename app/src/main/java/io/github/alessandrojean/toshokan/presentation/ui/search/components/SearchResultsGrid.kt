@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -26,14 +27,13 @@ fun SearchResultsGrid(
   results: List<Book>,
   contentPadding: PaddingValues = PaddingValues(4.dp),
   columns: GridCells = GridCells.Adaptive(minSize = 96.dp),
+  state: LazyGridState = rememberLazyGridState(),
   onResultClick: (Book) -> Unit
 ) {
-  val gridState = rememberLazyGridState()
-
   LazyVerticalGrid(
     modifier = modifier,
     columns = columns,
-    state = gridState,
+    state = state,
     contentPadding = contentPadding,
     verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top),
     horizontalArrangement = Arrangement.spacedBy(4.dp)

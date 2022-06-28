@@ -68,7 +68,7 @@ import kotlinx.coroutines.launch
 
 data class BookScreen(val bookId: Long) : AndroidScreen() {
 
-  override val key = "book_screen"
+  override val key = "book_screen_$bookId"
 
   @Composable
   override fun Content() {
@@ -155,8 +155,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       visible = showDeleteDialog,
       onDismiss = { showDeleteDialog = false },
       onDelete = {
-        bookScreenModel.delete()
-        navigator.pop()
+        bookScreenModel.delete { navigator.pop() }
       }
     )
 

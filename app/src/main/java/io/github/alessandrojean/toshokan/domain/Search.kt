@@ -1,7 +1,10 @@
 package io.github.alessandrojean.toshokan.domain
 
 import android.os.Parcelable
+import androidx.annotation.StringRes
 import androidx.core.util.Pair
+import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
@@ -26,6 +29,8 @@ sealed class SearchFilters {
     val stores: @RawValue List<Store> = emptyList(),
     val boughtAt: DateRange? = null,
     val readAt: DateRange? = null,
+    val sortColumn: SortColumn = SortColumn.BOUGHT_AT,
+    val sortDirection: SortDirection = SortDirection.DESCENDING
   ) : SearchFilters(), Parcelable, Serializable
 
   @Parcelize
@@ -40,6 +45,8 @@ sealed class SearchFilters {
     val stores: List<Long> = emptyList(),
     val boughtAt: DateRange? = null,
     val readAt: DateRange? = null,
+    val sortColumn: SortColumn = SortColumn.BOUGHT_AT,
+    val sortDirection: SortDirection = SortDirection.DESCENDING
   ) : SearchFilters(), Parcelable, Serializable
 }
 
@@ -79,4 +86,22 @@ data class Collection(
     result = 31 * result + count
     return result
   }
+}
+
+@Parcelize
+enum class SortColumn(
+  @StringRes val title: Int,
+  val mapper: (Book) -> Comparable<*>
+) : Parcelable, Serializable {
+  TITLE(R.string.title, { it.title }),
+  BOUGHT_AT(R.string.bought_at, { it.bought_at ?: 0L }),
+  CREATED_AT(R.string.created_at, { it.created_at }),
+  UPDATED_AT(R.string.updated_at, { it.updated_at })
+}
+
+@Parcelize
+enum class SortDirection : Parcelable, Serializable {
+  ASCENDING, DESCENDING;
+
+  operator fun not(): SortDirection = if (this == ASCENDING) DESCENDING else ASCENDING
 }

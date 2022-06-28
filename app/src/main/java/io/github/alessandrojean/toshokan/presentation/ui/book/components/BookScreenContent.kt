@@ -9,10 +9,15 @@ import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -119,12 +124,23 @@ fun BookScreenContent(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
 
+  val navigationBarsPadding = if (bookNeighbors == null) {
+    WindowInsets.navigationBars.asPaddingValues()
+  } else {
+    PaddingValues()
+  }
+
   Scaffold(
     modifier = Modifier
       .nestedScroll(scrollBehavior.nestedScrollConnection)
       .then(modifier),
     containerColor = MaterialTheme.colorScheme.surfaceWithTonalElevation(6.dp),
-    snackbarHost = { SnackbarHost(snackbarHostState) },
+    snackbarHost = {
+      SnackbarHost(
+        modifier = Modifier.padding(navigationBarsPadding),
+        hostState = snackbarHostState
+      )
+    },
     topBar = {
       Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -259,10 +275,22 @@ fun BookScreenContent(
         enabled = book != null,
         bookNeighbors = bookNeighbors,
         onCollectionClick = onPaginationCollectionClick,
-        onFirstClick = onPaginationFirstClick,
-        onLastClick = onPaginationLastClick,
-        onPreviousClick = onPaginationPreviousClick,
-        onNextClick = onPaginationNextClick
+        onFirstClick = {
+          onPaginationFirstClick()
+          scope.launch { scrollState.animateScrollTo(0) }
+        },
+        onLastClick = {
+          onPaginationLastClick()
+          scope.launch { scrollState.animateScrollTo(0) }
+        },
+        onPreviousClick = {
+          onPaginationPreviousClick()
+          scope.launch { scrollState.animateScrollTo(0) }
+        },
+        onNextClick = {
+          onPaginationNextClick()
+          scope.launch { scrollState.animateScrollTo(0) }
+        }
       )
     }
   )

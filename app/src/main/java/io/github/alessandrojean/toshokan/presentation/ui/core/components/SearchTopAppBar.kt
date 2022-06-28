@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import kotlinx.coroutines.android.awaitFrame
@@ -101,7 +102,9 @@ fun SearchTopAppBar(
             placeholder = {
               Text(
                 text = placeholderText,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
             },
             colors = TextFieldDefaults.textFieldColors(

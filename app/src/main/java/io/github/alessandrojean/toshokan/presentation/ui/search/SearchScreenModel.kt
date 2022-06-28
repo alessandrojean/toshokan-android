@@ -17,6 +17,8 @@ import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.DateRange
 import io.github.alessandrojean.toshokan.domain.SearchFilters
+import io.github.alessandrojean.toshokan.domain.SortColumn
+import io.github.alessandrojean.toshokan.domain.SortDirection
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
@@ -146,6 +148,16 @@ class SearchScreenModel @AssistedInject constructor(
 
   fun onReadAtChanged(newReadAt: DateRange?) {
     filters = filters.copy(readAt = newReadAt)
+    search()
+  }
+
+  fun onSortColumnChanged(newSortColumn: SortColumn) {
+    filters = filters.copy(sortColumn = newSortColumn)
+    search()
+  }
+
+  fun onSortDirectionChanged(newSortDirection: SortDirection) {
+    filters = filters.copy(sortDirection = newSortDirection)
     search()
   }
 

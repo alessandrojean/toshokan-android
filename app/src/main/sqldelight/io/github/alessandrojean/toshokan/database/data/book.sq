@@ -119,8 +119,7 @@ WHERE
   AND (:contributorsIsEmpty OR
     (SELECT count(*) FROM BookCredit
       WHERE BookCredit.book_id = Book.id
-        AND BookCredit.person_id IN :contributors) > 0)
-ORDER BY created_at DESC;
+        AND BookCredit.person_id IN :contributors) > 0);
 
 lastInsertedId:
 SELECT max(id)

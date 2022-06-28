@@ -28,6 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheet
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheetItem
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.service.link.BookLink
 import io.github.alessandrojean.toshokan.service.link.LinkCategory
@@ -38,88 +40,38 @@ fun LinkBottomSheet(
   links: Map<LinkCategory, List<BookLink>>,
   onLinkClick: (BookLink) -> Unit
 ) {
-  Surface(
-    modifier = Modifier
-      .fillMaxWidth()
-      .then(modifier),
-    color = MaterialTheme.colorScheme.surface,
-    tonalElevation = 12.dp
+  ModalBottomSheet(
+    modifier = modifier,
+    tonalElevation = 12.dp,
+    title = stringResource(R.string.links)
   ) {
-    Column(
+    links.entries.forEachIndexed { index, (category, links) ->
+      if (index > 0) {
+        Divider(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+          color = LocalContentColor.current.copy(alpha = DividerOpacity)
+        )
+      }
+
+      links.forEach { link ->
+        ModalBottomSheetItem(
+          modifier = Modifier.fillMaxWidth(),
+          icon = when {
+            link.icon != null -> painterResource(link.icon)
+            category == LinkCategory.STORE -> rememberVectorPainter(Icons.Outlined.LocalMall)
+            else -> rememberVectorPainter(Icons.Outlined.Feed)
+          },
+          text = stringResource(link.name),
+          onClick = { onLinkClick.invoke(link) }
+        )
+      }
+    }
+    Spacer(
       modifier = Modifier
         .fillMaxWidth()
-        .navigationBarsPadding()
-    ) {
-      Text(
-        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp),
-        text = stringResource(R.string.links),
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        style = MaterialTheme.typography.titleLarge
-      )
-      Divider(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(top = 16.dp, bottom = 8.dp),
-        color = LocalContentColor.current.copy(alpha = DividerOpacity)
-      )
-
-      links.entries.forEachIndexed { index, (category, links) ->
-        if (index > 0) {
-          Divider(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(vertical = 8.dp),
-            color = LocalContentColor.current.copy(alpha = DividerOpacity)
-          )
-        }
-
-        links.forEach { link ->
-          ModalBottomSheetItem(
-            modifier = Modifier.fillMaxWidth(),
-            icon = when {
-              link.icon != null -> painterResource(link.icon)
-              category == LinkCategory.STORE -> rememberVectorPainter(Icons.Outlined.LocalMall)
-              else -> rememberVectorPainter(Icons.Outlined.Feed)
-            },
-            text = stringResource(link.name),
-            onClick = { onLinkClick.invoke(link) }
-          )
-        }
-      }
-      Spacer(
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(8.dp)
-      )
-    }
-  }
-}
-
-@Composable
-fun ModalBottomSheetItem(
-  modifier: Modifier = Modifier,
-  text: String,
-  icon: Painter = rememberVectorPainter(Icons.Outlined.Link),
-  onClick: () -> Unit
-) {
-  Row(
-    modifier = Modifier
-      .clickable(onClick = onClick)
-      .padding(vertical = 16.dp, horizontal = 24.dp)
-      .then(modifier),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Icon(
-      painter = icon,
-      contentDescription = text,
-      tint = LocalContentColor.current
-    )
-    Text(
-      text = text,
-      modifier = Modifier.padding(start = 24.dp),
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
+        .height(8.dp)
     )
   }
 }

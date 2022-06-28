@@ -86,7 +86,7 @@ class BookScreenModel @AssistedInject constructor(
         booksRepository.findByIdAsFlow(bookId),
         booksRepository.findSimpleById(bookId),
         booksRepository.findBookContributorsAsFlow(bookId),
-        booksRepository.findSeriesVolumes(book.title.toTitleParts(), book.publisher_id, book.group_id)
+        booksRepository.findSeriesVolumes(book)
       ) { bookDb, simpleBook, contributors, neighbors ->
         if (bookDb != null && simpleBook != null) {
           State.Result(
@@ -120,20 +120,9 @@ class BookScreenModel @AssistedInject constructor(
     booksRepository.toggleFavorite(bookId)
   }
 
-  fun delete() = coroutineScope.launch {
+  fun delete(block: () -> Unit = {}) = coroutineScope.launch {
     booksRepository.delete(bookId)
-  }
-
-  private fun findSeriesVolumes(book: CompleteBook?): Flow<BookNeighbors?> {
-    if (book == null) {
-      return flowOf(null)
-    }
-
-    return booksRepository.findSeriesVolumes(
-      title = book.title.toTitleParts(),
-      publisherId = book.publisher_id,
-      groupId = book.group_id
-    )
+    block()
   }
 
   fun shareImage(bitmap: Bitmap?, book: CompleteBook) = coroutineScope.launch {

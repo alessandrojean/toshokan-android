@@ -36,6 +36,12 @@
   <string name="action_change_period">Change the period</string>
   <string name="action_show_value">Show value</string>
   <string name="action_hide_value">Hide value</string>
+  <string name="action_sort">Sort</string>
+  <string name="action_sort_by">Sort by</string>
+  <string name="action_reset">Reset</string>
+  <string name="action_apply">Apply</string>
+  <string name="action_filter">Filter</string>
+  <string name="action_close">Close</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>

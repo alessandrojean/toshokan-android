@@ -34,6 +34,8 @@ import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.domain.SearchFilters
+import io.github.alessandrojean.toshokan.domain.SortColumn
+import io.github.alessandrojean.toshokan.domain.SortDirection
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.util.extension.TitleParts
 import io.github.alessandrojean.toshokan.util.extension.currentTime
@@ -46,7 +48,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import logcat.logcat
+import java.text.Collator
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -177,8 +181,11 @@ class BooksRepository @Inject constructor(
       .flowOn(Dispatchers.IO)
   }
 
-  fun findSeriesVolumes(title: TitleParts, publisherId: Long, groupId: Long): Flow<BookNeighbors?> {
-    return database.bookQueries.seriesVolumes("${title.title} #", publisherId, groupId)
+  fun findSeriesVolumes(book: CompleteBook): Flow<BookNeighbors?> {
+    val title = book.title.toTitleParts()
+
+    return database.bookQueries
+      .seriesVolumes("${title.title} #", book.publisher_id, book.group_id)
       .asFlow()
       .mapToList()
       .map { collection ->
@@ -186,7 +193,7 @@ class BooksRepository @Inject constructor(
           return@map null
         }
 
-        val bookIndex = collection.indexOfFirst { it.title == title.full }
+        val bookIndex = collection.indexOfFirst { it.id == book.id }
 
         BookNeighbors(
           first = collection.firstOrNull(),
@@ -222,11 +229,24 @@ class BooksRepository @Inject constructor(
       .asFlow()
       .mapToList()
       .map { searchResults ->
-        if (filters.collections.isNotEmpty()) {
+        var results = if (filters.collections.isNotEmpty()) {
           val allTitles = filters.collections.map { it.title }
           searchResults.filter { it.title.toTitleParts().title in allTitles }
         } else {
           searchResults
+        }
+
+        results = if (filters.sortColumn == SortColumn.TITLE) {
+          val collator = Collator.getInstance(Locale.getDefault())
+          results.sortedWith(compareBy(collator, filters.sortColumn.mapper))
+        } else {
+          results.sortedWith(compareBy(filters.sortColumn.mapper))
+        }
+
+        if (!filters.sortDirection == SortDirection.DESCENDING) {
+          results.asReversed()
+        } else {
+          results
         }
       }
       .flowOn(Dispatchers.IO)

@@ -34,6 +34,12 @@
   <string name="action_change_period">Escolher o período</string>
   <string name="action_show_value">Mostrar o valor</string>
   <string name="action_hide_value">Ocultar o valor</string>
+  <string name="action_sort">Ordenar</string>
+  <string name="action_sort_by">Ordenar por</string>
+  <string name="action_reset">Redefinir</string>
+  <string name="action_apply">Aplicar</string>
+  <string name="action_filter">Filtrar</string>
+  <string name="action_close">Fechar</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>

@@ -240,14 +240,14 @@ class LibraryScreen : AndroidScreen() {
       content = { innerPadding ->
         Crossfade(
           targetState = state,
-          modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()
+          modifier = Modifier.fillMaxSize()
         ) { state ->
           when (state) {
             LibraryScreenModel.State.Empty -> {
               NoItemsFound(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                  .fillMaxSize()
+                  .padding(innerPadding),
                 icon = Icons.Outlined.Book
               )
             }
@@ -260,9 +260,9 @@ class LibraryScreen : AndroidScreen() {
               ) { page ->
                 LibraryGrid(
                   modifier = Modifier.fillMaxSize(),
-                  contentPadding = PaddingValues(4.dp) +
+                  contentPadding = innerPadding + PaddingValues(4.dp) +
                     if (selectionMode) WindowInsets.navigationBars.asPaddingValues()
-                    else PaddingValues(),
+                    else PaddingValues(bottom = 76.dp),
                   books = state.tabs[page].books.collectAsLazyPagingItems(),
                   selection = screenModel.selection,
                   onBookClick = { book ->

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +56,9 @@ fun BookCoverBox(
     WindowInsets.statusBars
       .asPaddingValues()
       .calculateTopPadding()
-  var aspectRatio by remember { mutableStateOf(2f / 3f) }
+
+  val idKey = book?.id?.toString() ?: "null"
+  var aspectRatio by rememberSaveable(key = "book_aspect_$idKey") { mutableStateOf(2f / 3f) }
 
   val coverPainter = rememberAsyncImagePainter(
     model = ImageRequest.Builder(LocalContext.current)
