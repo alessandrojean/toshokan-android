@@ -94,6 +94,7 @@ enum class SortColumn(
   val mapper: (Book) -> Comparable<*>
 ) : Parcelable, Serializable {
   TITLE(R.string.title, { it.title }),
+  PAGE_COUNT(R.string.page_count, { it.page_count ?: 0 }),
   BOUGHT_AT(R.string.bought_at, { it.bought_at ?: 0L }),
   CREATED_AT(R.string.created_at, { it.created_at }),
   UPDATED_AT(R.string.updated_at, { it.updated_at })

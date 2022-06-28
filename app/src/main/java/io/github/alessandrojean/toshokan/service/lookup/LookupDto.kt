@@ -17,7 +17,8 @@ data class LookupBookResult(
   val synopsis: String = "",
   val dimensions: List<Float> = emptyList(),
   val labelPrice: Price? = null,
-  val coverUrl: String = ""
+  val coverUrl: String = "",
+  val pageCount: Int = 0
 ) : Parcelable, Serializable
 
 @Parcelize

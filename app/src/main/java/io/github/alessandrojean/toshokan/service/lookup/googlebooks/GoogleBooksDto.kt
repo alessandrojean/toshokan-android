@@ -19,6 +19,7 @@ data class GoogleBooksVolumeInfo(
   val description: String? = "",
   val dimensions: GoogleBooksDimensions? = null,
   val industryIdentifiers: List<GoogleBooksIndustryIdentifier> = emptyList(),
+  val pageCount: Int? = 0,
   val publisher: String? = "",
   val title: String
 )

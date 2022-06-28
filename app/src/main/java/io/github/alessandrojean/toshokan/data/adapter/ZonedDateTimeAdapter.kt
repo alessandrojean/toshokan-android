@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.database.adapter
+package io.github.alessandrojean.toshokan.data.adapter
 
 import com.squareup.sqldelight.ColumnAdapter
 import java.time.Instant

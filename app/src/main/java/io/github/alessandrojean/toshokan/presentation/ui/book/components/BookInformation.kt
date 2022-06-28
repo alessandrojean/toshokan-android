@@ -1,59 +1,25 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumedWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmarks
-import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -64,12 +30,10 @@ import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.DateRange
 import io.github.alessandrojean.toshokan.domain.SearchFilters
-import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
-import io.github.alessandrojean.toshokan.presentation.ui.core.components.ExpandedIconButton
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
-import io.github.alessandrojean.toshokan.util.extension.placeholder
+import io.github.alessandrojean.toshokan.util.extension.push
 import io.github.alessandrojean.toshokan.util.extension.toLanguageDisplayName
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
@@ -92,59 +56,18 @@ fun BookInformation(
   onDeleteClick: () -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
-  var synopsisExpanded by remember { mutableStateOf(false) }
-  var synopsisToggleable by remember { mutableStateOf(false) }
-  var synopsisLayoutResultState by remember { mutableStateOf<TextLayoutResult?>(null) }
-  val synopsisBackground = color.withTonalElevation(tonalElevation)
-
-  val minContributors = 4
-  var contributorsExpanded by remember { mutableStateOf(false) }
-  val contributorsToggleable by remember(contributors) {
-    derivedStateOf { contributors.size > minContributors }
-  }
-  val visibleContributors by remember(contributors, contributorsExpanded) {
-    derivedStateOf {
-      if (contributorsExpanded) {
-        contributors
-      } else {
-        contributors.take(minContributors)
-      }
-    }
-  }
-  val contributorsButtonHeight = 58f
-  val contributorsIconRotation by animateFloatAsState(if (contributorsExpanded) 180f else 0f)
-
-  val toggleButtonOffset by animateFloatAsState(if (synopsisExpanded) 0f else -18f)
-  val toggleIconRotation by animateFloatAsState(if (synopsisExpanded) 180f else 0f)
-  val buttonRowCorner = 18.dp
-  val buttonRowContentPadding = PaddingValues(all = 12.dp)
-  val buttonRowContainerColor = MaterialTheme.colorScheme.surfaceVariant
-    .withTonalElevation(tonalElevation)
+  val context = LocalContext.current
 
   val bookAuthors by remember(contributors) {
     derivedStateOf {
       contributors.filter { it.role in CreditRole.AUTHOR_ROLES }
     }
   }
-
   val isbnInformation by remember(book?.code) {
-    derivedStateOf {
-      book?.code?.toIsbnInformation()
-    }
+    derivedStateOf { book?.code?.toIsbnInformation() }
   }
-
   val bookRead by remember(book?.reading_count) {
     derivedStateOf { (book?.reading_count ?: 0) > 0 }
-  }
-
-  LaunchedEffect(synopsisLayoutResultState) {
-    if (synopsisLayoutResultState == null) {
-      return@LaunchedEffect
-    }
-
-    if (!synopsisExpanded && synopsisLayoutResultState!!.hasVisualOverflow) {
-      synopsisToggleable = true
-    }
   }
 
   val consumeInsets = if (bottomBarVisible) {
@@ -152,6 +75,10 @@ fun BookInformation(
   } else {
     Modifier
   }
+
+  val createdAt = remember(book?.created_at) { book?.created_at?.formatToLocaleDate() }
+  val updatedAt = remember(book?.updated_at) { book?.updated_at?.formatToLocaleDate() }
+  val titleParts = remember(book?.title) { book?.title?.toTitleParts() }
 
   Surface(
     modifier = modifier,
@@ -168,136 +95,23 @@ fun BookInformation(
         .then(consumeInsets)
         .navigationBarsPadding()
     ) {
-      Text(
-        modifier = Modifier
-          .padding(horizontal = 24.dp)
-          .semantics { heading() }
-          .placeholder(book == null),
-        text = book?.title.orEmpty().ifEmpty { "Book title" },
-        style = MaterialTheme.typography.titleLarge
+      BookBasicInfo(
+        placeholder = book == null,
+        title = book?.title.orEmpty(),
+        authors = remember(bookAuthors) {
+          bookAuthors.joinToString(", ") { it.person_name }
+        },
+        isRead = bookRead,
+        isFuture = book?.is_future == true,
+        onReadingClick = onReadingClick,
+        onEditClick = onEditClick,
+        onDeleteClick = onDeleteClick
       )
-      Text(
-        modifier = Modifier
-          .padding(start = 24.dp, end = 24.dp, top = 2.dp)
-          .placeholder(book == null),
-        text = bookAuthors
-          .joinToString(", ") { it.person_name }
-          .ifEmpty { "Book authors" },
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        style = MaterialTheme.typography.bodyLarge.copy(
-          color = LocalContentColor.current.copy(alpha = 0.8f)
-        )
+      BookSynopsis(
+        synopsis = book?.synopsis,
+        containerColor = color,
+        tonalElevation = tonalElevation
       )
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 24.dp, vertical = 18.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
-      ) {
-        val buttonColors = ButtonDefaults.textButtonColors(
-          containerColor = buttonRowContainerColor,
-          contentColor = LocalContentColor.current,
-          disabledContainerColor = buttonRowContainerColor.copy(alpha = 0.25f)
-        )
-
-        ExpandedIconButton(
-          modifier = Modifier.weight(1f),
-          icon = if (bookRead) {
-            Icons.Filled.Bookmarks
-          } else {
-            Icons.Outlined.Bookmarks
-          },
-          text = if (bookRead) {
-            stringResource(R.string.book_read)
-          } else {
-            stringResource(R.string.book_unread)
-          },
-          colors = buttonColors,
-          shape = RoundedCornerShape(
-            topStart = buttonRowCorner,
-            bottomStart = buttonRowCorner
-          ),
-          contentPadding = buttonRowContentPadding,
-          enabled = book?.is_future == false,
-          onClick = onReadingClick
-        )
-        ExpandedIconButton(
-          modifier = Modifier.weight(1f),
-          icon = Icons.Outlined.Edit,
-          text = stringResource(R.string.action_edit),
-          colors = buttonColors,
-          shape = RectangleShape,
-          contentPadding = buttonRowContentPadding,
-          enabled = book != null,
-          onClick = onEditClick
-        )
-        ExpandedIconButton(
-          modifier = Modifier.weight(1f),
-          icon = Icons.Outlined.Delete,
-          text = stringResource(R.string.action_delete),
-          colors = buttonColors,
-          shape = RoundedCornerShape(
-            topEnd = buttonRowCorner,
-            bottomEnd = buttonRowCorner
-          ),
-          contentPadding = buttonRowContentPadding,
-          enabled = book != null,
-          onClick = onDeleteClick,
-        )
-      }
-      if (book?.synopsis.orEmpty().isNotBlank()) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .toggleable(
-              value = synopsisExpanded,
-              onValueChange = { synopsisExpanded = it },
-              enabled = synopsisToggleable,
-              role = Role.Checkbox,
-              indication = null,
-              interactionSource = MutableInteractionSource()
-            )
-            .padding(
-              bottom = if (synopsisToggleable) 4.dp else 12.dp,
-              start = 24.dp,
-              end = 24.dp
-            )
-            .animateContentSize()
-        ) {
-          Text(
-            text = book?.synopsis.orEmpty().ifEmpty { stringResource(R.string.no_synopsis) },
-            maxLines = if (synopsisExpanded) Int.MAX_VALUE else 4,
-            onTextLayout = { synopsisLayoutResultState = it },
-            overflow = TextOverflow.Clip,
-            style = MaterialTheme.typography.bodyMedium.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              fontStyle = if (book?.synopsis.orEmpty().isEmpty()) FontStyle.Italic else FontStyle.Normal
-            )
-          )
-          if (synopsisToggleable) {
-            Box(
-              modifier = Modifier
-                .fillMaxWidth()
-                .offset(y = toggleButtonOffset.dp)
-                .background(
-                  Brush.verticalGradient(
-                    0.0f to Color.Transparent,
-                    0.2f to synopsisBackground.copy(alpha = 0.5f),
-                    0.8f to synopsisBackground
-                  )
-                ),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                modifier = Modifier.graphicsLayer(rotationX = toggleIconRotation),
-                imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = null
-              )
-            }
-          }
-        }
-      }
       Divider(
         modifier = Modifier.padding(
           bottom = 12.dp,
@@ -320,196 +134,108 @@ fun BookInformation(
         }
         BookInformationRow(
           label = stringResource(R.string.created_at),
-          value = book?.created_at?.formatToLocaleDate() ?: ""
+          value = createdAt ?: ""
         )
         BookInformationRow(
           label = stringResource(R.string.updated_at),
-          value = book?.updated_at?.formatToLocaleDate() ?: ""
+          value = updatedAt ?: ""
         )
       }
-      if (contributors.isNotEmpty()) {
-        Text(
-          modifier = Modifier
-            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp)
-            .semantics { heading() },
-          text = stringResource(R.string.contributors),
-          style = MaterialTheme.typography.titleLarge
-        )
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize()
-        ) {
-          visibleContributors.forEach { contributor ->
-            BookContributorRow(
-              contributor = contributor,
-              onClick = {
-                val searchFilters = SearchFilters.Incomplete(
-                  contributors = listOf(contributor.person_id)
-                )
-                navigator.push(SearchScreen(searchFilters))
-              }
+      BookContributors(
+        contributors = contributors,
+        containerColor = color,
+        tonalElevation = tonalElevation,
+        onContributorClick = { contributor ->
+          navigator.push {
+            SearchScreen(
+              filters = SearchFilters.Incomplete(
+                contributors = listOf(contributor.person_id)
+              )
             )
           }
-          if (contributorsToggleable) {
-            Box(
-              modifier = Modifier
-                .fillMaxWidth()
-                .height(contributorsButtonHeight.dp)
-            ) {
-              if (!contributorsExpanded) {
-                BookContributorRow(contributor = contributors[minContributors])
-              }
-              Box(
-                modifier = Modifier
-                  .fillMaxSize()
-                  .background(
-                    Brush.verticalGradient(
-                      0.0f to Color.Transparent,
-                      0.2f to synopsisBackground.copy(alpha = 0.5f),
-                      0.8f to synopsisBackground
-                    )
-                  )
-                  .toggleable(
-                    value = contributorsExpanded,
-                    onValueChange = { contributorsExpanded = it },
-                    role = Role.Checkbox,
-                  ),
-                contentAlignment = Alignment.Center
-              ) {
-                Icon(
-                  modifier = Modifier.graphicsLayer(rotationX = contributorsIconRotation),
-                  imageVector = Icons.Outlined.ExpandMore,
-                  contentDescription = null
+        }
+      )
+      BookMetadata(
+        enabled = book != null,
+        publisher = book?.publisher_name.orEmpty(),
+        hasBookNeighbors = hasBookNeighbors,
+        series = titleParts?.title,
+        language = remember(isbnInformation) {
+          isbnInformation?.language?.toLanguageDisplayName()
+        },
+        pageCount = book?.page_count?.takeIf { it > 0 },
+        group = book?.group_name.orEmpty(),
+        dimensions = remember(book?.dimension_width, book?.dimension_height) {
+          context.getString(
+            R.string.dimensions_full,
+            book?.dimension_width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
+            book?.dimension_height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
+          )
+        },
+        labelPrice = remember(book?.label_price_currency, book?.label_price_value) {
+          book?.label_price_value?.toLocaleCurrencyString(book.label_price_currency).orEmpty()
+        },
+        paidPrice = remember(book?.paid_price_currency, book?.paid_price_value) {
+          book?.paid_price_value?.toLocaleCurrencyString(book.paid_price_currency).orEmpty()
+        },
+        store = book?.store_name.orEmpty(),
+        boughtAt = remember(book?.bought_at) {
+          book?.bought_at?.formatToLocaleDate(format = DateFormat.LONG)
+        },
+        latestReading = remember(book?.latest_reading) {
+          book?.latest_reading?.formatToLocaleDate(format = DateFormat.LONG)
+        },
+        onPublisherClick = {
+          navigator.push {
+            SearchScreen(
+              filters = SearchFilters.Incomplete(
+                publishers = listOf(book!!.publisher_id)
+              )
+            )
+          }
+        },
+        onSeriesClick = {
+          navigator.push {
+            SearchScreen(
+              filters = SearchFilters.Incomplete(
+                collections = listOf(titleParts!!.title)
+              )
+            )
+          }
+        },
+        onGroupClick = {
+          navigator.push {
+            SearchScreen(
+              filters = SearchFilters.Incomplete(
+                groups = listOf(book!!.group_id)
+              )
+            )
+          }
+        },
+        onStoreClick = {
+          navigator.push {
+            SearchScreen(
+              filters = SearchFilters.Incomplete(
+                stores = listOfNotNull(book!!.store_id)
+              )
+            )
+          }
+        },
+        onBoughtAtClick = {
+          if (book?.bought_at != null) {
+            navigator.push {
+              SearchScreen(
+                filters = SearchFilters.Incomplete(
+                  boughtAt = DateRange(start = book.bought_at, end = book.bought_at)
                 )
-              }
+              )
             }
           }
-        }
-      }
-      Text(
-        modifier = Modifier
-          .padding(
-            start = 24.dp,
-            end = 24.dp,
-            top = 32.dp,
-            bottom = 12.dp
-          )
-          .semantics { heading() },
-        text = stringResource(R.string.metadata),
-        style = MaterialTheme.typography.titleLarge
+        },
+        onLatestReadingClick = onReadingClick
       )
-      BookMetadataRow(
-        label = stringResource(R.string.publisher),
-        value = book?.publisher_name.orEmpty(),
-        enabled = book != null,
-        onClick = {
-          val searchFilters = SearchFilters.Incomplete(
-            publishers = listOf(book!!.publisher_id)
-          )
-          navigator.push(SearchScreen(searchFilters))
-        }
-      )
-      if (hasBookNeighbors) {
-        BookMetadataRow(
-          label = stringResource(R.string.book_series),
-          value = book?.title?.toTitleParts()?.title.orEmpty(),
-          enabled = book != null,
-          onClick = {
-            val searchFilters = SearchFilters.Incomplete(
-              collections = listOf(book!!.title.toTitleParts().title)
-            )
-            navigator.push(SearchScreen(searchFilters))
-          }
-        )
-      }
-      isbnInformation?.language?.toLanguageDisplayName()?.let { language ->
-        BookMetadataRow(
-          label = stringResource(R.string.language),
-          value = language,
-          enabled = false
-        )
-      }
-      BookMetadataRow(
-        label = stringResource(R.string.group),
-        value = book?.group_name.orEmpty(),
-        enabled = book != null,
-        onClick = {
-          val searchFilters = SearchFilters.Incomplete(
-            groups = listOf(book!!.group_id)
-          )
-          navigator.push(SearchScreen(searchFilters))
-        }
-      )
-      BookMetadataRow(
-        label = stringResource(R.string.dimensions),
-        value = stringResource(
-          R.string.dimensions_full,
-          book?.dimension_width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
-          book?.dimension_height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
-        ),
-        enabled = false
-      )
-      BookMetadataRow(
-        label = stringResource(R.string.label_price),
-        value = book?.label_price_value?.toLocaleCurrencyString(book.label_price_currency).orEmpty(),
-        enabled = false
-      )
-      BookMetadataRow(
-        label = stringResource(R.string.paid_price),
-        value = book?.paid_price_value?.toLocaleCurrencyString(book.paid_price_currency).orEmpty(),
-        enabled = false
-      )
-      BookMetadataRow(
-        label = stringResource(R.string.store),
-        value = book?.store_name.orEmpty(),
-        enabled = book != null,
-        onClick = {
-          val searchFilters = SearchFilters.Incomplete(
-            stores = listOfNotNull(book!!.store_id)
-          )
-          navigator.push(SearchScreen(searchFilters))
-        }
-      )
-      if (book?.bought_at != null) {
-        BookMetadataRow(
-          label = stringResource(R.string.bought_at),
-          value = book.bought_at.formatToLocaleDate(format = DateFormat.LONG),
-          onClick = {
-            val searchFilters = SearchFilters.Incomplete(
-              boughtAt = DateRange(start = book.bought_at, end = book.bought_at)
-            )
-            navigator.push(SearchScreen(searchFilters))
-          }
-        )
-      }
-      if (book?.latest_reading != null) {
-        BookMetadataRow(
-          label = stringResource(R.string.latest_reading),
-          value = book.latest_reading.formatToLocaleDate(format = DateFormat.LONG),
-          onClick = onReadingClick
-        )
-      }
-      if (book?.notes.orEmpty().isNotBlank()) {
-        Text(
-          modifier = Modifier
-            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp)
-            .semantics { heading() },
-          text = stringResource(R.string.notes),
-          style = MaterialTheme.typography.titleLarge
-        )
-        SelectionContainer(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-        ) {
-          Text(
-            text = book?.notes.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
-      }
+      BookNotes(notes = book?.notes)
     }
   }
 }
+

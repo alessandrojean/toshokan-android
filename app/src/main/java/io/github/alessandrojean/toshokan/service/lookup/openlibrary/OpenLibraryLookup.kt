@@ -94,6 +94,7 @@ class OpenLibraryLookup @Inject constructor (
           )
         },
       publisher = publishers[0].name,
+      pageCount = pageCount ?: 0,
       synopsis = when (details?.description) {
         is JsonObject -> {
           details.description.jsonObject["value"]?.jsonPrimitive?.contentOrNull.orEmpty()

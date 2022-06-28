@@ -107,6 +107,7 @@
   <string name="date">Date</string>
   <string name="read_at">Read at</string>
   <string name="unknown">Unknown</string>
+  <string name="page_count">Page count</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Unknown</string>

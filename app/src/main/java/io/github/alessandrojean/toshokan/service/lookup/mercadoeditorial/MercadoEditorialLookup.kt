@@ -74,6 +74,7 @@ class MercadoEditorialLookup @Inject constructor (
       },
     publisher = publisher?.name.orEmpty(),
     synopsis = this.synopsis.orEmpty(),
+    pageCount = dimensions?.pageCount?.toIntOrNull() ?: 0,
     dimensions = if (dimensions.isValid) {
       listOf(dimensions!!.width.toFloat(), dimensions.height.toFloat())
     } else {

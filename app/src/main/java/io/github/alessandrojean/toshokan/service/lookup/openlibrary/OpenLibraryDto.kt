@@ -11,6 +11,7 @@ data class OpenLibraryBook(
   val authors: List<OpenLibraryContributor>? = emptyList(),
   val cover: OpenLibraryCover? = null,
   val identifiers: Map<String, List<String>> = emptyMap(),
+  @SerialName("number_of_pages") val pageCount: Int? = 0,
   val publishers: List<OpenLibraryPublisher> = emptyList(),
   val title: String,
   val url: String

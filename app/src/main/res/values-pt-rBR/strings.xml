@@ -80,6 +80,7 @@
   <string name="date">Data</string>
   <string name="read_at">Data de leitura</string>
   <string name="unknown">Desconhecido</string>
+  <string name="page_count">Número de páginas</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Desconhecido</string>

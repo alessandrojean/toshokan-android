@@ -58,6 +58,7 @@ class GoogleBooksLookup @Inject constructor (
       .map { LookupBookContributor(it, CreditRole.AUTHOR) },
     publisher = volumeInfo.publisher.orEmpty(),
     synopsis = volumeInfo.description.orEmpty(),
+    pageCount = volumeInfo.pageCount ?: 0,
     dimensions = if (volumeInfo.dimensions.isValid) {
       listOf(
         volumeInfo.dimensions!!.width.replace(" cm", "").toFloatOrNull() ?: 0f,

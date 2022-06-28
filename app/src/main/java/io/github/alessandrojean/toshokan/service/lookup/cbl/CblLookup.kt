@@ -98,6 +98,7 @@ class CblLookup @Inject constructor (
         )
       } ?: emptyList(),
     synopsis = synopsis.orEmpty().trim(),
+    pageCount = pageCount?.toIntOrNull() ?: 0,
     providerId = id.orEmpty()
   )
 
@@ -136,7 +137,8 @@ class CblLookup @Inject constructor (
       "Ilustrador" to CreditRole.ILLUSTRATOR,
       "Roteirista" to CreditRole.SCRIPT,
       "Editor" to CreditRole.EDITOR,
-      "Tradutor" to CreditRole.TRANSLATOR
+      "Tradutor" to CreditRole.TRANSLATOR,
+      "Diagramador" to CreditRole.GRAPHIC_DESIGN
     )
     private val PUBLISHER_REPLACEMENTS = mapOf(
       "Editora JBC" to "JBC",

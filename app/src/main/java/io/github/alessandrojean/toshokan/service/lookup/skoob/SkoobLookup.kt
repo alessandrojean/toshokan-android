@@ -66,6 +66,7 @@ class SkoobLookup @Inject constructor(
     publisher = publisher.orEmpty(),
     coverUrl = coverUrl.orEmpty(),
     synopsis = synopsis.orEmpty(),
+    pageCount = pageCount ?: 0,
     providerId = bookId.toString()
   )
 

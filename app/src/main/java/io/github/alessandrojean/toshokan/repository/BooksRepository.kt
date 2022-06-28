@@ -136,51 +136,6 @@ class BooksRepository @Inject constructor(
       .flowOn(Dispatchers.IO)
   }
 
-  fun findLibraryBooks(isFuture: Boolean = false): Flow<Library> {
-    return database.bookQueries.libraryItems(is_future = isFuture).asFlow().mapToList()
-      .map { libraryItems ->
-        val groups = libraryItems.groupBy { it.group_id }
-          .map { (groupId, libraryItems) ->
-            val group = LibraryGroup(
-              id = groupId,
-              name = libraryItems[0].group_name,
-              sort = libraryItems[0].group_sort
-            )
-
-            val books = libraryItems.map { item ->
-              Book(
-                id = item.id,
-                code = item.code,
-                title = item.title,
-                volume = item.volume,
-                synopsis = item.synopsis,
-                notes = item.notes,
-                publisher_id = item.publisher_id,
-                group_id = item.group_id,
-                paid_price_currency = item.paid_price_currency,
-                paid_price_value = item.paid_price_value,
-                label_price_currency = item.label_price_currency,
-                label_price_value = item.label_price_value,
-                store_id = item.store_id,
-                bought_at = item.bought_at,
-                is_future = item.is_future,
-                cover_url = item.cover_url,
-                dimension_width = item.dimension_width,
-                dimension_height = item.dimension_height,
-                created_at = item.created_at,
-                updated_at = item.updated_at,
-                is_favorite = item.is_favorite,
-              )
-            }
-
-            group to books
-          }
-
-        Library(groups = groups.toMap())
-      }
-      .flowOn(Dispatchers.IO)
-  }
-
   fun findSeriesVolumes(book: CompleteBook): Flow<BookNeighbors?> {
     val title = book.title.toTitleParts()
 
@@ -265,6 +220,7 @@ class BooksRepository @Inject constructor(
     storeId: Long,
     boughtAt: Long?,
     isFuture: Boolean = false,
+    pageCount: Int = 0,
     cover: BookCover?,
     dimensionWidth: Float,
     dimensionHeight: Float,
@@ -289,11 +245,8 @@ class BooksRepository @Inject constructor(
         store_id = storeId,
         bought_at = boughtAt,
         is_future = isFuture,
-        cover_url = if (cover is BookCover.External) {
-          cover.imageUrl
-        } else {
-          null
-        },
+        page_count = pageCount,
+        cover_url = (cover as? BookCover.External)?.imageUrl,
         dimension_width = dimensionWidth,
         dimension_height = dimensionHeight,
         created_at = now,
@@ -343,6 +296,7 @@ class BooksRepository @Inject constructor(
     storeId: Long,
     boughtAt: Long?,
     isFuture: Boolean = false,
+    pageCount: Int = 0,
     cover: BookCover?,
     dimensionWidth: Float,
     dimensionHeight: Float,
@@ -367,11 +321,8 @@ class BooksRepository @Inject constructor(
         store_id = storeId,
         bought_at = boughtAt,
         is_future = isFuture,
-        cover_url = if (cover is BookCover.External) {
-          cover.imageUrl
-        } else {
-          null
-        },
+        page_count = pageCount,
+        cover_url = (cover as? BookCover.External)?.imageUrl,
         dimension_width = dimensionWidth,
         dimension_height = dimensionHeight,
         updated_at = now

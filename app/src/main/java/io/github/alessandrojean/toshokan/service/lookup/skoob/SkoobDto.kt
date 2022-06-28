@@ -18,5 +18,6 @@ data class SkoobBook(
   val isbn: Long? = 0L,
   @SerialName("editora") val publisher: String? = "",
   @SerialName("sinopse") val synopsis: String? = "",
+  @SerialName("paginas") val pageCount: Int? = 0,
   @SerialName("capa_grande") val coverUrl: String? = "",
 )

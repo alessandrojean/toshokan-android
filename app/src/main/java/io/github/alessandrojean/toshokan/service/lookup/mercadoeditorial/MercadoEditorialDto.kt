@@ -39,7 +39,8 @@ data class MercadoEditorialContribution(
 @Serializable
 data class MercadoEditorialDimension(
   @SerialName("altura") val height: String = "",
-  @SerialName("largura") val width: String = ""
+  @SerialName("largura") val width: String = "",
+  @SerialName("paginas") val pageCount: String? = ""
 )
 
 @Serializable

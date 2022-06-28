@@ -86,13 +86,26 @@ class ManageBookScreenModel @AssistedInject constructor(
   var cover by mutableStateOf<BookCover?>(null)
   var dimensionWidth by mutableStateOf("")
   var dimensionHeight by mutableStateOf("")
+  var pageCount by mutableStateOf(0)
+  var pageCountText by mutableStateOf("0")
 
   val informationTabInvalid by derivedStateOf {
-    code.isEmpty() || title.isEmpty() || publisherText.isEmpty() ||
-      labelPriceValue.isEmpty() || labelPriceValue.parseLocaleValueOrNull() == null ||
-      paidPriceValue.isEmpty() || paidPriceValue.parseLocaleValueOrNull() == null ||
-      dimensionWidth.isEmpty() || dimensionWidth.parseLocaleValueOrNull() == null ||
-      dimensionHeight.isEmpty() || dimensionHeight.parseLocaleValueOrNull() == null
+    val conditions = listOf(
+      code.isEmpty(),
+      title.isEmpty(),
+      publisherText.isEmpty(),
+      labelPriceValue.isEmpty(),
+      labelPriceValue.parseLocaleValueOrNull() == null,
+      paidPriceValue.isEmpty(),
+      paidPriceValue.parseLocaleValueOrNull() == null,
+      dimensionWidth.isEmpty(),
+      dimensionWidth.parseLocaleValueOrNull() == null,
+      dimensionHeight.isEmpty(),
+      dimensionHeight.parseLocaleValueOrNull() == null,
+      pageCountText.toIntOrNull() == null
+    )
+
+    conditions.any { it }
   }
 
   val contributorsTabInvalid by derivedStateOf { contributors.isEmpty() }
@@ -137,6 +150,8 @@ class ManageBookScreenModel @AssistedInject constructor(
     title = lookupBook.title
     synopsis = lookupBook.synopsis
     publisherText = lookupBook.publisher
+    pageCount = lookupBook.pageCount
+    pageCountText = lookupBook.pageCount.toString()
 
     lookupBook.labelPrice?.let {
       labelPriceCurrency = it.currency
@@ -192,6 +207,8 @@ class ManageBookScreenModel @AssistedInject constructor(
     notes = existingBook.notes.orEmpty()
     isFuture = existingBook.is_future
     boughtAt = existingBook.bought_at
+    pageCount = existingBook.page_count ?: 0
+    pageCountText = existingBook.page_count?.toString() ?: "0"
 
     labelPriceCurrency = existingBook.label_price_currency
     labelPriceValue = existingBook.label_price_value.toLocaleString()
@@ -342,6 +359,7 @@ class ManageBookScreenModel @AssistedInject constructor(
         storeId = storeId,
         boughtAt = boughtAt,
         isFuture = isFuture,
+        pageCount = pageCountText.toIntOrNull() ?: 0,
         cover = cover,
         dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
         dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
@@ -398,6 +416,7 @@ class ManageBookScreenModel @AssistedInject constructor(
         storeId = storeId,
         boughtAt = boughtAt,
         isFuture = isFuture,
+        pageCount = pageCountText.toIntOrNull() ?: 0,
         cover = cover,
         dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
         dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,

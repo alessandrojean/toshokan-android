@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.database.adapter
+package io.github.alessandrojean.toshokan.data.adapter
 
 import android.icu.util.Currency
 import com.squareup.sqldelight.ColumnAdapter

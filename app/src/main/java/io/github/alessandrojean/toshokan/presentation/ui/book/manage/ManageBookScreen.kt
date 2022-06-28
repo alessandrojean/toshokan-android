@@ -150,9 +150,6 @@ data class ManageBookScreen(
     val allGroups by manageBookScreenModel.groups
       .collectAsStateWithLifecycle(emptyList())
 
-    val topAppBarBackgroundColors = TopAppBarDefaults.smallTopAppBarColors()
-    val topAppBarBackground = topAppBarBackgroundColors.containerColor(scrollBehavior.scrollFraction).value
-
     LaunchedEffect(pagerState.currentPage) {
       if (
         tabs[pagerState.currentPage] is ManageBookTab.Cover &&
@@ -313,6 +310,7 @@ data class ManageBookScreen(
                   publisher = manageBookScreenModel.publisher,
                   publisherText = manageBookScreenModel.publisherText,
                   allPublishers = allPublishers,
+                  pageCountText = manageBookScreenModel.pageCountText,
                   labelPriceCurrency = manageBookScreenModel.labelPriceCurrency,
                   labelPriceValue = manageBookScreenModel.labelPriceValue,
                   paidPriceCurrency = manageBookScreenModel.paidPriceCurrency,
@@ -324,6 +322,7 @@ data class ManageBookScreen(
                   onSynopsisChange = { manageBookScreenModel.synopsis = it },
                   onPublisherTextChange = { manageBookScreenModel.publisherText = it },
                   onPublisherChange = { manageBookScreenModel.publisher = it },
+                  onPageCountTextChange = { manageBookScreenModel.pageCountText = it },
                   onLabelPriceValueChange = { manageBookScreenModel.labelPriceValue = it },
                   onLabelPriceCurrencyChange = { manageBookScreenModel.labelPriceCurrency = it },
                   onPaidPriceValueChange = { manageBookScreenModel.paidPriceValue = it },

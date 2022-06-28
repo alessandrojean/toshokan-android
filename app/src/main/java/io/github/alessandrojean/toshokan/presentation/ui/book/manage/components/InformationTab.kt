@@ -51,6 +51,7 @@ fun InformationTab(
   publisher: Publisher?,
   publisherText: String,
   allPublishers: List<Publisher>,
+  pageCountText: String,
   labelPriceCurrency: Currency,
   labelPriceValue: String,
   paidPriceCurrency: Currency,
@@ -62,6 +63,7 @@ fun InformationTab(
   onSynopsisChange: (String) -> Unit,
   onPublisherTextChange: (String) -> Unit,
   onPublisherChange: (Publisher?) -> Unit,
+  onPageCountTextChange: (String) -> Unit,
   onLabelPriceValueChange: (String) -> Unit,
   onLabelPriceCurrencyChange: (Currency) -> Unit,
   onPaidPriceValueChange: (String) -> Unit,
@@ -135,34 +137,60 @@ fun InformationTab(
       )
     )
 
-    OutlinedTextField(
-      modifier = Modifier
-        .fillMaxWidth()
-        .bringIntoViewOnFocus(scope),
-      value = publisherText,
-      onValueChange = {
-        onPublisherTextChange.invoke(it)
-        onPublisherChange.invoke(null)
-      },
-      singleLine = true,
-      label = { Text(stringResource(R.string.publisher)) },
-      isError = publisherText.isBlank(),
-      trailingIcon = {
-        IconButton(onClick = { showPublisherPickerDialog = true }) {
-          Icon(
-            imageVector = Icons.Outlined.ManageSearch,
-            contentDescription = stringResource(R.string.action_search)
-          )
-        }
-      },
-      colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-      keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-      keyboardActions = KeyboardActions(
-        onNext = {
-          focusManager.moveFocus(FocusDirection.Down)
-        }
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      OutlinedTextField(
+        modifier = Modifier
+          .weight(1f)
+          .bringIntoViewOnFocus(scope),
+        value = publisherText,
+        onValueChange = {
+          onPublisherTextChange.invoke(it)
+          onPublisherChange.invoke(null)
+        },
+        singleLine = true,
+        label = { Text(stringResource(R.string.publisher)) },
+        isError = publisherText.isBlank(),
+        trailingIcon = {
+          IconButton(onClick = { showPublisherPickerDialog = true }) {
+            Icon(
+              imageVector = Icons.Outlined.ManageSearch,
+              contentDescription = stringResource(R.string.action_search)
+            )
+          }
+        },
+        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(
+          onNext = {
+            focusManager.moveFocus(FocusDirection.Down)
+          }
+        )
       )
-    )
+
+      OutlinedTextField(
+        modifier = Modifier
+          .weight(1f)
+          .bringIntoViewOnFocus(scope),
+        value = pageCountText,
+        onValueChange = onPageCountTextChange,
+        singleLine = true,
+        isError = pageCountText.toIntOrNull() == null,
+        label = { Text(stringResource(R.string.page_count)) },
+        keyboardOptions = KeyboardOptions.Default.copy(
+          imeAction = ImeAction.Next,
+          keyboardType = KeyboardType.Number
+        ),
+        keyboardActions = KeyboardActions(
+          onNext = {
+            focusManager.moveFocus(FocusDirection.Down)
+          }
+        )
+      )
+    }
 
     OutlinedTextField(
       modifier = Modifier

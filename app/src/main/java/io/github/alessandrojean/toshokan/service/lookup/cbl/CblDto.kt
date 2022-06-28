@@ -29,6 +29,7 @@ data class CblRecord(
   @SerialName("RecordId") val id: String? = "",
   @SerialName("Authors") val authors: List<String> = emptyList(),
   @SerialName("Dimensao") val dimensions: String? = "",
+  @SerialName("Paginas") val pageCount: String? = "",
   @SerialName("Imprint") val publisher: String = "",
   @SerialName("Profissoes") val roles: List<String>? = emptyList(),
   @SerialName("RowKey") val rowKey: String = "",

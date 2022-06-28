@@ -8,16 +8,13 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
-import io.github.alessandrojean.toshokan.database.adapter.BookCreditRoleAdapter
-import io.github.alessandrojean.toshokan.database.adapter.CurrencyAdapter
-import io.github.alessandrojean.toshokan.database.adapter.ZonedDateTimeAdapter
+import io.github.alessandrojean.toshokan.data.adapter.BookCreditRoleAdapter
+import io.github.alessandrojean.toshokan.data.adapter.CurrencyAdapter
+import io.github.alessandrojean.toshokan.data.adapter.JsonAdapter
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookCredit
-import io.github.alessandrojean.toshokan.database.data.BookGroup
-import io.github.alessandrojean.toshokan.database.data.Person
-import io.github.alessandrojean.toshokan.database.data.Publisher
-import io.github.alessandrojean.toshokan.database.data.Reading
-import io.github.alessandrojean.toshokan.database.data.Store
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import javax.inject.Singleton
 
 @Module
@@ -36,12 +33,13 @@ object DatabaseModule {
 
   @Singleton
   @Provides
-  fun provideDatabase(sqlDriver: SqlDriver): ToshokanDatabase {
+  fun provideDatabase(sqlDriver: SqlDriver, json: Json): ToshokanDatabase {
     return ToshokanDatabase(
       driver = sqlDriver,
       BookAdapter = Book.Adapter(
         paid_price_currencyAdapter = CurrencyAdapter(),
         label_price_currencyAdapter = CurrencyAdapter(),
+        tagsAdapter = JsonAdapter(json, serializer())
       ),
       BookCreditAdapter = BookCredit.Adapter(
         roleAdapter = BookCreditRoleAdapter()

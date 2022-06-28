@@ -1,0 +1,4 @@
+ALTER TABLE Book ADD COLUMN page_count INTEGER DEFAULT 0;
+ALTER TABLE Book ADD COLUMN tags TEXT DEFAULT "[]";
+
+UPDATE Book SET page_count = 0, tags = "[]";
