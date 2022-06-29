@@ -1,5 +1,4 @@
 import android.icu.util.Currency;
-import kotlin.collections.List;
 
 CREATE TABLE Book(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +25,7 @@ CREATE TABLE Book(
 
   is_favorite INTEGER AS Boolean DEFAULT 0,
   page_count INTEGER AS Int DEFAULT 0,
-  tags TEXT AS List<String> DEFAULT "[]",
+  tags TEXT DEFAULT "[]",
 
   FOREIGN KEY (publisher_id) REFERENCES Publisher (id)
     ON DELETE CASCADE,
@@ -122,7 +121,11 @@ WHERE
   AND (:contributorsIsEmpty OR
     (SELECT count(*) FROM BookCredit
       WHERE BookCredit.book_id = Book.id
-        AND BookCredit.person_id IN :contributors) > 0);
+        AND BookCredit.person_id IN :contributors) > 0)
+  AND (:tagsIsEmpty OR
+    (SELECT count(*) FROM BookTag
+      WHERE BookTag.book_id = Book.id
+        AND BookTag.tag_id IN :tagIds) > 0);
 
 lastInsertedId:
 SELECT max(id)

@@ -1,0 +1,52 @@
+CREATE TABLE Tag(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  is_nsfw INTEGER AS Boolean NOT NULL DEFAULT 0,
+
+  created_at INTEGER AS Long NOT NULL,
+  updated_at INTEGER AS Long NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM Tag
+ORDER BY name COLLATE UNICODE ASC;
+
+selectNotEmpty:
+SELECT *
+FROM Tag
+WHERE (SELECT count(*) FROM BookTag WHERE BookTag.tag_id = Tag.id) > 0
+ORDER BY name COLLATE UNICODE ASC;
+
+findById:
+SELECT *
+FROM Tag
+WHERE id = ?;
+
+findByIds:
+SELECT *
+FROM Tag
+WHERE id IN ?;
+
+lastInsertedId:
+SELECT max(id)
+FROM Tag;
+
+insert:
+INSERT OR IGNORE INTO Tag(
+  id,
+  name,
+  is_nsfw,
+  created_at,
+  updated_at
+)
+VALUES (?, ?, ?, ?, ?);
+
+update:
+UPDATE Tag
+SET name = ?, is_nsfw = ?, updated_at = ?
+WHERE id = ?;
+
+deleteBulk:
+DELETE FROM Tag
+WHERE id IN ?;

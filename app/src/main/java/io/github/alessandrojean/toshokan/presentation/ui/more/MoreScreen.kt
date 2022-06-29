@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Domain
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.GroupWork
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.LocalMall
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Divider
@@ -36,6 +37,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.publishers.PublishersSc
 import io.github.alessandrojean.toshokan.presentation.ui.settings.SettingsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsCategory
 import io.github.alessandrojean.toshokan.presentation.ui.stores.StoresScreen
+import io.github.alessandrojean.toshokan.presentation.ui.tags.TagsScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 
 class MoreScreen : AndroidScreen() {
@@ -87,6 +89,13 @@ class MoreScreen : AndroidScreen() {
               title = stringResource(R.string.groups),
               icon = Icons.Outlined.GroupWork,
               onClick = { navigator.push(GroupsScreen()) }
+            )
+          }
+          item("tags") {
+            SettingsCategory(
+              title = stringResource(R.string.tags),
+              icon = Icons.Outlined.Label,
+              onClick = { navigator.push(TagsScreen()) }
             )
 
             Divider(

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Domain
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.GroupWork
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.LocalMall
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.StarOutline
@@ -52,6 +53,8 @@ fun SearchFilterChipsRow(
   showCollections: Boolean = true,
   groupsSelected: Boolean,
   showGroups: Boolean = true,
+  tagsSelected: Boolean,
+  showTags: Boolean = true,
   contributorsSelected: Boolean,
   showContributors: Boolean = true,
   publishersSelected: Boolean,
@@ -64,6 +67,7 @@ fun SearchFilterChipsRow(
   onFavoritesOnlyChanged: (Boolean) -> Unit,
   onCollectionsClick: () -> Unit,
   onGroupsClick: () -> Unit,
+  onTagsClick: () -> Unit,
   onContributorsClick: () -> Unit,
   onPublishersClick: () -> Unit,
   onStoresClick: () -> Unit,
@@ -244,6 +248,37 @@ fun SearchFilterChipsRow(
             leadingIcon = {
               Icon(
                 imageVector = Icons.Outlined.GroupWork,
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+              )
+            },
+            selectedIcon = {
+              Icon(
+                imageVector = Icons.Outlined.Check,
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+              )
+            },
+            trailingIcon = {
+              Icon(
+                imageVector = Icons.Outlined.ArrowDropDown,
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+              )
+            }
+          )
+        }
+      }
+      if (showTags) {
+        item("tags") {
+          FilterChip(
+            shape = shape,
+            selected = tagsSelected,
+            onClick = { onTagsClick.invoke() },
+            label = { Text(stringResource(R.string.tags)) },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Outlined.Label,
                 contentDescription = null,
                 modifier = Modifier.size(FilterChipDefaults.IconSize)
               )

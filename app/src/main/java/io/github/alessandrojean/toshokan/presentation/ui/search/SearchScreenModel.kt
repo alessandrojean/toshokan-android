@@ -15,6 +15,7 @@ import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
+import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.DateRange
 import io.github.alessandrojean.toshokan.domain.SearchFilters
@@ -25,6 +26,7 @@ import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
+import io.github.alessandrojean.toshokan.repository.TagsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -36,6 +38,7 @@ class SearchScreenModel @AssistedInject constructor(
   private val peopleRepository: PeopleRepository,
   private val publishersRepository: PublishersRepository,
   private val storesRepository: StoresRepository,
+  private val tagsRepository: TagsRepository,
   @Assisted filters: SearchFilters?
 ) : StateScreenModel<SearchScreenModel.State>(
   if (filters is SearchFilters.Incomplete) State.Loading else State.Empty
@@ -64,6 +67,7 @@ class SearchScreenModel @AssistedInject constructor(
   val allPersons = peopleRepository.people
   val allStores = storesRepository.stores
   val allCollections = booksRepository.subscribeToCollections()
+  val allTags = tagsRepository.subscribeToTags()
 
   private var searchJob: Job? = null
 
@@ -94,6 +98,7 @@ class SearchScreenModel @AssistedInject constructor(
             favoritesOnly = newFilters.favoritesOnly,
             collections = newFilters.collections.map { Collection(it) },
             groups = groupsRepository.findByIds(newFilters.groups),
+            tags = tagsRepository.findByIds(newFilters.tags),
             publishers = publishersRepository.findByIds(newFilters.publishers),
             contributors = peopleRepository.findByIds(newFilters.contributors),
             stores = storesRepository.findByIds(newFilters.stores),
@@ -131,6 +136,11 @@ class SearchScreenModel @AssistedInject constructor(
 
   fun onGroupsChanged(newGroups: List<BookGroup>) {
     filters = filters.copy(groups = newGroups)
+    search()
+  }
+
+  fun onTagsChanged(newTags: List<Tag>) {
+    filters = filters.copy(tags = newTags)
     search()
   }
 

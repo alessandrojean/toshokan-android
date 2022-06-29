@@ -10,10 +10,11 @@ data class ToshokanSheet(
   @ProtoNumber(1) val version: Int,
   @ProtoNumber(2) val sheetVersion: Int,
   @ProtoNumber(3) val groups: List<String>,
-  @ProtoNumber(4) val publishers: List<String>,
-  @ProtoNumber(5) val stores: List<String>,
-  @ProtoNumber(6) val authors: List<String>,
-  @ProtoNumber(7) val library: List<ToshokanSheetBook>
+  @ProtoNumber(4) val tags: List<String>,
+  @ProtoNumber(5) val publishers: List<String>,
+  @ProtoNumber(6) val stores: List<String>,
+  @ProtoNumber(7) val authors: List<String>,
+  @ProtoNumber(8) val library: List<ToshokanSheetBook>
 )
 
 @Serializable

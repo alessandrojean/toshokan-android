@@ -209,6 +209,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             book = resultState?.book,
             simpleBook = resultState?.simpleBook,
             bookContributors = resultState?.contributors.orEmpty(),
+            bookTags = resultState?.tags.orEmpty(),
             bookNeighbors = resultState?.neighbors,
             showBookNavigation = showBookNavigation,
             showLinksButton = resultState?.links.orEmpty().isNotEmpty(),

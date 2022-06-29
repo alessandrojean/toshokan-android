@@ -109,6 +109,7 @@
   <string name="read_at">Read at</string>
   <string name="unknown">Unknown</string>
   <string name="page_count">Page count</string>
+  <string name="tag">Tag</string>
 
   <!-- Credit roles -->
   <string name="role_unknown">Unknown</string>
@@ -248,6 +249,20 @@
     </item>
     <item quantity="other">
       By deleting groups, all books inside it will also be deleted from the library.
+    </item>
+  </plurals>
+
+  <!-- Tags -->
+  <string name="tags">Tags</string>
+  <string name="no_tags_found">No tags found</string>
+  <string name="create_tag">New tag</string>
+  <string name="tag_nsfw">Has NSFW content</string>
+  <plurals name="tag_delete_warning">
+    <item quantity="one">
+      By deleting a tag, it will also be removed from all books that uses the tag.
+    </item>
+    <item quantity="other">
+      By deleting tags, they will also be removed from all books that uses these tags.
     </item>
   </plurals>
 

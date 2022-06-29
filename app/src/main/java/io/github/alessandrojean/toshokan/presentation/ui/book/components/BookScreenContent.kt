@@ -62,6 +62,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
@@ -76,6 +77,7 @@ fun BookScreenContent(
   book: CompleteBook?,
   simpleBook: Book?,
   bookContributors: List<BookContributor>,
+  bookTags: List<Tag>,
   bookNeighbors: BookNeighbors?,
   showBookNavigation: Boolean = true,
   showLinksButton: Boolean = true,
@@ -260,6 +262,7 @@ fun BookScreenContent(
           bottomBarVisible = bookNeighbors != null && showBookNavigation,
           book = book,
           contributors = bookContributors,
+          tags = bookTags,
           hasBookNeighbors = bookNeighbors != null,
           onReadingClick = onReadingClick,
           onEditClick = onEditClick,

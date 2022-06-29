@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explicit
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
@@ -93,6 +94,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
     val allPublishers by screenModel.allPublishers.collectAsStateWithLifecycle(emptyList())
     val allStores by screenModel.allStores.collectAsStateWithLifecycle(emptyList())
     val allCollections by screenModel.allCollections.collectAsStateWithLifecycle(emptyList())
+    val allTags by screenModel.allTags.collectAsStateWithLifecycle(emptyList())
 
     val collections by remember(allCollections) {
       derivedStateOf { allCollections.filter { it.count > 1 } }
@@ -103,6 +105,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
     var showPublishersPickerDialog by remember { mutableStateOf(false) }
     var showStoresPickerDialog by remember { mutableStateOf(false) }
     var showCollectionsPickerDialog by remember { mutableStateOf(false) }
+    var showTagsPickerDialog by remember { mutableStateOf(false) }
 
     val boughtAtPickerTitle = stringResource(R.string.filter_bought_at)
     val readAtPickerTitle = stringResource(R.string.filter_read_at)
@@ -118,6 +121,27 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       itemText = { it.name },
       onChoose = { screenModel.onGroupsChanged(it) },
       onDismiss = { showGroupsPickerDialog = false }
+    )
+
+    FullScreenItemPickerDialog(
+      role = Role.Checkbox,
+      nullable = true,
+      visible = showTagsPickerDialog,
+      title = stringResource(R.string.tags),
+      selected = screenModel.filters.tags,
+      items = allTags,
+      itemKey = { it.id },
+      itemText = { it.name },
+      itemTrailingIcon = {
+        if (it.is_nsfw) {
+          Icon(
+            painter = rememberVectorPainter(Icons.Outlined.Explicit),
+            contentDescription = null
+          )
+        }
+      },
+      onChoose = { screenModel.onTagsChanged(it) },
+      onDismiss = { showTagsPickerDialog = false }
     )
 
     FullScreenItemPickerDialog(
@@ -234,6 +258,8 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
               showCollections = collections.isNotEmpty(),
               groupsSelected = screenModel.filters.groups.isNotEmpty(),
               showGroups = allGroups.isNotEmpty(),
+              tagsSelected = screenModel.filters.tags.isNotEmpty(),
+              showTags = allTags.isNotEmpty(),
               contributorsSelected = screenModel.filters.contributors.isNotEmpty(),
               showContributors = allPersons.isNotEmpty(),
               publishersSelected = screenModel.filters.publishers.isNotEmpty(),
@@ -246,6 +272,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
               onFavoritesOnlyChanged = { screenModel.onFavoritesOnlyChanged(it) },
               onCollectionsClick = { showCollectionsPickerDialog = true },
               onGroupsClick = { showGroupsPickerDialog = true },
+              onTagsClick = { showTagsPickerDialog = true },
               onContributorsClick = { showContributorsPickerDialog = true },
               onPublishersClick = { showPublishersPickerDialog = true },
               onStoresClick = { showStoresPickerDialog = true },

@@ -17,6 +17,7 @@ import io.github.alessandrojean.toshokan.data.storage.ImageSaver
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.service.link.BookLink
@@ -54,6 +55,7 @@ class BookScreenModel @AssistedInject constructor(
       val book: CompleteBook?,
       val simpleBook: Book?,
       val contributors: List<BookContributor> = emptyList(),
+      val tags: List<Tag> = emptyList(),
       val neighbors: BookNeighbors?,
       val links: Map<LinkCategory, List<BookLink>> = emptyMap()
     ) : State()
@@ -86,13 +88,15 @@ class BookScreenModel @AssistedInject constructor(
         booksRepository.findByIdAsFlow(bookId),
         booksRepository.findSimpleById(bookId),
         booksRepository.findBookContributorsAsFlow(bookId),
+        booksRepository.findBookTagsAsFlow(bookId),
         booksRepository.findSeriesVolumes(book)
-      ) { bookDb, simpleBook, contributors, neighbors ->
+      ) { bookDb, simpleBook, contributors, tags, neighbors ->
         if (bookDb != null && simpleBook != null) {
           State.Result(
             book = bookDb,
             simpleBook = simpleBook,
             contributors = contributors,
+            tags = tags,
             neighbors = neighbors,
             links = findBookLinks(bookDb)
           )

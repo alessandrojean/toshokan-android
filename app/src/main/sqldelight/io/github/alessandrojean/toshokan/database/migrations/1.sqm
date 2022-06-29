@@ -1,9 +1,0 @@
--- Add the readings table.
-CREATE TABLE Reading (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  book_id INTEGER NOT NULL,
-  read_at INTEGER AS Long,
-
-  FOREIGN KEY (book_id) REFERENCES Book (id)
-    ON DELETE CASCADE
-);

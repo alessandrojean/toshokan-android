@@ -42,6 +42,8 @@ fun BookSynopsis(
   synopsis: String?,
   containerColor: Color = MaterialTheme.colorScheme.surface,
   tonalElevation: Dp = 6.dp,
+  onSynopsisToggleableChange: (Boolean) -> Unit = {},
+  onSynopsisExpandedChange: (Boolean) -> Unit = {}
 ) {
   var synopsisExpanded by remember { mutableStateOf(false) }
   var synopsisToggleable by remember { mutableStateOf(false) }
@@ -58,6 +60,7 @@ fun BookSynopsis(
 
     if (!synopsisExpanded && synopsisLayoutResultState!!.hasVisualOverflow) {
       synopsisToggleable = true
+      onSynopsisToggleableChange(synopsisToggleable)
     }
   }
 
@@ -67,7 +70,10 @@ fun BookSynopsis(
         .fillMaxWidth()
         .toggleable(
           value = synopsisExpanded,
-          onValueChange = { synopsisExpanded = it },
+          onValueChange = {
+            synopsisExpanded = it
+            onSynopsisExpandedChange(it)
+          },
           enabled = synopsisToggleable,
           role = Role.Checkbox,
           indication = null,

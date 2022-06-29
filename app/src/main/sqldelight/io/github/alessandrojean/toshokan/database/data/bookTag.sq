@@ -1,0 +1,23 @@
+CREATE TABLE BookTag(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  tag_id INTEGER NOT NULL,
+
+  FOREIGN KEY (book_id) REFERENCES Book (id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES Tag (id)
+    ON DELETE CASCADE
+);
+
+findByBookId:
+SELECT *
+FROM Tag
+WHERE id IN (SELECT tag_id FROM BookTag WHERE book_id = ?);
+
+insert:
+INSERT INTO BookTag(book_id, tag_id)
+VALUES (?, ?);
+
+deleteBulk:
+DELETE FROM BookTag
+WHERE book_id = ?;

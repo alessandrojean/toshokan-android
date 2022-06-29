@@ -26,11 +26,13 @@ import io.github.alessandrojean.toshokan.data.backup.models.ToshokanSheetBook
 import io.github.alessandrojean.toshokan.data.backup.models.ToshokanSheetStatus
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole
+import io.github.alessandrojean.toshokan.domain.RawTag
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
+import io.github.alessandrojean.toshokan.repository.TagsRepository
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.util.extension.toSheetDate
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
@@ -52,7 +54,8 @@ class SheetBackupRestorer @AssistedInject constructor(
   private val groupsRepository: GroupsRepository,
   private val publishersRepository: PublishersRepository,
   private val storesRepository: StoresRepository,
-  private val peopleRepository: PeopleRepository
+  private val peopleRepository: PeopleRepository,
+  private val tagsRepository: TagsRepository
 ) : AbstractBackupRestorer(context, notifier) {
 
   @AssistedFactory
@@ -91,14 +94,15 @@ class SheetBackupRestorer @AssistedInject constructor(
         throw SheetRestoreException(context.getString(R.string.error_backup_no_books_to_restore))
       }
 
-      restoreAmount = booksToInsert.size + 4
+      restoreAmount = booksToInsert.size + 5
 
-      val groupsMap = restoreGroups(backup.groups)
-      val publishersMap = restorePublishers(backup.publishers)
-      val storesMap = restoreStores(backup.stores)
-      val peopleMap = restorePeople(backup.authors)
+      val groupsMap = restoreGroups(backup.groups.filterNot(String::isBlank))
+      val publishersMap = restorePublishers(backup.publishers.filterNot(String::isBlank))
+      val storesMap = restoreStores(backup.stores.filterNot(String::isBlank))
+      val peopleMap = restorePeople(backup.authors.filterNot(String::isBlank))
+      val tagsMap = restoreTags(backup.tags.filterNot(String::isBlank))
 
-      restoreBooks(booksToInsert, groupsMap, publishersMap, storesMap, peopleMap)
+      restoreBooks(booksToInsert, groupsMap, publishersMap, storesMap, peopleMap, tagsMap)
     }
 
     result.exceptionOrNull()?.let {
@@ -114,7 +118,8 @@ class SheetBackupRestorer @AssistedInject constructor(
     groupsMap: Map<String, Long>,
     publishersMap: Map<String, Long>,
     storesMap: Map<String, Long>,
-    peopleMap: Map<String, Long>
+    peopleMap: Map<String, Long>,
+    tagsMap: Map<String, Long>
   ) {
     books.forEach { sheetBook ->
       if (job?.isActive != true) {
@@ -137,9 +142,14 @@ class SheetBackupRestorer @AssistedInject constructor(
         cover = sheetBook.coverUrl?.let { BookCover.External(it) },
         dimensionWidth = sheetBook.dimensions.width,
         dimensionHeight = sheetBook.dimensions.height,
-        contributors = sheetBook.authors.map { author ->
-          Contributor(personId = peopleMap[author]!!, role = CreditRole.AUTHOR)
-        }
+        contributors = sheetBook.authors.mapNotNull { author ->
+          peopleMap[author]?.let { personId ->
+            Contributor(personId = personId, role = CreditRole.AUTHOR)
+          }
+        },
+        tags = sheetBook.tags
+          .filterNot(String::isEmpty)
+          .map { tag -> RawTag(tagId = tagsMap[tag]!!) }
       )
 
       if (sheetBook.status == ToshokanSheetStatus.READ) {
@@ -163,6 +173,22 @@ class SheetBackupRestorer @AssistedInject constructor(
 
     restoreProgress++
     showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.groups))
+
+    return map
+  }
+
+  private suspend fun restoreTags(tags: List<String>): Map<String, Long> {
+    val existingTags = tagsRepository.findAll()
+
+    val map = tags.associateWith { sheetTag ->
+      val dbTag = existingTags.firstOrNull { it.name.equals(sheetTag, ignoreCase = true) }
+      val dbTagId = dbTag?.id ?: tagsRepository.insert(sheetTag)!!
+
+      dbTagId
+    }
+
+    restoreProgress++
+    showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.tags))
 
     return map
   }

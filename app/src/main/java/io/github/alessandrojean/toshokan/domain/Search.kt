@@ -9,6 +9,7 @@ import io.github.alessandrojean.toshokan.database.data.BookGroup
 import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
+import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
 import io.github.alessandrojean.toshokan.util.extension.toLocalEpochMilli
 import io.github.alessandrojean.toshokan.util.extension.toUtcEpochMilli
@@ -24,6 +25,7 @@ sealed class SearchFilters {
     val favoritesOnly: Boolean = false,
     val collections: List<Collection> = emptyList(),
     val groups: @RawValue List<BookGroup> = emptyList(),
+    val tags: @RawValue List<Tag> = emptyList(),
     val publishers: @RawValue List<Publisher> = emptyList(),
     val contributors: @RawValue List<Person> = emptyList(),
     val stores: @RawValue List<Store> = emptyList(),
@@ -40,6 +42,7 @@ sealed class SearchFilters {
     val favoritesOnly: Boolean = false,
     val collections: List<String> = emptyList(),
     val groups: List<Long> = emptyList(),
+    val tags: List<Long> = emptyList(),
     val publishers: List<Long> = emptyList(),
     val contributors: List<Long> = emptyList(),
     val stores: List<Long> = emptyList(),

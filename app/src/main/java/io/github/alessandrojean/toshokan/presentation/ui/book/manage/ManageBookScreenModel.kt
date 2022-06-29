@@ -22,12 +22,14 @@ import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Price
+import io.github.alessandrojean.toshokan.domain.RawTag
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTabState
 import io.github.alessandrojean.toshokan.repository.BooksRepository
 import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.PeopleRepository
 import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
+import io.github.alessandrojean.toshokan.repository.TagsRepository
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverRepository
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
@@ -46,6 +48,7 @@ class ManageBookScreenModel @AssistedInject constructor(
   private val peopleRepository: PeopleRepository,
   private val publishersRepository: PublishersRepository,
   private val storesRepository: StoresRepository,
+  private val tagsRepository: TagsRepository,
   private val coverRepository: CoverRepository,
   private val coverCache: CoverCache,
   preferencesManager: PreferencesManager,
@@ -121,6 +124,8 @@ class ManageBookScreenModel @AssistedInject constructor(
   var coverState by mutableStateOf<CoverTabState>(CoverTabState.Display)
     private set
 
+  val rawTags = mutableStateListOf<RawTag>()
+
   var mode by mutableStateOf(Mode.CREATING)
     private set
 
@@ -128,6 +133,7 @@ class ManageBookScreenModel @AssistedInject constructor(
   val stores = storesRepository.stores
   val groups = groupsRepository.groupsSorted
   val people = peopleRepository.people
+  val tags = tagsRepository.subscribeToTags()
 
   var selectedContributor by mutableStateOf<Contributor?>(null)
 
@@ -176,8 +182,6 @@ class ManageBookScreenModel @AssistedInject constructor(
         )
       }
       .let(contributors::addAll)
-
-    logcat { contributors.toString() }
 
     publishersRepository.selectAll()
       .firstOrNull { it.name.equals(lookupBook.publisher, ignoreCase = true) }
@@ -231,6 +235,10 @@ class ManageBookScreenModel @AssistedInject constructor(
         )
       }
       .let(contributors::addAll)
+
+    booksRepository.findBookTags(existingBook.id)
+      .map { RawTag(it, it.id, it.name) }
+      .let(rawTags::addAll)
 
     val customCover = coverCache.getCustomCoverFile(existingBook)
 
@@ -339,7 +347,18 @@ class ManageBookScreenModel @AssistedInject constructor(
         )
       }
 
-      // Third step: Create the book.
+      // Third step: create the tags that doesn't exist on the database.
+      val insertedTags = rawTags.map { rawTag ->
+        if (rawTag.tag != null) {
+          return@map rawTag
+        }
+
+        rawTag.copy(
+          tagId = tagsRepository.insert(rawTag.tagText)
+        )
+      }
+
+      // Fourth step: Create the book.
       val bookId = booksRepository.insert(
         code = code,
         title = title,
@@ -363,7 +382,8 @@ class ManageBookScreenModel @AssistedInject constructor(
         cover = cover,
         dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
         dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
-        contributors = insertedContributors
+        contributors = insertedContributors,
+        tags = insertedTags
       )
 
       onFinish.invoke(bookId)
@@ -395,6 +415,17 @@ class ManageBookScreenModel @AssistedInject constructor(
         )
       }
 
+      // Third step: create the tags that doesn't exist on the database.
+      val insertedTags = rawTags.map { rawTag ->
+        if (rawTag.tag != null) {
+          return@map rawTag
+        }
+
+        rawTag.copy(
+          tagId = tagsRepository.insert(rawTag.tagText)
+        )
+      }
+
       // Third step: Update the book.
       booksRepository.update(
         id = existingBookId!!,
@@ -420,7 +451,8 @@ class ManageBookScreenModel @AssistedInject constructor(
         cover = cover,
         dimensionWidth = dimensionWidth.parseLocaleValueOrNull() ?: 0f,
         dimensionHeight = dimensionHeight.parseLocaleValueOrNull() ?: 0f,
-        contributors = insertedContributors
+        contributors = insertedContributors,
+        tags = insertedTags
       )
 
       onFinish.invoke()

@@ -26,6 +26,7 @@ import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.database.data.Statistics
 import io.github.alessandrojean.toshokan.database.data.Store
+import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.Contributor
@@ -33,6 +34,7 @@ import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.Library
 import io.github.alessandrojean.toshokan.domain.LibraryGroup
 import io.github.alessandrojean.toshokan.domain.Price
+import io.github.alessandrojean.toshokan.domain.RawTag
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.domain.SortColumn
 import io.github.alessandrojean.toshokan.domain.SortDirection
@@ -87,6 +89,14 @@ class BooksRepository @Inject constructor(
 
   fun findBookContributors(id: Long): List<BookContributor> {
     return database.bookCreditQueries.bookContributor(id).executeAsList()
+  }
+
+  fun findBookTags(id: Long): List<Tag> {
+    return database.bookTagQueries.findByBookId(id).executeAsList()
+  }
+
+  fun findBookTagsAsFlow(id: Long): Flow<List<Tag>> {
+    return database.bookTagQueries.findByBookId(id).asFlow().mapToList().flowOn(Dispatchers.IO)
   }
 
   fun findReadings(id: Long, descending: Boolean = true): Flow<List<Reading>> {
@@ -168,6 +178,8 @@ class BooksRepository @Inject constructor(
         isFavorite = if (filters.favoritesOnly) true else null,
         groupIds = filters.groups.map(BookGroup::id),
         groupsIsEmpty = filters.groups.isEmpty(),
+        tagIds = filters.tags.map(Tag::id),
+        tagsIsEmpty = filters.tags.isEmpty(),
         publisherIds = filters.publishers.map(Publisher::id),
         publishersIsEmpty = filters.publishers.isEmpty(),
         storeIds = filters.stores.map(Store::id),
@@ -222,7 +234,8 @@ class BooksRepository @Inject constructor(
     cover: BookCover?,
     dimensionWidth: Float,
     dimensionHeight: Float,
-    contributors: List<Contributor>
+    contributors: List<Contributor>,
+    tags: List<RawTag> = emptyList()
   ): Long? = withContext(Dispatchers.IO) {
     val now = currentTime
     var bookId: Long? = null
@@ -259,6 +272,10 @@ class BooksRepository @Inject constructor(
           person_id = contributor.person?.id ?: contributor.personId!!,
           role = contributor.role
         )
+      }
+
+      tags.forEach { rawTag ->
+        database.bookTagQueries.insert(bookId!!, rawTag.tag?.id ?: rawTag.tagId!!)
       }
     }
 
@@ -298,7 +315,8 @@ class BooksRepository @Inject constructor(
     cover: BookCover?,
     dimensionWidth: Float,
     dimensionHeight: Float,
-    contributors: List<Contributor>
+    contributors: List<Contributor>,
+    tags: List<RawTag> = emptyList()
   ) = withContext(Dispatchers.IO) {
     val now = currentTime
 
@@ -334,6 +352,12 @@ class BooksRepository @Inject constructor(
           person_id = contributor.person?.id ?: contributor.personId!!,
           role = contributor.role
         )
+      }
+
+      database.bookTagQueries.deleteBulk(id)
+
+      tags.forEach { rawTag ->
+        database.bookTagQueries.insert(id, rawTag.tag?.id ?: rawTag.tagId!!)
       }
     }
 

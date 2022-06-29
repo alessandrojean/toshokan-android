@@ -10,7 +10,6 @@ import dagger.hilt.components.SingletonComponent
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.data.adapter.BookCreditRoleAdapter
 import io.github.alessandrojean.toshokan.data.adapter.CurrencyAdapter
-import io.github.alessandrojean.toshokan.data.adapter.JsonAdapter
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookCredit
 import kotlinx.serialization.json.Json
@@ -33,13 +32,12 @@ object DatabaseModule {
 
   @Singleton
   @Provides
-  fun provideDatabase(sqlDriver: SqlDriver, json: Json): ToshokanDatabase {
+  fun provideDatabase(sqlDriver: SqlDriver): ToshokanDatabase {
     return ToshokanDatabase(
       driver = sqlDriver,
       BookAdapter = Book.Adapter(
         paid_price_currencyAdapter = CurrencyAdapter(),
         label_price_currencyAdapter = CurrencyAdapter(),
-        tagsAdapter = JsonAdapter(json, serializer())
       ),
       BookCreditAdapter = BookCredit.Adapter(
         roleAdapter = BookCreditRoleAdapter()

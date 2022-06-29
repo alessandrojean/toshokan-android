@@ -28,12 +28,17 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Badge
@@ -41,6 +46,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -50,6 +56,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -68,6 +75,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -93,6 +101,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.InformationTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.OrganizationTab
+import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.TagsTab
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
@@ -119,7 +128,8 @@ data class ManageBookScreen(
         ManageBookTab.Information,
         ManageBookTab.Contributors,
         ManageBookTab.Organization,
-        ManageBookTab.Cover
+        ManageBookTab.Cover,
+        ManageBookTab.Tags
       )
     }
 
@@ -148,6 +158,8 @@ data class ManageBookScreen(
     val allStores by manageBookScreenModel.stores
       .collectAsStateWithLifecycle(emptyList())
     val allGroups by manageBookScreenModel.groups
+      .collectAsStateWithLifecycle(emptyList())
+    val allTags by manageBookScreenModel.tags
       .collectAsStateWithLifecycle(emptyList())
 
     LaunchedEffect(pagerState.currentPage) {
@@ -302,7 +314,7 @@ data class ManageBookScreen(
             verticalAlignment = Alignment.Top,
           ) { page ->
             when (tabs[page]) {
-              is ManageBookTab.Information -> {
+              ManageBookTab.Information -> {
                 InformationTab(
                   code = manageBookScreenModel.code,
                   title = manageBookScreenModel.title,
@@ -331,7 +343,7 @@ data class ManageBookScreen(
                   onDimensionHeightChange = { manageBookScreenModel.dimensionHeight = it }
                 )
               }
-              is ManageBookTab.Contributors -> {
+              ManageBookTab.Contributors -> {
                 ContributorsTab(
                   writing = manageBookScreenModel.writing,
                   contributors = manageBookScreenModel.contributors,
@@ -342,7 +354,7 @@ data class ManageBookScreen(
                   }
                 )
               }
-              is ManageBookTab.Organization -> {
+              ManageBookTab.Organization -> {
                 OrganizationTab(
                   store = manageBookScreenModel.store,
                   storeText = manageBookScreenModel.storeText,
@@ -362,7 +374,7 @@ data class ManageBookScreen(
                   onIsFutureChange = { manageBookScreenModel.isFuture = it }
                 )
               }
-              is ManageBookTab.Cover -> {
+              ManageBookTab.Cover -> {
                 CoverTab(
                   cover = manageBookScreenModel.cover,
                   allCovers = manageBookScreenModel.allCovers,
@@ -374,6 +386,16 @@ data class ManageBookScreen(
                   onCustomCoverPicked = { customCover ->
                     manageBookScreenModel.cover = customCover
                     manageBookScreenModel.allCovers.add(customCover)
+                  }
+                )
+              }
+              ManageBookTab.Tags -> {
+                TagsTab(
+                  tags = manageBookScreenModel.rawTags,
+                  allTags = allTags,
+                  onTagsChange = { newTags ->
+                    manageBookScreenModel.rawTags.clear()
+                    manageBookScreenModel.rawTags.addAll(newTags)
                   }
                 )
               }
@@ -762,6 +784,7 @@ data class ManageBookScreen(
     object Contributors : ManageBookTab(R.string.contributors)
     object Organization : ManageBookTab(R.string.organization)
     object Cover : ManageBookTab(R.string.cover)
+    object Tags : ManageBookTab(R.string.tags)
   }
 
   companion object {

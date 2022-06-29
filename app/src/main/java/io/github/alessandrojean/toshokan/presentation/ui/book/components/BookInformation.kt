@@ -2,6 +2,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumedWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -27,6 +30,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.DateRange
 import io.github.alessandrojean.toshokan.domain.SearchFilters
@@ -46,6 +50,7 @@ fun BookInformation(
   modifier: Modifier = Modifier,
   book: CompleteBook?,
   contributors: List<BookContributor>,
+  tags: List<Tag>,
   hasBookNeighbors: Boolean = false,
   color: Color = MaterialTheme.colorScheme.surface,
   tonalElevation: Dp = 6.dp,
@@ -80,6 +85,14 @@ fun BookInformation(
   val updatedAt = remember(book?.updated_at) { book?.updated_at?.formatToLocaleDate() }
   val titleParts = remember(book?.title) { book?.title?.toTitleParts() }
 
+  var synopsisToggleable by remember { mutableStateOf(false) }
+  var synopsisExpanded by remember { mutableStateOf(false) }
+  val synopsisIsEmpty = remember(book?.synopsis) { book?.synopsis.orEmpty().isBlank() }
+
+  val tagsExpanded = remember(synopsisExpanded, synopsisToggleable, synopsisIsEmpty) {
+    synopsisIsEmpty || (synopsisToggleable && synopsisExpanded)
+  }
+
   Surface(
     modifier = modifier,
     shape = ModalBottomSheetExtraLargeShape,
@@ -110,7 +123,28 @@ fun BookInformation(
       BookSynopsis(
         synopsis = book?.synopsis,
         containerColor = color,
-        tonalElevation = tonalElevation
+        tonalElevation = tonalElevation,
+        onSynopsisExpandedChange = { synopsisExpanded = it },
+        onSynopsisToggleableChange = { synopsisToggleable = it }
+      )
+      BookTags(
+        tags = tags,
+        contentPadding = PaddingValues(
+          start = 24.dp,
+          end = 24.dp,
+          top = if (tagsExpanded && !synopsisIsEmpty) 16.dp else 0.dp,
+          bottom = if (tagsExpanded && !synopsisIsEmpty) 24.dp else 16.dp
+        ),
+        expanded = tagsExpanded,
+        onTagClick = { tag ->
+          navigator.push {
+            SearchScreen(
+              filters = SearchFilters.Incomplete(
+                tags = listOf(tag.id)
+              )
+            )
+          }
+        }
       )
       Divider(
         modifier = Modifier.padding(
