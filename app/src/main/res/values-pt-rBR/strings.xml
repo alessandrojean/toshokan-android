@@ -40,6 +40,7 @@
   <string name="action_apply">Aplicar</string>
   <string name="action_filter">Filtrar</string>
   <string name="action_close">Fechar</string>
+  <string name="action_select_suggestion">Selecionar esta sugestão</string>
 
   <!-- Common states -->
   <string name="error_happened">Um erro aconteceu</string>

@@ -99,9 +99,7 @@ class BooksRepository @Inject constructor(
     return database.bookQueries.allTitles().asFlow().mapToList()
       .map { allTitles ->
         allTitles.groupBy { it.title.toTitleParts().title }
-          .filterValues { collection ->
-            collection.size > 1 && collection.all { collection[0].group_id == it.group_id }
-          }
+          .filterValues { collection -> collection.all { collection[0].group_id == it.group_id } }
           .map { (key, value) -> Collection(key, value.size) }
       }
       .flowOn(Dispatchers.IO)

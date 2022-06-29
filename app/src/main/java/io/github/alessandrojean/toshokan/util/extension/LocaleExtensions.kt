@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.util.extension
 
+import java.text.Normalizer
 import java.util.Locale
 
 fun String.toCountryDisplayName(locale: Locale = Locale.getDefault()): String {
@@ -45,4 +46,9 @@ fun String.toFlagEmoji(): String {
   }
 
   return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
+}
+
+fun String.removeAccents(): String {
+  return Normalizer.normalize(this, Normalizer.Form.NFD)
+    .replace("\\p{Mn}+".toRegex(), "")
 }

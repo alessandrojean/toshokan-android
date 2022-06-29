@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,7 +45,7 @@ class IsbnLookupViewModel @Inject constructor(
   private val preferencesManager: PreferencesManager
 ) : AndroidViewModel(application) {
 
-  var searchQuery by mutableStateOf("")
+  var searchQuery by mutableStateOf(TextFieldValue(""))
   var results = mutableStateListOf<LookupBookResult>()
   var progress by mutableStateOf(0f)
   var error by mutableStateOf<Throwable?>(null)
@@ -91,7 +92,7 @@ class IsbnLookupViewModel @Inject constructor(
     updateHistory()
 
     searchJob = viewModelScope.launch {
-      lookupRepository.searchByIsbn(searchQuery)
+      lookupRepository.searchByIsbn(searchQuery.text)
         .collect { searchState ->
           when (searchState) {
             is LookupResult.Loading -> {
@@ -129,11 +130,11 @@ class IsbnLookupViewModel @Inject constructor(
   }
 
   private fun updateHistory() {
-    if (!searchQuery.isValidIsbn()) {
+    if (!searchQuery.text.isValidIsbn()) {
       return
     }
 
-    val query = searchQuery.removeDashes()
+    val query = searchQuery.text.removeDashes()
     val oldHistory = preferencesManager.isbnLookupSearchHistory().get().filter { it != query }
     val newHistory = (listOf(query) + oldHistory).take(20)
 
@@ -156,6 +157,6 @@ class IsbnLookupViewModel @Inject constructor(
   }
 
   fun checkDuplicates(): Long? {
-    return booksRepository.findByCode(searchQuery.removeDashes())?.id
+    return booksRepository.findByCode(searchQuery.text.removeDashes())?.id
   }
 }

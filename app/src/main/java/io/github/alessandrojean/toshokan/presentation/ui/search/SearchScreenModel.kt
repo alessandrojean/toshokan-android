@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.search
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import cafe.adriel.voyager.hilt.ScreenModelFactory
@@ -48,12 +49,14 @@ class SearchScreenModel @AssistedInject constructor(
   sealed class State {
     object Empty : State()
     object Loading : State()
-    data class History(val history: List<String>) : State()
+    object Suggestions : State()
     data class Results(val results: List<Book>) : State()
     object NoResultsFound : State()
   }
 
   var filters by mutableStateOf(SearchFilters.Complete())
+    private set
+  var query by mutableStateOf(TextFieldValue(""))
     private set
 
   val allGroups = groupsRepository.groupsSorted
@@ -67,6 +70,7 @@ class SearchScreenModel @AssistedInject constructor(
   fun clearSearch() {
     mutableState.value = State.Empty
     filters = SearchFilters.Complete()
+    query = TextFieldValue("")
     searchJob?.cancel()
   }
 
@@ -77,6 +81,7 @@ class SearchScreenModel @AssistedInject constructor(
   private fun onFiltersChanged(newFilters: SearchFilters) {
     if (newFilters is SearchFilters.Complete) {
       filters = newFilters.copy()
+      query = TextFieldValue(newFilters.query)
       search()
     } else if (newFilters is SearchFilters.Incomplete) {
       coroutineScope.launch {
@@ -96,14 +101,22 @@ class SearchScreenModel @AssistedInject constructor(
             readAt = newFilters.readAt
           )
         }
+        query = TextFieldValue(filters.query)
 
         search()
       }
     }
   }
 
-  fun onSearchTextChanged(newQuery: String) {
-    filters = filters.copy(query = newQuery)
+  fun onSearchTextChanged(newQuery: TextFieldValue) {
+    filters = filters.copy(query = newQuery.text)
+    query = newQuery
+
+    if (newQuery.text.isNotBlank()) {
+      mutableState.value = State.Suggestions
+    } else {
+      mutableState.value = State.Empty
+    }
   }
 
   fun onIsFutureChanged(newIsFuture: Boolean?) {

@@ -10,28 +10,20 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Filter
 import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material.icons.outlined.Sort
-import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,13 +46,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
-import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
@@ -73,9 +65,9 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenI
 import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDateRangePicker
 import io.github.alessandrojean.toshokan.presentation.ui.search.components.SearchFilterChipsRow
 import io.github.alessandrojean.toshokan.presentation.ui.search.components.SearchResultsGrid
+import io.github.alessandrojean.toshokan.presentation.ui.search.components.SearchSuggestions
 import io.github.alessandrojean.toshokan.presentation.ui.search.components.SortModalBottomSheetContent
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
-import io.github.alessandrojean.toshokan.util.extension.bottomPadding
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.extension.navigationBarsWithIme
 import io.github.alessandrojean.toshokan.util.extension.plus
@@ -101,6 +93,10 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
     val allPublishers by screenModel.allPublishers.collectAsStateWithLifecycle(emptyList())
     val allStores by screenModel.allStores.collectAsStateWithLifecycle(emptyList())
     val allCollections by screenModel.allCollections.collectAsStateWithLifecycle(emptyList())
+
+    val collections by remember(allCollections) {
+      derivedStateOf { allCollections.filter { it.count > 1 } }
+    }
 
     var showGroupsPickerDialog by remember { mutableStateOf(false) }
     var showContributorsPickerDialog by remember { mutableStateOf(false) }
@@ -169,7 +165,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       visible = showCollectionsPickerDialog,
       title = stringResource(R.string.filter_collection),
       selected = screenModel.filters.collections,
-      items = allCollections,
+      items = collections,
       itemKey = { it.title },
       itemText = { it.title },
       itemTrailingIcon = {
@@ -202,6 +198,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
     }
 
     val bottomPadding = WindowInsets.navigationBarsWithIme.asPaddingValues()
+    val fabHeightPadding = PaddingValues(bottom = 76.dp)
 
     ModalBottomSheetLayout(
       sheetBackgroundColor = Color.Transparent,
@@ -234,7 +231,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
               isFuture = screenModel.filters.isFuture,
               favoritesOnly = screenModel.filters.favoritesOnly,
               collectionsSelected = screenModel.filters.collections.isNotEmpty(),
-              showCollections = allCollections.isNotEmpty(),
+              showCollections = collections.isNotEmpty(),
               groupsSelected = screenModel.filters.groups.isNotEmpty(),
               showGroups = allGroups.isNotEmpty(),
               contributorsSelected = screenModel.filters.contributors.isNotEmpty(),
@@ -291,12 +288,14 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
         topBar = {
           SearchTopAppBar(
             scrollBehavior = scrollBehavior,
-            backgroundColor = navigationBarColor,
-            searchText = screenModel.filters.query,
+            containerColor = navigationBarColor,
+            searchText = screenModel.query,
             placeholderText = stringResource(R.string.library_search_placeholder),
             shouldRequestFocus = state !is SearchScreenModel.State.Results && filters == null,
             onNavigationClick = { navigator.pop() },
-            onClearClick = { screenModel.clearSearch() },
+            onClearClick = {
+              screenModel.clearSearch()
+            },
             onSearchTextChanged = { screenModel.onSearchTextChanged(it) },
             onSearchAction = { screenModel.search() },
             bottomContent = {
@@ -322,20 +321,19 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
           )
         },
         content = { innerPadding ->
-          val padding = innerPadding + bottomPadding + PaddingValues(bottom = 76.dp)
+          val padding = innerPadding + bottomPadding
 
           Crossfade(
             modifier = Modifier.fillMaxSize(),
             targetState = state
           ) { state ->
             when (state) {
-              SearchScreenModel.State.Empty,
-              is SearchScreenModel.State.History -> {
+              SearchScreenModel.State.Empty -> {
                 NoItemsFound(
                   modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                  icon = Icons.Outlined.History
+                  icon = Icons.Outlined.Search
                 )
               }
               SearchScreenModel.State.Loading -> {
@@ -343,6 +341,24 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
                   modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                )
+              }
+              SearchScreenModel.State.Suggestions -> {
+                SearchSuggestions(
+                  modifier = Modifier.fillMaxSize(),
+                  contentPadding = padding + fabHeightPadding,
+                  query = screenModel.filters.query.trim(),
+                  suggestions = remember(allCollections) {
+                    allCollections.map { it.title }
+                  },
+                  onSuggestionClick = {
+                    focusManager.clearFocus()
+                    screenModel.onSearchTextChanged(TextFieldValue(it, TextRange(it.length)))
+                    screenModel.search()
+                  },
+                  onSuggestionSelectClick = {
+                    screenModel.onSearchTextChanged(TextFieldValue(it, TextRange(it.length)))
+                  }
                 )
               }
               SearchScreenModel.State.NoResultsFound -> {
@@ -357,7 +373,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
               is SearchScreenModel.State.Results -> {
                 SearchResultsGrid(
                   modifier = Modifier.fillMaxSize(),
-                  contentPadding = padding + PaddingValues(all = 4.dp),
+                  contentPadding = padding + fabHeightPadding + PaddingValues(all = 4.dp),
                   state = gridState,
                   results = state.results,
                   onResultClick = {

@@ -34,8 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffect
@@ -79,16 +82,17 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
 
     var showDuplicateDialog by remember { mutableStateOf(false) }
     var duplicateId by remember { mutableStateOf<Long?>(null) }
+    val focusManager = LocalFocusManager.current
 
     LifecycleEffect(
       onStarted = {
         if (
           !isbn.isNullOrBlank() &&
           isbn.isValidIsbn() &&
-          isbnLookupViewModel.searchQuery != isbn &&
+          isbnLookupViewModel.searchQuery.text != isbn &&
           isbnLookupViewModel.results.isEmpty()
         ) {
-          isbnLookupViewModel.searchQuery = isbn
+          isbnLookupViewModel.searchQuery = TextFieldValue(isbn, TextRange(isbn.length))
           isbnLookupViewModel.search()
           isbnLookupViewModel.checkDuplicates()?.let {
             duplicateId = it
@@ -131,7 +135,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
       modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
         SearchTopAppBar(
-          backgroundColor = topAppBarBackground,
+          containerColor = topAppBarBackground,
           searchText = isbnLookupViewModel.searchQuery,
           placeholderText = stringResource(R.string.isbn_search_placeholder),
           scrollBehavior = scrollBehavior,
@@ -139,7 +143,7 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
           shouldRequestFocus = isbn.isNullOrBlank() || !isbn.isValidIsbn(),
           onNavigationClick = { navigator.pop() },
           onClearClick = {
-            isbnLookupViewModel.searchQuery = ""
+            isbnLookupViewModel.searchQuery = TextFieldValue("")
             isbnLookupViewModel.state = if (history.isNotEmpty()) {
               IsbnLookupState.HISTORY
             } else {
@@ -208,7 +212,8 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
                   bottom = innerPadding.bottom + WindowInsets.navigationBarsWithIme.bottomPadding
                 ),
                 onClick = {
-                  isbnLookupViewModel.searchQuery = it
+                  focusManager.clearFocus()
+                  isbnLookupViewModel.searchQuery = TextFieldValue(it, TextRange(it.length))
                   isbnLookupViewModel.search()
                 },
                 onRemoveClick = {
