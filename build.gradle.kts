@@ -3,7 +3,7 @@
 buildscript {
   extra.apply {
     set("compose_version", "1.2.0-rc02")
-    set("kotlin_version", "1.6.21")
+    set("kotlin_version", "1.7.0")
     set("coroutines_version", "1.6.3")
     set("hilt_version", "2.42")
     set("sqldelight_version", "1.5.3")

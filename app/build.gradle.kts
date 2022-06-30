@@ -4,7 +4,7 @@ plugins {
   kotlin("plugin.parcelize")
   kotlin("kapt")
   id("dagger.hilt.android.plugin")
-  kotlin("plugin.serialization") version "1.6.10"
+  kotlin("plugin.serialization") version "1.6.21"
   id("com.squareup.sqldelight")
   id("com.mikepenz.aboutlibraries.plugin")
 }
@@ -107,7 +107,8 @@ android {
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion = rootProject.extra["compose_version"] as String?
+    // https://android-developers.googleblog.com/2022/06/independent-versioning-of-Jetpack-Compose-libraries.html
+    kotlinCompilerExtensionVersion = "1.2.0"
   }
 
   packagingOptions {
@@ -144,9 +145,10 @@ dependencies {
   androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 
   // Compose
+  // https://android-developers.googleblog.com/2022/06/independent-versioning-of-Jetpack-Compose-libraries.html
   val composeVersion = rootProject.extra["compose_version"]
   implementation("androidx.activity:activity-compose:1.6.0-alpha05")
-  implementation("androidx.compose.ui:ui:$composeVersion")
+  implementation("androidx.compose.ui:ui:1.2.0-rc03")
   implementation("androidx.compose.material3:material3:1.0.0-alpha13")
   implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
   implementation("androidx.compose.material:material-icons-extended:$composeVersion")
