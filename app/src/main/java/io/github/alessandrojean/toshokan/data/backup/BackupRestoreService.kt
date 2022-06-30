@@ -24,7 +24,6 @@ import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.data.backup.AbstractBackupRestorer.SheetRestoreException
 import io.github.alessandrojean.toshokan.data.notification.Notifications
 import io.github.alessandrojean.toshokan.util.extension.acquireWakeLock
 import io.github.alessandrojean.toshokan.util.extension.isServiceRunning

@@ -25,13 +25,10 @@ import io.github.alessandrojean.toshokan.service.link.LinkCategory
 import io.github.alessandrojean.toshokan.service.link.LinkRepository
 import io.github.alessandrojean.toshokan.util.extension.toLocaleCurrencyString
 import io.github.alessandrojean.toshokan.util.extension.toShareIntent
-import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.extension.toast
 import io.github.alessandrojean.toshokan.util.storage.DiskUtil
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 class BookScreenModel @AssistedInject constructor(

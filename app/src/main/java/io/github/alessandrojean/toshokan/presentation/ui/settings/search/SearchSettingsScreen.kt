@@ -44,7 +44,7 @@ class SearchSettingsScreen : AndroidScreen() {
       Provider.values().sortedWith(compareBy(collator) { context.getString(it.title) })
     }
 
-    val disabledLookupProviders by viewModel.disabledLookupProviders.asFlow()
+    val disabledLookupProviders by viewModel.disabledLookupProvidersFlow
       .collectAsStateWithLifecycle(initialValue = emptySet())
 
     val actionOpenInBrowser = stringResource(R.string.action_open_in_browser)

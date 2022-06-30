@@ -12,10 +12,11 @@ class AdvancedSettingsViewModel @Inject constructor(
   preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-  val verboseLogging = preferencesManager.verboseLogging()
+  private val verboseLogging = preferencesManager.verboseLogging()
+  val verboseLoggingFlow = verboseLogging.asFlow()
 
   fun onVerboseLoggingChanged(newValue: Boolean) = viewModelScope.launch {
-    verboseLogging.setAndCommit(newValue)
+    verboseLogging.edit(newValue)
   }
 
 }

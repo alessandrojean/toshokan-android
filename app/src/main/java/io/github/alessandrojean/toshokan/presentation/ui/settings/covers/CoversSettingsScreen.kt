@@ -44,7 +44,7 @@ class CoversSettingsScreen : AndroidScreen() {
       CoverProviderWebsite.values().sortedWith(compareBy(collator) { context.getString(it.title) })
     }
 
-    val disabledCoverProviders by viewModel.disabledCoverProviders.asFlow()
+    val disabledCoverProviders by viewModel.disabledCoverProvidersFlow
       .collectAsStateWithLifecycle(initialValue = emptySet())
 
     val actionOpenInBrowser = stringResource(R.string.action_open_in_browser)

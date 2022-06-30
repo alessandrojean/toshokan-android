@@ -15,7 +15,7 @@ import io.github.alessandrojean.toshokan.data.coil.BookCoverFetcher
 import io.github.alessandrojean.toshokan.data.coil.BookCoverKeyer
 import io.github.alessandrojean.toshokan.data.notification.Notifications
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
-import io.github.alessandrojean.toshokan.util.extension.asImmediateFlow
+import io.github.alessandrojean.toshokan.data.preference.Theme
 import kotlinx.coroutines.flow.launchIn
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
@@ -43,12 +43,12 @@ class ToshokanApp : Application(), ImageLoaderFactory {
     setupNotificationChannels()
 
     preferences.theme()
-      .asImmediateFlow {
+      .asImmediateObjectFlow {
         AppCompatDelegate.setDefaultNightMode(
           when (it) {
-            PreferencesManager.Theme.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-            PreferencesManager.Theme.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-            PreferencesManager.Theme.FOLLOW_SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            Theme.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+            Theme.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+            Theme.FOLLOW_SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
           }
         )
       }

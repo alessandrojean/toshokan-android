@@ -38,9 +38,7 @@ import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.launch
-import logcat.logcat
 import java.util.Date
-import java.util.Locale
 
 class ManageBookScreenModel @AssistedInject constructor(
   private val booksRepository: BooksRepository,
@@ -69,6 +67,8 @@ class ManageBookScreenModel @AssistedInject constructor(
     EDITING
   }
 
+  val currency = preferencesManager.currency().getObject()
+
   var id by mutableStateOf<Long?>(null)
   var code by mutableStateOf("")
   var title by mutableStateOf("")
@@ -80,9 +80,9 @@ class ManageBookScreenModel @AssistedInject constructor(
   var store by mutableStateOf<Store?>(null)
   var groupText by mutableStateOf("")
   var group by mutableStateOf<BookGroup?>(null)
-  var labelPriceCurrency by mutableStateOf<Currency>(preferencesManager.currency().get())
+  var labelPriceCurrency by mutableStateOf<Currency>(currency)
   var labelPriceValue by mutableStateOf("")
-  var paidPriceCurrency by mutableStateOf<Currency>(preferencesManager.currency().get())
+  var paidPriceCurrency by mutableStateOf<Currency>(currency)
   var paidPriceValue by mutableStateOf("")
   var boughtAt by mutableStateOf<Long?>(Date().time)
   var isFuture by mutableStateOf(false)

@@ -23,11 +23,9 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.fade
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.material.placeholder
 import io.github.alessandrojean.toshokan.presentation.extensions.selection
-import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

@@ -12,10 +12,11 @@ class LibrarySettingsViewModel @Inject constructor(
   preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-  val showBookNavigation = preferencesManager.showBookNavigation()
+  private val showBookNavigation = preferencesManager.showBookNavigation()
+  val showBookNavigationFlow = showBookNavigation.asFlow()
 
   fun onShowBookNavigationChanged(newValue: Boolean) = viewModelScope.launch {
-    showBookNavigation.setAndCommit(newValue)
+    showBookNavigation.edit(newValue)
   }
 
 }

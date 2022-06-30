@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDatePicker
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
-import io.github.alessandrojean.toshokan.util.extension.toLocalEpochMilli
 
 @Composable
 fun OutlinedDateField(

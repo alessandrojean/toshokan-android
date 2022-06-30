@@ -7,13 +7,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.data.adapter.BookCreditRoleAdapter
 import io.github.alessandrojean.toshokan.data.adapter.CurrencyAdapter
+import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.BookCredit
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import javax.inject.Singleton
 
 @Module

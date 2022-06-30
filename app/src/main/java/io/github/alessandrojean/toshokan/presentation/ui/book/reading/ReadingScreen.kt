@@ -61,7 +61,6 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.google.android.material.datepicker.MaterialDatePicker
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Reading
 import io.github.alessandrojean.toshokan.presentation.extensions.selection
@@ -74,7 +73,6 @@ import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetE
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.extension.currentTime
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
-import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
 import kotlinx.coroutines.launch
 
 class ReadingScreen(val bookId: Long) : AndroidScreen() {

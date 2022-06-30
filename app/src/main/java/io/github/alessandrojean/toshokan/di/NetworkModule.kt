@@ -6,7 +6,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.alessandrojean.toshokan.BuildConfig
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cache.HttpCache

@@ -96,7 +96,9 @@ android {
       "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
       "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
       "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi",
-      "-opt-in=coil.annotation.ExperimentalCoilApi"
+      "-opt-in=coil.annotation.ExperimentalCoilApi",
+      "-opt-in=com.russhwolf.settings.ExperimentalSettingsApi",
+      "-opt-in=com.russhwolf.settings.ExperimentalSettingsImplementation"
     )
   }
 
@@ -180,8 +182,7 @@ dependencies {
   implementation("androidx.camera:camera-view:$cameraxVersion")
 
   // Preferences
-  implementation("androidx.preference:preference-ktx:1.2.0")
-  implementation("com.fredporciuncula:flow-preferences:1.7.0")
+  implementation("androidx.datastore:datastore-preferences:1.0.0")
 
   // Palette
   implementation("androidx.palette:palette-ktx:1.0.0")

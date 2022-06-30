@@ -2,13 +2,9 @@ package io.github.alessandrojean.toshokan.data.preference
 
 import android.icu.util.Currency
 import android.os.Build
-import androidx.annotation.StringRes
-import com.fredporciuncula.flow.preferences.FlowSharedPreferences
-import com.fredporciuncula.flow.preferences.Serializer
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import io.github.alessandrojean.toshokan.BuildConfig
-import io.github.alessandrojean.toshokan.R
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import java.util.Locale
 import javax.inject.Inject
@@ -16,59 +12,46 @@ import javax.inject.Singleton
 
 @Singleton
 class PreferencesManager @Inject constructor(
-  private val flowPrefs: FlowSharedPreferences,
-  private val json: Json
+  private val dataStore: DataStore<Preferences>
 ) {
 
-  fun isbnLookupSearchHistory() = flowPrefs.getObject(
-    PreferenceKeys.isbnLookupSearchHistory,
-    serializer = JsonSerializer<List<String>>(json, serializer()),
+  fun isbnLookupSearchHistory() = dataStore.getObject(
+    serializer = DataStoreJsonSerializer<List<String>>(serializer()),
+    key = PreferenceKeys.isbnLookupSearchHistory,
     defaultValue = emptyList()
   )
 
-  fun showBookNavigation() = flowPrefs.getBoolean(
-    PreferenceKeys.showBookNavigation,
+  fun showBookNavigation() = dataStore.getBoolean(
+    key = PreferenceKeys.showBookNavigation,
     defaultValue = true
   )
 
-  fun disabledLookupProviders() = flowPrefs.getStringSet(
-    PreferenceKeys.disabledLookupProviders,
+  fun disabledLookupProviders() = dataStore.getStringSet(
+    key = PreferenceKeys.disabledLookupProviders,
     defaultValue = emptySet()
   )
 
-  fun disabledCoverProviders() = flowPrefs.getStringSet(
-    PreferenceKeys.disabledCoverProviders,
+  fun disabledCoverProviders() = dataStore.getStringSet(
+    key = PreferenceKeys.disabledCoverProviders,
     defaultValue = emptySet()
   )
 
-  fun verboseLogging() = flowPrefs.getBoolean(
-    PreferenceKeys.verboseLogging,
+  fun verboseLogging() = dataStore.getBoolean(
+    key = PreferenceKeys.verboseLogging,
     defaultValue = BuildConfig.FLAVOR == "dev"
   )
 
-  fun currency() = flowPrefs.getObject(
-    PreferenceKeys.currency,
-    serializer = CurrencySerializer(),
+  fun currency() = dataStore.getObject(
+    key = PreferenceKeys.currency,
+    serializer = object : DataStoreObjectSerializer<Currency> {
+      override fun serialize(value: Currency): String = value.currencyCode
+      override fun deserialize(encoded: String): Currency = Currency.getInstance(encoded)
+    },
     defaultValue = Currency.getInstance(Locale.getDefault())
   )
 
-  enum class Theme(@StringRes val title: Int) {
-    FOLLOW_SYSTEM(R.string.pref_theme_follow_system),
-    DARK(R.string.pref_theme_dark),
-    LIGHT(R.string.pref_theme_light);
-
-    companion object {
-      val themes: List<Theme>
-        get () = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          values().toList()
-        } else {
-          listOf(DARK, LIGHT)
-        }
-    }
-  }
-
-  fun theme() = flowPrefs.getEnum(
-    PreferenceKeys.theme,
+  fun theme() = dataStore.getEnum(
+    key = PreferenceKeys.theme,
     defaultValue = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       Theme.FOLLOW_SYSTEM
     } else {

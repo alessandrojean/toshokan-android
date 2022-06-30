@@ -11,7 +11,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.BuildConfig
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.data.preference.PreferenceKeys
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsListScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SwitchPreference
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
@@ -25,14 +24,14 @@ class AdvancedSettingsScreen : AndroidScreen() {
     val navigator = LocalNavigator.currentOrThrow
     val activity = LocalContext.current as? AppCompatActivity
 
-    val verboseLogging by viewModel.verboseLogging.asFlow()
+    val verboseLogging by viewModel.verboseLoggingFlow
       .collectAsStateWithLifecycle(initialValue = BuildConfig.DEBUG)
 
     SettingsListScaffold(
       title = stringResource(R.string.settings_advanced),
       onNavigationClick = { navigator.pop() }
     ) {
-      item(PreferenceKeys.showBookNavigation) {
+      item("verbose_logging") {
         SwitchPreference(
           title = stringResource(R.string.pref_verbose_logging),
           summary = stringResource(R.string.pref_verbose_logging_summary),

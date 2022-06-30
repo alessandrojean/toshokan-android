@@ -27,8 +27,6 @@ import coil.compose.AsyncImagePainter
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import io.github.alessandrojean.toshokan.util.extension.bottom
-import io.github.alessandrojean.toshokan.util.extension.end
-import io.github.alessandrojean.toshokan.util.extension.start
 import io.github.alessandrojean.toshokan.util.extension.top
 
 @Composable

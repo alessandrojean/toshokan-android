@@ -1,19 +1,23 @@
 package io.github.alessandrojean.toshokan.data.preference
 
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+
 object PreferenceKeys {
 
-  const val isbnLookupSearchHistory = "isbn_lookup_search_history_v2"
+  val isbnLookupSearchHistory = stringPreferencesKey("isbn_lookup_search_history_v2")
 
-  const val theme = "theme"
+  val theme = stringPreferencesKey("theme")
 
-  const val currency = "currency"
+  val currency = stringPreferencesKey("currency")
 
-  const val showBookNavigation = "show_book_navigation"
+  val showBookNavigation = booleanPreferencesKey("show_book_navigation")
 
-  const val disabledLookupProviders = "disabled_lookup_providers"
+  val disabledLookupProviders = stringSetPreferencesKey("disabled_lookup_providers")
 
-  const val disabledCoverProviders = "disabled_cover_providers"
+  val disabledCoverProviders = stringSetPreferencesKey("disabled_cover_providers")
 
-  const val verboseLogging = "verbose_logging"
+  val verboseLogging = booleanPreferencesKey("verbose_logging")
 
 }

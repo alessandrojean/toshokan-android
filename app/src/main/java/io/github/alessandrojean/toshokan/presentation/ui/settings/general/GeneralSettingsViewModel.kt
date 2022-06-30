@@ -5,24 +5,27 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
-import io.github.alessandrojean.toshokan.data.preference.PreferencesManager.Theme
+import io.github.alessandrojean.toshokan.data.preference.Theme
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class GeneralSettingsViewModel @Inject constructor(
-  private val preferencesManager: PreferencesManager
+  preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-  val theme = preferencesManager.theme().asFlow()
-  val currency = preferencesManager.currency().asFlow()
+  private val theme = preferencesManager.theme()
+  val themeFlow = theme.asObjectFlow()
+
+  private val currency = preferencesManager.currency()
+  val currencyFlow = currency.asObjectFlow()
 
   fun onCurrencyChanged(newValue: Currency) = viewModelScope.launch {
-    preferencesManager.currency().setAndCommit(newValue)
+    currency.editObject(newValue)
   }
 
   fun onThemeChanged(newValue: Theme) = viewModelScope.launch {
-    preferencesManager.theme().setAndCommit(newValue)
+    theme.editObject(newValue)
   }
 
 }

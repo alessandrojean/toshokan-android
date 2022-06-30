@@ -20,11 +20,7 @@ import io.github.alessandrojean.toshokan.util.observeConnectivityAsFlow
 import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 enum class IsbnLookupState {
@@ -50,7 +46,9 @@ class IsbnLookupViewModel @Inject constructor(
   var progress by mutableStateOf(0f)
   var error by mutableStateOf<Throwable?>(null)
   var state by mutableStateOf(IsbnLookupState.EMPTY)
-  val history = preferencesManager.isbnLookupSearchHistory().asFlow()
+
+  private val history = preferencesManager.isbnLookupSearchHistory()
+  val historyFlow = history.asObjectFlow()
 
   private val context
     get() = getApplication<Application>()
@@ -135,20 +133,19 @@ class IsbnLookupViewModel @Inject constructor(
     }
 
     val query = searchQuery.text.removeDashes()
-    val oldHistory = preferencesManager.isbnLookupSearchHistory().get().filter { it != query }
+    val oldHistory = history.getObject().filter { it != query }
     val newHistory = (listOf(query) + oldHistory).take(20)
 
     viewModelScope.launch {
-      preferencesManager.isbnLookupSearchHistory().setAndCommit(newHistory)
+      history.editObject(newHistory)
     }
   }
 
   fun removeHistoryItem(item: String) {
-    val newHistory = preferencesManager.isbnLookupSearchHistory().get().filter { it != item }
+    val newHistory = preferencesManager.isbnLookupSearchHistory().getObject().filter { it != item }
 
     viewModelScope.launch {
-      preferencesManager.isbnLookupSearchHistory()
-        .setAndCommit(newHistory)
+      history.editObject(newHistory)
 
       if (newHistory.isEmpty()) {
         state = IsbnLookupState.EMPTY

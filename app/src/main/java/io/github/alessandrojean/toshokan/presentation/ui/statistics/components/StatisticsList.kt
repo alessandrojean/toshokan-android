@@ -16,17 +16,13 @@ import androidx.compose.material.icons.outlined.Paid
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.text.buildSpannedString
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.PeriodStatistics
 import io.github.alessandrojean.toshokan.database.data.Statistics

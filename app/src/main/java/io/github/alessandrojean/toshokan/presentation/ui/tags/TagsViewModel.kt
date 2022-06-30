@@ -3,9 +3,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.tags
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupMode
 import io.github.alessandrojean.toshokan.presentation.ui.tags.manage.ManageTagMode
-import io.github.alessandrojean.toshokan.repository.GroupsRepository
 import io.github.alessandrojean.toshokan.repository.TagsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -41,9 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookContributor
-import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
-import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 
 @Composable
 fun BookContributors(

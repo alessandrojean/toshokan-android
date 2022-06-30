@@ -13,9 +13,10 @@ class CoversSettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
   val disabledCoverProviders = preferencesManager.disabledCoverProviders()
+  val disabledCoverProvidersFlow = disabledCoverProviders.asFlow()
 
   fun onDisabledCoverProvidersChanged(newValue: Set<String>) = viewModelScope.launch {
-    disabledCoverProviders.setAndCommit(newValue)
+    disabledCoverProviders.edit(newValue)
   }
 
 }

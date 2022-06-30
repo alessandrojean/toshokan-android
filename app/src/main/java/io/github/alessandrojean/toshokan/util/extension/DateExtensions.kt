@@ -3,7 +3,6 @@ package io.github.alessandrojean.toshokan.util.extension
 import android.content.Context
 import io.github.alessandrojean.toshokan.R
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime

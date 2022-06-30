@@ -10,7 +10,6 @@ import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.database.data.Publisher
 import io.github.alessandrojean.toshokan.database.data.Store
 import io.github.alessandrojean.toshokan.database.data.Tag
-import io.github.alessandrojean.toshokan.util.extension.toLocalCalendar
 import io.github.alessandrojean.toshokan.util.extension.toLocalEpochMilli
 import io.github.alessandrojean.toshokan.util.extension.toUtcEpochMilli
 import kotlinx.parcelize.Parcelize

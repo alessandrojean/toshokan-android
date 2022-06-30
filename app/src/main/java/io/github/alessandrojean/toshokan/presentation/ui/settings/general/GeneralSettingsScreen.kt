@@ -4,7 +4,6 @@ import android.content.Intent
 import android.icu.util.Currency
 import android.os.Build
 import android.provider.Settings
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,7 +16,7 @@ import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.data.preference.PreferencesManager.Theme
+import io.github.alessandrojean.toshokan.data.preference.Theme
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.FullScreenItemPickerDialog
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.GenericPreference
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.ListPreference
@@ -44,10 +43,10 @@ class GeneralSettingsScreen : AndroidScreen() {
     }
 
     var showCurrencyPicker by remember { mutableStateOf(false) }
-    val currency by viewModel.currency.collectAsStateWithLifecycle(
+    val currency by viewModel.currencyFlow.collectAsStateWithLifecycle(
       initialValue = Currency.getInstance(currentLocale)
     )
-    val theme by viewModel.theme.collectAsStateWithLifecycle(Theme.FOLLOW_SYSTEM)
+    val theme by viewModel.themeFlow.collectAsStateWithLifecycle(Theme.FOLLOW_SYSTEM)
 
     FullScreenItemPickerDialog(
       visible = showCurrencyPicker,

@@ -12,10 +12,11 @@ class SearchSettingsViewModel @Inject constructor(
   preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-  val disabledLookupProviders = preferencesManager.disabledLookupProviders()
+  private val disabledLookupProviders = preferencesManager.disabledLookupProviders()
+  val disabledLookupProvidersFlow = disabledLookupProviders.asFlow()
 
   fun onDisabledLookupProvidersChanged(newValue: Set<String>) = viewModelScope.launch {
-    disabledLookupProviders.setAndCommit(newValue)
+    disabledLookupProviders.edit(newValue)
   }
 
 }

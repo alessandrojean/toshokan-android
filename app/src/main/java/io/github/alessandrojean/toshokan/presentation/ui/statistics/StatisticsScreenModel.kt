@@ -30,7 +30,7 @@ class StatisticsScreenModel @Inject constructor(
     ) : State()
   }
 
-  val currency = preferencesManager.currency().get()
+  val currency = preferencesManager.currency().getObject()
 
   var showValue by mutableStateOf(false)
     private set

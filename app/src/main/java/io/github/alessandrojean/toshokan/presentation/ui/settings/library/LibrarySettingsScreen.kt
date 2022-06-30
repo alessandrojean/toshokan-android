@@ -8,7 +8,6 @@ import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.data.preference.PreferenceKeys
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsListScaffold
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SwitchPreference
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
@@ -20,14 +19,14 @@ class LibrarySettingsScreen : AndroidScreen() {
     val viewModel = getViewModel<LibrarySettingsViewModel>()
     val navigator = LocalNavigator.currentOrThrow
 
-    val showBookNavigation by viewModel.showBookNavigation.asFlow()
+    val showBookNavigation by viewModel.showBookNavigationFlow
       .collectAsStateWithLifecycle(initialValue = true)
 
     SettingsListScaffold(
       title = stringResource(R.string.settings_library),
       onNavigationClick = { navigator.pop() }
     ) {
-      item(PreferenceKeys.showBookNavigation) {
+      item("show_book_navigation") {
         SwitchPreference(
           title = stringResource(R.string.pref_show_book_navigation),
           checked = showBookNavigation,
