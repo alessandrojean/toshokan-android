@@ -59,15 +59,16 @@ class LinkRepository @Inject constructor() {
       condition = { it.code?.toIsbnInformation()?.country == "ES" },
       urlWithPlaceholder = "https://www.amazon.es/dp/$ISBN_10"
     ),
-    LinkProvider(
-      name = R.string.loja_panini,
-      category = LinkCategory.STORE,
-      condition = { book ->
-        book.code?.toIsbnInformation()?.country == "BR" &&
-          book.publisher_name.contains("Panini", ignoreCase = true)
-      },
-      urlWithPlaceholder = "https://loja.panini.com.br/panini/solucoes/busca.aspx?t=$ISBN_13"
-    ),
+    // Panini did a migration to Magento and still haven't added the ISBN to the products.
+    // LinkProvider(
+    //   name = R.string.loja_panini,
+    //   category = LinkCategory.STORE,
+    //   condition = { book ->
+    //     book.code?.toIsbnInformation()?.country == "BR" &&
+    //       book.publisher_name.contains("Panini", ignoreCase = true)
+    //   },
+    //   urlWithPlaceholder = "https://loja.panini.com.br/panini/solucoes/busca.aspx?t=$ISBN_13"
+    // ),
     LinkProvider(
       name = R.string.newpop_shop,
       category = LinkCategory.STORE,

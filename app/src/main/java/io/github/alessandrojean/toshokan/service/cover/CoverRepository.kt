@@ -2,7 +2,7 @@ package io.github.alessandrojean.toshokan.service.cover
 
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.service.cover.amazon.AmazonCoverProvider
-import io.github.alessandrojean.toshokan.service.cover.contentstuff.ContentStuffCoverProvider
+import io.github.alessandrojean.toshokan.service.cover.magento.MagentoCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.oembed.OembedCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.urlreplacer.UrlReplacerCoverProvider
 import io.github.alessandrojean.toshokan.service.cover.wordpress.WordPressCoverProvider
@@ -27,7 +27,7 @@ interface CoverRepository {
 @Singleton
 class CoverRepositoryImpl @Inject constructor(
   private val amazonCoverProvider: AmazonCoverProvider,
-  contentStuffCoverProvider: ContentStuffCoverProvider.Factory,
+  magentoCoverProvider: MagentoCoverProvider.Factory,
   oembedCoverProviderFactory: OembedCoverProvider.Factory,
   urlReplacerCoverProviderFactory: UrlReplacerCoverProvider.Factory,
   wordPressCoverProviderFactory: WordPressCoverProvider.Factory,
@@ -52,13 +52,20 @@ class CoverRepositoryImpl @Inject constructor(
         "/mangas/colecao/$series/vol/$title"
       }
     ),
-    contentStuffCoverProvider.create(
+    magentoCoverProvider.create(
       website = CoverProviderWebsite.LOJA_PANINI,
       condition = { book ->
         book.code.toIsbnInformation()?.country == "BR" &&
           book.publisher.contains("panini", ignoreCase = true)
       },
-      baseUrl = "https://loja.panini.com.br/panini/solucoes"
+      baseUrl = CoverProviderWebsite.LOJA_PANINI.url,
+      createPath = { book ->
+        val (title, number) = book.title.toTitleParts()
+        val numberConverted = number?.toIntOrNull()?.toString()
+        val path = title + if (!numberConverted.isNullOrEmpty()) " vol $numberConverted" else ""
+
+        path.toSlug(Locale("pt", "BR"))
+      }
     ),
     wordPressCoverProviderFactory.create(
       website = CoverProviderWebsite.NEWPOP,

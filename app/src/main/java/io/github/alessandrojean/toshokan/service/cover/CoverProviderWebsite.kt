@@ -5,7 +5,7 @@ import io.github.alessandrojean.toshokan.R
 
 enum class CoverProviderWebsite(@StringRes val title: Int, val url: String) {
   AMAZON(R.string.amazon, "https://amazon.com"),
-  LOJA_PANINI(R.string.loja_panini, "https://loja.panini.com.br"),
+  LOJA_PANINI(R.string.loja_panini, "https://panini.com.br"),
   JBC(R.string.jbc, "https://editorajbc.com.br"),
   NEWPOP(R.string.newpop, "https://www.newpop.com.br"),
   PIPOCA_E_NANQUIM(R.string.pipoca_e_nanquim, "https://pipocaenanquim.com.br"),
