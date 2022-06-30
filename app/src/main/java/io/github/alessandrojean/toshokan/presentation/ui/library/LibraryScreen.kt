@@ -31,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -49,14 +48,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getScreenModel
@@ -74,8 +73,10 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookS
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BaseSelectionTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.EnhancedAlertDialog
 import io.github.alessandrojean.toshokan.presentation.ui.core.provider.LocalNavigationBarControl
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
+import io.github.alessandrojean.toshokan.presentation.ui.library.components.CreateBookDialog
 import io.github.alessandrojean.toshokan.presentation.ui.library.components.LibraryGrid
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.util.ConnectionState
@@ -141,7 +142,7 @@ class LibraryScreen : AndroidScreen() {
     )
 
     if (showCreateBookSheet) {
-      CreateBookSheet(
+      CreateBookDialog(
         onScanBarcodeClick = { navigator.push(BarcodeScannerScreen()) },
         onIsbnSearchClick = { navigator.push(IsbnLookupScreen()) },
         onFillManuallyClick = { navigator.push(ManageBookScreen()) },
@@ -303,116 +304,6 @@ class LibraryScreen : AndroidScreen() {
         }
       }
     )
-  }
-
-  @Composable
-  fun CreateBookSheet(
-    onScanBarcodeClick: () -> Unit,
-    onIsbnSearchClick: () -> Unit,
-    onFillManuallyClick: () -> Unit,
-    onDismiss: () -> Unit
-  ) {
-    val context = LocalContext.current
-    val hasCamera = remember { context.deviceHasCamera }
-
-    Dialog(onDismissRequest = onDismiss) {
-      Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.extraLarge,
-        tonalElevation = 6.dp,
-      ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp, bottom = 18.dp)
-        ) {
-          Text(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
-            maxLines = 1,
-            text = stringResource(R.string.create_book),
-            color =  MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineSmall
-          )
-          if (hasCamera) {
-            CreateBookSheetItem(
-              icon = {
-                Icon(
-                  painter = painterResource(R.drawable.ic_barcode_scanner_outlined),
-                  contentDescription = stringResource(R.string.action_scan_barcode),
-                  tint = MaterialTheme.colorScheme.onSurface
-                )
-              },
-              text = stringResource(R.string.action_scan_barcode),
-              onClick = {
-                onScanBarcodeClick()
-                onDismiss()
-              }
-            )
-          }
-          CreateBookSheetItem(
-            icon = Icons.Outlined.Search,
-            text = stringResource(R.string.action_search_by_isbn),
-            onClick = {
-              onIsbnSearchClick()
-              onDismiss()
-            }
-          )
-          CreateBookSheetItem(
-            icon = Icons.Outlined.EditNote,
-            text = stringResource(R.string.action_fill_manually),
-            onClick = {
-              onFillManuallyClick()
-              onDismiss()
-            }
-          )
-        }
-      }
-    }
-  }
-
-  @Composable
-  fun CreateBookSheetItem(
-    icon: ImageVector,
-    text: String,
-    onClick: () -> Unit
-  ) {
-    CreateBookSheetItem(
-      icon = {
-        Icon(
-          imageVector = icon,
-          contentDescription = text,
-          tint = MaterialTheme.colorScheme.onSurface
-        )
-      },
-      text = text,
-      onClick = onClick
-    )
-  }
-
-  @Composable
-  fun CreateBookSheetItem(
-    icon: @Composable () -> Unit,
-    text: String,
-    onClick: () -> Unit
-  ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .clickable(onClick = onClick)
-        .padding(vertical = 16.dp, horizontal = 24.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-      icon.invoke()
-      Text(
-        text = text,
-        color = MaterialTheme.colorScheme.onSurface,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-      )
-    }
   }
 
 }

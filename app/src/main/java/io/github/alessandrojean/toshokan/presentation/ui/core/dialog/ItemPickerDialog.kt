@@ -1,8 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.core.dialog
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,7 +16,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,12 +27,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import io.github.alessandrojean.toshokan.R
-import io.github.alessandrojean.toshokan.presentation.ui.theme.DialogButtonBoxPadding
-import io.github.alessandrojean.toshokan.presentation.ui.theme.DialogTitlePadding
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
-import io.github.alessandrojean.toshokan.util.extension.rememberLazyListScrollContext
+import io.github.alessandrojean.toshokan.util.extension.rememberScrollContext
 
 @Composable
 fun <T> ItemPickerDialog(
@@ -115,25 +109,19 @@ fun <T> ItemPickerDialog(
       }
     )
     val selectedState = remember { selected.toMutableStateList() }
-    val scrollContext = rememberLazyListScrollContext(listState)
+    val scrollContext = rememberScrollContext(listState)
 
-    Dialog(onDismissRequest = onDismiss) {
-      Surface(
-        modifier = Modifier.padding(vertical = 64.dp),
-        shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 6.dp
-      ) {
+    EnhancedAlertDialog(
+      onDismissRequest = onDismiss,
+      title = {
+        Text(
+          text = title,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      },
+      text = {
         Column(modifier = Modifier.fillMaxWidth()) {
-          Text(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(DialogTitlePadding),
-            maxLines = 1,
-            text = title,
-            color =  MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineSmall
-          )
           AnimatedVisibility(!scrollContext.isAllItemsVisible && !scrollContext.isTop) {
             Divider(
               modifier = Modifier.fillMaxWidth(),
@@ -171,34 +159,27 @@ fun <T> ItemPickerDialog(
               color = LocalContentColor.current.copy(alpha = DividerOpacity)
             )
           }
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(DialogButtonBoxPadding)
-          ) {
-            Row(
-              horizontalArrangement = Arrangement.End,
-              modifier = Modifier.fillMaxWidth()
-            ) {
-              TextButton(onClick = onDismiss) {
-                Text(dismissText)
-              }
-              if (role == Role.Checkbox) {
-                TextButton(
-                  enabled = selected.isNotEmpty(),
-                  onClick = {
-                    onChoose(selectedState.toList().filterNotNull())
-                    onDismiss()
-                  }
-                ) {
-                  Text(chooseText)
-                }
-              }
+        }
+      },
+      dismissButton = {
+        TextButton(onClick = onDismiss) {
+          Text(dismissText)
+        }
+      },
+      confirmButton = {
+        if (role == Role.Checkbox) {
+          TextButton(
+            enabled = selected.isNotEmpty(),
+            onClick = {
+              onChoose(selectedState.toList().filterNotNull())
+              onDismiss()
             }
+          ) {
+            Text(chooseText)
           }
         }
       }
-    }
+    )
   }
 }
 
@@ -239,6 +220,7 @@ fun ItemOption(
         .weight(1f),
       text = text,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
+      style = MaterialTheme.typography.bodyLarge,
       maxLines = 1,
       overflow = TextOverflow.Ellipsis
     )

@@ -1,4 +1,4 @@
-package io.github.alessandrojean.toshokan.presentation.ui.core.components
+package io.github.alessandrojean.toshokan.presentation.ui.core.dialog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,8 +34,8 @@ import kotlin.math.max
 @Composable
 fun EnhancedAlertDialog(
   onDismissRequest: () -> Unit,
-  confirmButton: @Composable () -> Unit,
   modifier: Modifier = Modifier,
+  confirmButton: @Composable (() -> Unit)? = null,
   dismissButton: @Composable (() -> Unit)? = null,
   icon: @Composable (() -> Unit)? = null,
   title: @Composable (() -> Unit)? = null,
@@ -53,15 +53,17 @@ fun EnhancedAlertDialog(
     properties = properties
   ) {
     EnhancedAlertDialogContent(
-      buttons = {
-        EnhancedAlertDialogFlowRow(
-          mainAxisSpacing = ButtonsMainAxisSpacing,
-          crossAxisSpacing = ButtonsCrossAxisSpacing
-        ) {
-          dismissButton?.invoke()
-          confirmButton()
+      buttons = if (dismissButton != null || confirmButton != null) {
+        {
+          EnhancedAlertDialogFlowRow(
+            mainAxisSpacing = ButtonsMainAxisSpacing,
+            crossAxisSpacing = ButtonsCrossAxisSpacing
+          ) {
+            dismissButton?.invoke()
+            confirmButton?.invoke()
+          }
         }
-      },
+      } else null,
       modifier = modifier,
       icon = icon,
       title = title,
@@ -86,8 +88,8 @@ private val ButtonsCrossAxisSpacing = 12.dp
 
 @Composable
 fun EnhancedAlertDialogContent(
-  buttons: @Composable () -> Unit,
   modifier: Modifier = Modifier,
+  buttons: @Composable (() -> Unit)? = null,
   icon: (@Composable () -> Unit)?,
   title: (@Composable () -> Unit)?,
   text: @Composable (() -> Unit)?,
@@ -149,7 +151,7 @@ fun EnhancedAlertDialogContent(
             Box(
               Modifier
                 .weight(weight = 1f, fill = false)
-                .padding(TextPadding)
+                .padding(if (buttons != null) TextPadding else PaddingValues(bottom = 8.dp))
                 .align(Alignment.Start)
             ) {
               text()
@@ -157,14 +159,16 @@ fun EnhancedAlertDialogContent(
           }
         }
       }
-      Box(
-        modifier = Modifier
-          .align(Alignment.End)
-          .padding(start = DialogPadding.start, end = DialogPadding.end)
-      ) {
-        CompositionLocalProvider(LocalContentColor provides buttonContentColor) {
-          val textStyle = MaterialTheme.typography.labelLarge
-          ProvideTextStyle(value = textStyle, content = buttons)
+      if (buttons != null) {
+        Box(
+          modifier = Modifier
+            .align(Alignment.End)
+            .padding(start = DialogPadding.start, end = DialogPadding.end)
+        ) {
+          CompositionLocalProvider(LocalContentColor provides buttonContentColor) {
+            val textStyle = MaterialTheme.typography.labelLarge
+            ProvideTextStyle(value = textStyle, content = buttons)
+          }
         }
       }
     }

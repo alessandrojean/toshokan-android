@@ -22,8 +22,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Tag
-import io.github.alessandrojean.toshokan.presentation.ui.core.components.DialogHorizontalPadding
-import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedAlertDialog
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.DialogHorizontalPadding
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.EnhancedAlertDialog
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.ItemOption
 import kotlinx.coroutines.android.awaitFrame
 

@@ -1,15 +1,17 @@
 package io.github.alessandrojean.toshokan.presentation.ui.more.about
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,8 +34,11 @@ import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.util.htmlReadyLicenseContent
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.EnhancedAlertDialog
 import io.github.alessandrojean.toshokan.presentation.ui.settings.components.SettingsScaffold
+import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.extension.plus
+import io.github.alessandrojean.toshokan.util.extension.rememberScrollContext
 
 class OpenSourceLicensesScreen : AndroidScreen() {
 
@@ -78,10 +83,13 @@ class OpenSourceLicensesScreen : AndroidScreen() {
     library: Library?,
     onDismiss: () -> Unit
   ) {
-    if (library != null) {
-      val scrollState = rememberScrollState()
+    val licenseText = library?.licenses?.firstOrNull()?.htmlReadyLicenseContent.orEmpty()
 
-      AlertDialog(
+    if (library != null && licenseText.isNotEmpty()) {
+      val scrollState = rememberScrollState()
+      val scrollContext = rememberScrollContext(scrollState)
+
+      EnhancedAlertDialog(
         modifier = Modifier.padding(vertical = 16.dp),
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -93,11 +101,30 @@ class OpenSourceLicensesScreen : AndroidScreen() {
           Text(library.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
         text = {
-          Column(modifier = Modifier.verticalScroll(scrollState)) {
-            HtmlText(
-              html = library.licenses.firstOrNull()?.htmlReadyLicenseContent.orEmpty(),
-              color = LocalContentColor.current,
-            )
+          Column(modifier = Modifier.fillMaxWidth()) {
+            AnimatedVisibility(!scrollContext.isTop) {
+              Divider(
+                modifier = Modifier.fillMaxWidth(),
+                color = LocalContentColor.current.copy(alpha = DividerOpacity)
+              )
+            }
+            Column(
+              modifier = Modifier
+                .verticalScroll(scrollState)
+                .weight(1f)
+            ) {
+              HtmlText(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                html = licenseText,
+                color = LocalContentColor.current,
+              )
+            }
+            AnimatedVisibility(!scrollContext.isBottom) {
+              Divider(
+                modifier = Modifier.fillMaxWidth(),
+                color = LocalContentColor.current.copy(alpha = DividerOpacity)
+              )
+            }
           }
         }
       )

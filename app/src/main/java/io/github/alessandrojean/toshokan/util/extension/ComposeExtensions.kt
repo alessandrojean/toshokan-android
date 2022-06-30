@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.util.extension
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -102,20 +103,35 @@ val LazyListState.isFirstItemVisible: Boolean
 val LazyListState.isAllItemsVisible: Boolean
   get () = layoutInfo.visibleItemsInfo.size == layoutInfo.totalItemsCount
 
-data class LazyListScrollContext(
+data class ScrollContext(
   val isTop: Boolean,
   val isBottom: Boolean,
   val isAllItemsVisible: Boolean
 )
 
 @Composable
-fun rememberLazyListScrollContext(listState: LazyListState): LazyListScrollContext {
+fun rememberScrollContext(listState: LazyListState): ScrollContext {
   val scrollContext by remember {
     derivedStateOf {
-      LazyListScrollContext(
+      ScrollContext(
         isTop = listState.isFirstItemVisible,
         isBottom = listState.isLastItemVisible,
         isAllItemsVisible = listState.isAllItemsVisible
+      )
+    }
+  }
+
+  return scrollContext
+}
+
+@Composable
+fun rememberScrollContext(scrollState: ScrollState): ScrollContext {
+  val scrollContext by remember {
+    derivedStateOf {
+      ScrollContext(
+        isTop = scrollState.value == 0,
+        isBottom = scrollState.value == scrollState.maxValue,
+        isAllItemsVisible = true
       )
     }
   }
