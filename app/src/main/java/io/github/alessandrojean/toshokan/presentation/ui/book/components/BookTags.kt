@@ -81,7 +81,7 @@ fun BookTags(
 fun TagChip(
   modifier: Modifier = Modifier,
   tag: Tag,
-  contentPadding: PaddingValues = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+  contentPadding: PaddingValues = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
   onClick: () -> Unit = {}
 ) {
   TagChip(
@@ -98,7 +98,7 @@ fun TagChip(
   modifier: Modifier = Modifier,
   name: String,
   isNsfw: Boolean = false,
-  contentPadding: PaddingValues = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+  contentPadding: PaddingValues = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
   onClick: () -> Unit = {}
 ) {
   Surface(
@@ -125,7 +125,7 @@ fun TagChip(
         modifier = Modifier.padding(contentPadding),
         text = name,
         overflow = TextOverflow.Ellipsis,
-        style = MaterialTheme.typography.bodyMedium
+        style = MaterialTheme.typography.bodySmall
       )
     }
   }
