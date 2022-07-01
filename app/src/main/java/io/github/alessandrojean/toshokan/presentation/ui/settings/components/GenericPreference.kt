@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,24 +19,17 @@ fun GenericPreference(
   enabled: Boolean = true,
   onClick: () -> Unit = {}
 ) {
-  Column(
+  ListItem(
     modifier = Modifier
       .fillMaxWidth()
       .clickable(
         enabled = enabled,
         onClick = onClick
       )
-      .padding(16.dp)
-      .then(modifier)
-  ) {
-    Text(text = title)
-
-    if (summary.orEmpty().isNotEmpty()) {
-      Text(
-        text = summary!!,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-    }
-  }
+      .then(modifier),
+    headlineText = { Text(text = title) },
+    supportingText = if (!summary.isNullOrBlank()) {
+      { Text(text = summary) }
+    } else null
+  )
 }

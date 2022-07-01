@@ -3,7 +3,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.core.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,12 +10,12 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -25,6 +24,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetLargeShape
+import io.github.alessandrojean.toshokan.util.extension.bottom
+import io.github.alessandrojean.toshokan.util.extension.end
+import io.github.alessandrojean.toshokan.util.extension.start
+import io.github.alessandrojean.toshokan.util.extension.top
 
 @Composable
 fun ModalBottomSheet(
@@ -112,20 +115,22 @@ fun ModalBottomSheetItem(
   modifier: Modifier = Modifier,
   text: String,
   icon: Painter,
-  trailingIcon: @Composable () -> Unit = {},
+  contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp),
+  trailingContent: @Composable () -> Unit = {},
   onClick: () -> Unit
 ) {
   ModalBottomSheetItem(
     modifier = modifier,
+    contentPadding = contentPadding,
     text = text,
-    leadingIcon = {
+    leadingContent = {
       Icon(
         painter = icon,
         contentDescription = text,
         tint = LocalContentColor.current
       )
     },
-    trailingIcon = trailingIcon,
+    trailingContent = trailingContent,
     onClick = onClick
   )
 }
@@ -134,31 +139,36 @@ fun ModalBottomSheetItem(
 fun ModalBottomSheetItem(
   modifier: Modifier = Modifier,
   text: String,
-  leadingIcon: @Composable (() -> Unit)? = null,
-  trailingIcon: @Composable (() -> Unit)? = null,
-  contentPadding: PaddingValues = PaddingValues(vertical = 16.dp, horizontal = 24.dp),
-  textPadding: PaddingValues = PaddingValues(
-    start = if (leadingIcon != null) 24.dp else 0.dp,
-    end = if (trailingIcon != null) 24.dp else 0.dp
-  ),
+  contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp),
+  leadingContent: @Composable (() -> Unit)? = null,
+  trailingContent: @Composable (() -> Unit)? = null,
   onClick: () -> Unit
 ) {
-  Row(
+  val padding = PaddingValues(
+    start = (contentPadding.start - 16.dp).coerceAtLeast(0.dp),
+    end = (contentPadding.end - 16.dp).coerceAtLeast(0.dp),
+    top = (contentPadding.top - 16.dp).coerceAtLeast(0.dp),
+    bottom = (contentPadding.bottom - 16.dp).coerceAtLeast(0.dp)
+  )
+
+  ListItem(
     modifier = Modifier
+      .fillMaxWidth()
       .clickable(onClick = onClick)
-      .padding(contentPadding)
+      .padding(padding)
       .then(modifier),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    leadingIcon?.let { it() }
-    Text(
-      text = text,
-      modifier = Modifier
-        .padding(textPadding)
-        .weight(1f),
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
-    )
-    trailingIcon?.let { it() }
-  }
+    leadingContent = leadingContent,
+    headlineText = {
+      Text(
+        modifier = Modifier.padding(
+          start = if (leadingContent != null) padding.start else 0.dp,
+          end = if (trailingContent != null) padding.end else 0.dp
+        ),
+        text = text,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+    },
+    trailingContent = trailingContent
+  )
 }

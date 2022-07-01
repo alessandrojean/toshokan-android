@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.settings.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -26,10 +28,10 @@ fun SwitchPreference(
   summary: String? = null,
   checked: Boolean = false,
   enabled: Boolean = true,
-  trailingContent: @Composable () -> Unit = {},
+  trailingContent: @Composable (() -> Unit)? = null,
   onCheckedChange: (Boolean) -> Unit = {}
 ) {
-  Row(
+  ListItem(
     modifier = Modifier
       .fillMaxWidth()
       .toggleable(
@@ -37,42 +39,32 @@ fun SwitchPreference(
         value = checked,
         onValueChange = { onCheckedChange.invoke(it) }
       )
-      .padding(16.dp)
       .then(modifier),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Column(modifier = Modifier.weight(1f)) {
-      Text(text = title)
+    headlineText = { Text(text = title) },
+    supportingText = if (!summary.isNullOrBlank()) {
+      { Text(text = summary) }
+    } else null,
+    trailingContent = {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        trailingContent?.invoke()
 
-      if (summary.orEmpty().isNotEmpty()) {
-        Text(
-          text = summary!!,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
+        Switch(
+          modifier = Modifier.padding(start = if (trailingContent != null) 16.dp else 8.dp),
+          checked = checked,
+          enabled = enabled,
+          thumbContent = if (checked) {
+            {
+              Icon(
+                imageVector = if (checked) Icons.Filled.Check else Icons.Outlined.Close,
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize)
+              )
+            }
+          } else null,
+          onCheckedChange = null,
         )
       }
+
     }
-
-    trailingContent.invoke()
-
-    val thumbIcon: (@Composable () -> Unit)? = if (checked) {
-      {
-        Icon(
-          imageVector = if (checked) Icons.Filled.Check else Icons.Outlined.Close,
-          contentDescription = null,
-          modifier = Modifier.size(SwitchDefaults.IconSize)
-        )
-      }
-    } else {
-      null
-    }
-
-    Switch(
-      modifier = Modifier.padding(start = 16.dp),
-      checked = checked,
-      enabled = enabled,
-      thumbContent = thumbIcon,
-      onCheckedChange = null,
-    )
-  }
+  )
 }

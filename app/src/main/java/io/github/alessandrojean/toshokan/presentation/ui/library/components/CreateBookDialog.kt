@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheetItem
 import io.github.alessandrojean.toshokan.presentation.ui.core.dialog.EnhancedAlertDialog
 import io.github.alessandrojean.toshokan.util.extension.deviceHasCamera
 
@@ -49,7 +50,7 @@ fun CreateBookDialog(
     text = {
       Column(modifier = Modifier.fillMaxWidth()) {
         if (hasCamera) {
-          CreateBookDialogItem(
+          ModalBottomSheetItem(
             icon = painterResource(R.drawable.ic_barcode_scanner_outlined),
             text = stringResource(R.string.action_scan_barcode),
             onClick = {
@@ -58,7 +59,7 @@ fun CreateBookDialog(
             }
           )
         }
-        CreateBookDialogItem(
+        ModalBottomSheetItem(
           icon = rememberVectorPainter(Icons.Outlined.Search),
           text = stringResource(R.string.action_search_by_isbn),
           onClick = {
@@ -66,7 +67,7 @@ fun CreateBookDialog(
             onDismiss()
           }
         )
-        CreateBookDialogItem(
+        ModalBottomSheetItem(
           icon = rememberVectorPainter(Icons.Outlined.EditNote),
           text = stringResource(R.string.action_fill_manually),
           onClick = {
@@ -77,33 +78,4 @@ fun CreateBookDialog(
       }
     },
   )
-}
-
-@Composable
-fun CreateBookDialogItem(
-  icon: Painter,
-  text: String,
-  onClick: () -> Unit
-) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .clickable(onClick = onClick)
-      .padding(vertical = 16.dp, horizontal = 24.dp),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(24.dp)
-  ) {
-    Icon(
-      painter = icon,
-      contentDescription = text,
-      tint = MaterialTheme.colorScheme.onSurface
-    )
-    Text(
-      text = text,
-      color = MaterialTheme.colorScheme.onSurface,
-      style = MaterialTheme.typography.bodyLarge,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
-    )
-  }
 }

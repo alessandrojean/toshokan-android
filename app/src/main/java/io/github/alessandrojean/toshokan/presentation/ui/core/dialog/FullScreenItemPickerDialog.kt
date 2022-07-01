@@ -274,7 +274,7 @@ fun <T> FullScreenItemPickerDialog(
                     text = itemText(itemOption),
                     role = role,
                     selected = itemOption in selectedState,
-                    trailingIcon = { itemTrailingIcon.invoke(itemOption) },
+                    trailingContent = { itemTrailingIcon.invoke(itemOption) },
                     onClick = {
                       if (role == Role.RadioButton) {
                         selectedState.clear()

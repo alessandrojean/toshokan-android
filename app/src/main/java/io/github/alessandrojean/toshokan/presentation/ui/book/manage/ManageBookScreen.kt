@@ -3,7 +3,6 @@ package io.github.alessandrojean.toshokan.presentation.ui.book.manage
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,7 +45,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -66,7 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -94,6 +91,9 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.OrganizationTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.TagsTab
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheet
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheetItem
+import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheetTitle
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
@@ -193,7 +193,7 @@ data class ManageBookScreen(
       sheetShape = ModalBottomSheetExtraLargeShape,
       sheetBackgroundColor = Color.Transparent,
       sheetContent = {
-        ModalBottomSheet(
+        ContributorModalBottomSheet(
           contributor = manageBookScreenModel.selectedContributor,
           onEditClick = {
             scope.launch { modalBottomSheetState.hide() }
@@ -398,92 +398,51 @@ data class ManageBookScreen(
   }
 
   @Composable
-  fun ModalBottomSheet(
+  fun ContributorModalBottomSheet(
     contributor: Contributor?,
     onEditClick: () -> Unit,
     onRemoveClick: () -> Unit
   ) {
-    Surface(
-      modifier = Modifier.fillMaxWidth(),
-      color = MaterialTheme.colorScheme.surface,
-      tonalElevation = 6.dp
+    ModalBottomSheet(
+      header = {
+        Column(modifier = Modifier.fillMaxWidth()) {
+          ModalBottomSheetTitle(
+            text = contributor?.personText.orEmpty(),
+            contentPadding = PaddingValues(top = 24.dp, start = 24.dp, end = 24.dp)
+          )
+          Text(
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
+            text = stringResource(
+              R.string.person_role,
+              stringResource(contributor?.role?.title ?: CreditRole.UNKNOWN.title)
+                .lowercase(Locale.getDefault())
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.bodyMedium.copy(
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              fontStyle = FontStyle.Italic
+            )
+          )
+        }
+      }
     ) {
-      Column(
+      ModalBottomSheetItem(
+        modifier = Modifier.fillMaxWidth(),
+        text = stringResource(R.string.action_edit_contributor),
+        icon = rememberVectorPainter(Icons.Outlined.Edit),
+        onClick = onEditClick
+      )
+      ModalBottomSheetItem(
+        modifier = Modifier.fillMaxWidth(),
+        text = stringResource(R.string.action_remove_contributor),
+        icon = rememberVectorPainter(Icons.Outlined.Delete),
+        onClick = onRemoveClick
+      )
+      Spacer(
         modifier = Modifier
           .fillMaxWidth()
-          .navigationBarsPadding()
-      ) {
-        Text(
-          modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp),
-          text = contributor?.personText.orEmpty(),
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-          style = MaterialTheme.typography.titleLarge
-        )
-        Text(
-          modifier = Modifier.padding(horizontal = 24.dp),
-          text = stringResource(
-            R.string.person_role,
-            stringResource(contributor?.role?.title ?: CreditRole.UNKNOWN.title)
-              .lowercase(Locale.getDefault())
-          ),
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-          style = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontStyle = FontStyle.Italic
-          )
-        )
-        Divider(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp, bottom = 8.dp),
-          color = LocalContentColor.current.copy(alpha = DividerOpacity)
-        )
-        ModalBottomSheetItem(
-          modifier = Modifier.fillMaxWidth(),
-          text = stringResource(R.string.action_edit_contributor),
-          icon = Icons.Outlined.Edit,
-          onClick = onEditClick
-        )
-        ModalBottomSheetItem(
-          modifier = Modifier.fillMaxWidth(),
-          text = stringResource(R.string.action_remove_contributor),
-          icon = Icons.Outlined.Delete,
-          onClick = onRemoveClick
-        )
-        Spacer(
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(8.dp)
-        )
-      }
-    }
-  }
-
-  @Composable
-  fun ModalBottomSheetItem(
-    modifier: Modifier = Modifier,
-    text: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-  ) {
-    Row(
-      modifier = Modifier
-        .clickable(onClick = onClick)
-        .padding(vertical = 16.dp, horizontal = 24.dp)
-        .then(modifier),
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Icon(
-        imageVector = icon,
-        contentDescription = text
-      )
-      Text(
-        text = text,
-        modifier = Modifier.padding(start = 24.dp),
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+          .height(8.dp)
       )
     }
   }

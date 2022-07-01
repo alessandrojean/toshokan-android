@@ -23,6 +23,8 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -125,31 +127,33 @@ fun ContributorRow(
   contributor: Contributor,
   onLongClick: () -> Unit
 ) {
-  Column(
+  ListItem(
     modifier = Modifier
+      .fillMaxWidth()
       .combinedClickable(
         onClick = { /* Do nothing */ },
         onLongClick = onLongClick
       )
-      .padding(vertical = 16.dp, horizontal = 12.dp)
-      .then(modifier)
-  ) {
-    Text(
-      text = contributor.personText,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
-    )
-    Text(
-      text = stringResource(
-        R.string.person_role,
-        stringResource(contributor.role.title).lowercase(Locale.getDefault())
-      ),
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis,
-      style = MaterialTheme.typography.bodySmall.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontStyle = FontStyle.Italic
+      .then(modifier),
+    headlineText = {
+      Text(
+        text = contributor.personText,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
       )
-    )
-  }
+    },
+    supportingText = {
+      Text(
+        text = stringResource(
+          R.string.person_role,
+          stringResource(contributor.role.title).lowercase(Locale.getDefault())
+        ),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = LocalTextStyle.current.copy(
+          fontStyle = FontStyle.Italic
+        )
+      )
+    }
+  )
 }

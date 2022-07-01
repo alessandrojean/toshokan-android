@@ -132,7 +132,7 @@ dependencies {
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
 
   // Lifecycle
-  val lifecycleVersion = "2.5.0-rc02"
+  val lifecycleVersion = "2.5.0"
   implementation("androidx.lifecycle:lifecycle-process:$lifecycleVersion")
   implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
   implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycleVersion")
@@ -149,7 +149,6 @@ dependencies {
   val composeVersion = rootProject.extra["compose_version"]
   implementation("androidx.activity:activity-compose:1.6.0-alpha05")
   implementation("androidx.compose.ui:ui:1.2.0-rc03")
-  implementation("androidx.compose.material3:material3:1.0.0-alpha13")
   implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
   implementation("androidx.compose.material:material-icons-extended:$composeVersion")
   androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
@@ -165,9 +164,10 @@ dependencies {
   // Material Design
   implementation("com.google.android.material:material:1.7.0-alpha02")
   implementation("com.google.android.material:compose-theme-adapter-3:1.0.13")
+  implementation("androidx.compose.material3:material3:1.0.0-alpha14")
 
   // Accompanist
-  val accompanistVersion = "0.24.12-rc"
+  val accompanistVersion = "0.24.13-rc"
   implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
   implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")

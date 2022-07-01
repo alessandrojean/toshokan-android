@@ -13,6 +13,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.extension.rememberScrollContext
+import io.github.alessandrojean.toshokan.util.extension.start
 
 @Composable
 fun <T> ItemPickerDialog(
@@ -186,44 +188,43 @@ fun <T> ItemPickerDialog(
 @Composable
 fun ItemOption(
   modifier: Modifier = Modifier,
-  contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+  contentPadding: PaddingValues = PaddingValues(start = 8.dp),
   text: String,
   role: Role,
   selected: Boolean,
-  trailingIcon: @Composable () -> Unit = {},
+  trailingContent: @Composable (() -> Unit)? = null,
   onClick: () -> Unit
 ) {
-  Row(
+  ListItem(
     modifier = modifier
+      .fillMaxWidth()
       .selectable(
         selected = selected,
         onClick = onClick,
         role = role
       )
       .padding(contentPadding),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    if (role == Role.RadioButton) {
-      RadioButton(
-        selected = selected,
-        onClick = null
+    leadingContent = {
+      if (role == Role.RadioButton) {
+        RadioButton(
+          selected = selected,
+          onClick = null
+        )
+      } else if (role == Role.Checkbox) {
+        Checkbox(
+          checked = selected,
+          onCheckedChange = null
+        )
+      }
+    },
+    headlineText = {
+      Text(
+        modifier = Modifier.padding(start = contentPadding.start),
+        text = text,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
       )
-    } else if (role == Role.Checkbox) {
-      Checkbox(
-        checked = selected,
-        onCheckedChange = null
-      )
-    }
-    Text(
-      modifier = Modifier
-        .padding(horizontal = 24.dp)
-        .weight(1f),
-      text = text,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-      style = MaterialTheme.typography.bodyLarge,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
-    )
-    trailingIcon.invoke()
-  }
+    },
+    trailingContent = trailingContent
+  )
 }

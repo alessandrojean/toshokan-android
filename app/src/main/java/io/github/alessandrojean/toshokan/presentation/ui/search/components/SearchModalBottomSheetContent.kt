@@ -57,8 +57,7 @@ fun SortModalBottomSheetContent(
         modifier = Modifier.fillMaxWidth(),
         text = stringResource(sortable.title),
         contentPadding = PaddingValues(horizontal = 18.dp, vertical = 16.dp),
-        textPadding = PaddingValues(start = 18.dp),
-        leadingIcon = {
+        leadingContent = {
           Box(modifier = Modifier.size(24.dp)) {
             androidx.compose.animation.AnimatedVisibility(
               visible = column == sortable,
