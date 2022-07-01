@@ -153,8 +153,8 @@ fun BookContributorRow(
       modifier = Modifier
         .clip(CircleShape)
         .background(MaterialTheme.colorScheme.surfaceVariant.withTonalElevation(6.dp))
-        .padding(8.dp)
-        .size(18.dp),
+        .padding(6.dp)
+        .size(24.dp),
       imageVector = Icons.Outlined.Person,
       contentDescription = null,
       tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -167,7 +167,6 @@ fun BookContributorRow(
       Text(
         modifier = Modifier.fillMaxWidth(),
         text = contributor.person_name,
-        style = MaterialTheme.typography.bodyMedium,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
       )

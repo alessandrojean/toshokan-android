@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.hilt.getScreenModel
@@ -190,14 +191,18 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
       title = stringResource(R.string.filter_collection),
       selected = screenModel.filters.collections,
       items = collections,
-      itemKey = { it.title },
+      itemKey = { it.hashCode() },
       itemText = { it.title },
-      itemTrailingIcon = {
-        Badge(
-          containerColor = MaterialTheme.colorScheme.primary,
-          contentColor = MaterialTheme.colorScheme.onPrimary,
-          content = { Text(it.count.toString()) }
-        )
+      itemTrailingIcon = { collection ->
+        collection.groupName?.let { groupName ->
+          Text(
+            text = groupName,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        }
       },
       onChoose = { screenModel.onCollectionsChanged(it) },
       onDismiss = { showCollectionsPickerDialog = false }
@@ -376,7 +381,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
                   contentPadding = padding + fabHeightPadding,
                   query = screenModel.filters.query.trim(),
                   suggestions = remember(allCollections) {
-                    allCollections.map { it.title }
+                    allCollections.map { it.title }.distinct()
                   },
                   onSuggestionClick = {
                     focusManager.clearFocus()

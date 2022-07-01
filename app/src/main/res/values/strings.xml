@@ -154,6 +154,7 @@
   <string name="by_period">By period</string>
   <string name="count">Count</string>
   <string name="read">Read</string>
+  <string name="pages_read">Pages read</string>
   <string name="total_expense">Total expense</string>
   <string name="total_savings">Total savings</string>
   <string name="period_expense">Period expense</string>
@@ -162,6 +163,8 @@
   <string name="period_current">This month (%s)</string>
   <string name="period_custom" translatable="false">%s ￫ %s</string>
   <string name="period_full_month_pattern">MMMM yyyy</string>
+  <string name="rankings">Rankings</string>
+  <string name="authors">Authors</string>
 
   <!-- Books -->
   <string name="information">Information</string>

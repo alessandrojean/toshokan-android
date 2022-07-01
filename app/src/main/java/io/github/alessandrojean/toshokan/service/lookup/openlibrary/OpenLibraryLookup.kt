@@ -5,6 +5,9 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
 import io.github.alessandrojean.toshokan.service.lookup.Provider
+import io.github.alessandrojean.toshokan.util.extension.getRequest
+import io.github.alessandrojean.toshokan.util.extension.headers
+import io.github.alessandrojean.toshokan.util.extension.urlWithBuilder
 import io.github.alessandrojean.toshokan.util.removeDashes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -37,15 +40,13 @@ class OpenLibraryLookup @Inject constructor (
     append(HttpHeaders.UserAgent, "Toshokan " + System.getProperty("http.agent"))
   }
 
-  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url("$baseUrl/api/books")
-    headers.appendAll(this@OpenLibraryLookup.headers)
-    url {
+  override fun searchRequest(isbn: String) = getRequest {
+    urlWithBuilder("$baseUrl/api/books") {
       parameters.append("bibkeys", "ISBN:$isbn")
       parameters.append("jscmd", "data")
       parameters.append("format", "json")
     }
+    headers(this@OpenLibraryLookup.headers)
   }
 
   override suspend fun searchParse(response: HttpResponse): List<LookupBookResult> {
@@ -66,10 +67,9 @@ class OpenLibraryLookup @Inject constructor (
     return listOf(result[bibKey]!!.toLookupBookResult(details.getOrNull()))
   }
 
-  private fun detailsRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
+  private fun detailsRequest(isbn: String) = getRequest {
     url("$baseUrl/isbn/${isbn.removeDashes()}.json")
-    headers.appendAll(this@OpenLibraryLookup.headers)
+    headers(this@OpenLibraryLookup.headers)
   }
 
   private suspend fun detailsParse(response: HttpResponse): OpenLibraryBookDetails {

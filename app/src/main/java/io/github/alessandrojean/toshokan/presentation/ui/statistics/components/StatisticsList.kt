@@ -4,14 +4,26 @@ import android.icu.util.Currency
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material.icons.outlined.Domain
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.GroupWork
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.LocalMall
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Paid
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material3.Icon
@@ -19,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -74,6 +87,10 @@ fun StatisticsList(
   val periodReads = remember(periodStatistics.read_count) {
     periodStatistics.read_count.toLocaleString()
   }
+  val (pagesRead, periodPagesRead) = remember(statistics.pages_read, periodStatistics.pages_read) {
+    statistics.pages_read?.toInt()?.toLocaleString() to
+      periodStatistics.pages_read?.toInt()?.toLocaleString()
+  }
 
   val context = LocalContext.current
   val periodSubtitle = remember(context, startPeriod, endPeriod) {
@@ -103,9 +120,11 @@ fun StatisticsList(
     modifier = Modifier
       .fillMaxSize()
       .then(modifier),
-    contentPadding = contentPadding + PaddingValues(vertical = 8.dp),
-    verticalArrangement = Arrangement.spacedBy(8.dp)
+    contentPadding = contentPadding + PaddingValues(top = 8.dp, bottom = 16.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
+    val horizontalPadding = PaddingValues(horizontal = 16.dp)
+
     item {
       StatisticHeader(
         modifier = Modifier.padding(bottom = 8.dp, start = 16.dp, end = 16.dp),
@@ -114,7 +133,7 @@ fun StatisticsList(
     }
     item("book_count") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.count),
         value = bookCount,
         icon = Icons.Outlined.Book
@@ -122,15 +141,23 @@ fun StatisticsList(
     }
     item("reading_percent") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.read),
         value = "$readingPercent%",
         icon = Icons.Outlined.Bookmarks
       )
     }
+    item("pages_read") {
+      StatisticCard(
+        contentPadding = horizontalPadding,
+        title = stringResource(R.string.pages_read),
+        value = pagesRead ?: "0",
+        icon = Icons.Outlined.MenuBook
+      )
+    }
     item("total_expense") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.total_expense),
         value = totalExpense,
         icon = Icons.Outlined.Paid,
@@ -140,7 +167,7 @@ fun StatisticsList(
     }
     item("total_savings") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.total_savings),
         value = totalSavings,
         icon = Icons.Outlined.Savings,
@@ -171,7 +198,7 @@ fun StatisticsList(
     }
     item("period_expense") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.period_expense),
         value = periodExpense,
         icon = Icons.Outlined.Paid,
@@ -181,7 +208,7 @@ fun StatisticsList(
     }
     item("period_bought") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.bought_count),
         value = periodBoughts,
         icon = Icons.Outlined.LocalMall,
@@ -190,12 +217,74 @@ fun StatisticsList(
     }
     item("period_read") {
       StatisticCard(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = horizontalPadding,
         title = stringResource(R.string.read_count),
         value = periodReads,
         icon = Icons.Outlined.Bookmarks,
         onClick = onPeriodReadClick
       )
+    }
+    item("period_pages_read") {
+      StatisticCard(
+        contentPadding = horizontalPadding,
+        title = stringResource(R.string.pages_read),
+        value = periodPagesRead ?: "0",
+        icon = Icons.Outlined.MenuBook
+      )
+    }
+    item {
+      StatisticHeader(
+        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, start = 16.dp, end = 16.dp),
+        title = stringResource(R.string.rankings)
+      )
+    }
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontalPadding),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        RankingCard(
+          modifier = Modifier.weight(1f),
+          title = stringResource(R.string.authors),
+          icon = rememberVectorPainter(Icons.Outlined.Group)
+        )
+        RankingCard(
+          modifier = Modifier.weight(1f),
+          title = stringResource(R.string.publishers),
+          icon = rememberVectorPainter(Icons.Outlined.Domain)
+        )
+        RankingCard(
+          modifier = Modifier.weight(1f),
+          title = stringResource(R.string.stores),
+          icon = rememberVectorPainter(Icons.Outlined.LocalMall)
+        )
+      }
+    }
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontalPadding),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        RankingCard(
+          modifier = Modifier.weight(1f),
+          title = stringResource(R.string.filter_collection),
+          icon = rememberVectorPainter(Icons.Outlined.CollectionsBookmark)
+        )
+        RankingCard(
+          modifier = Modifier.weight(1f),
+          title = stringResource(R.string.groups),
+          icon = rememberVectorPainter(Icons.Outlined.GroupWork)
+        )
+        RankingCard(
+          modifier = Modifier.weight(1f),
+          title = stringResource(R.string.tags),
+          icon = rememberVectorPainter(Icons.Outlined.Label)
+        )
+      }
     }
   }
 }

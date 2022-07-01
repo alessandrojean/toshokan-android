@@ -30,8 +30,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
+import io.github.alessandrojean.toshokan.util.extension.bottom
+import io.github.alessandrojean.toshokan.util.extension.end
 import io.github.alessandrojean.toshokan.util.extension.rememberScrollContext
 import io.github.alessandrojean.toshokan.util.extension.start
+import io.github.alessandrojean.toshokan.util.extension.top
 
 @Composable
 fun <T> ItemPickerDialog(
@@ -188,13 +191,20 @@ fun <T> ItemPickerDialog(
 @Composable
 fun ItemOption(
   modifier: Modifier = Modifier,
-  contentPadding: PaddingValues = PaddingValues(start = 8.dp),
+  contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp),
   text: String,
   role: Role,
   selected: Boolean,
   trailingContent: @Composable (() -> Unit)? = null,
   onClick: () -> Unit
 ) {
+  val padding = PaddingValues(
+    start = (contentPadding.start - 16.dp).coerceAtLeast(0.dp),
+    end = (contentPadding.end - 16.dp).coerceAtLeast(0.dp),
+    top = (contentPadding.top - 16.dp).coerceAtLeast(0.dp),
+    bottom = (contentPadding.bottom - 16.dp).coerceAtLeast(0.dp)
+  )
+
   ListItem(
     modifier = modifier
       .fillMaxWidth()
@@ -203,7 +213,7 @@ fun ItemOption(
         onClick = onClick,
         role = role
       )
-      .padding(contentPadding),
+      .padding(padding),
     leadingContent = {
       if (role == Role.RadioButton) {
         RadioButton(
@@ -219,7 +229,7 @@ fun ItemOption(
     },
     headlineText = {
       Text(
-        modifier = Modifier.padding(start = contentPadding.start),
+        modifier = Modifier.padding(start = padding.start),
         text = text,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis

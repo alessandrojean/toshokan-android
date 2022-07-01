@@ -96,7 +96,7 @@ class SearchScreenModel @AssistedInject constructor(
             query = newFilters.query,
             isFuture = newFilters.isFuture,
             favoritesOnly = newFilters.favoritesOnly,
-            collections = newFilters.collections.map { Collection(it) },
+            collections = newFilters.collections,
             groups = groupsRepository.findByIds(newFilters.groups),
             tags = tagsRepository.findByIds(newFilters.tags),
             publishers = publishersRepository.findByIds(newFilters.publishers),

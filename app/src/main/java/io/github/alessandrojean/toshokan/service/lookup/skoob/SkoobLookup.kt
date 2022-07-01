@@ -5,6 +5,8 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
 import io.github.alessandrojean.toshokan.service.lookup.Provider
+import io.github.alessandrojean.toshokan.util.extension.getRequest
+import io.github.alessandrojean.toshokan.util.extension.urlWithBuilder
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
@@ -30,11 +32,8 @@ class SkoobLookup @Inject constructor(
     append(HttpHeaders.UserAgent, USER_AGENT)
   }
 
-  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url("$baseUrl/book/search")
-
-    url {
+  override fun searchRequest(isbn: String) = getRequest {
+    urlWithBuilder("$baseUrl/book/search") {
       appendPathSegments(
         "term:" + isbn.replace("-", ""),
         "limit:8",

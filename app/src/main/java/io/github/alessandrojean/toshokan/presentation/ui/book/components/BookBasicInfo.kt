@@ -59,7 +59,7 @@ fun BookBasicInfo(
         .semantics { heading() }
         .placeholder(placeholder),
       text = title.ifEmpty { "Book title" },
-      style = MaterialTheme.typography.titleLarge
+      style = MaterialTheme.typography.headlineSmall
     )
     Text(
       modifier = Modifier

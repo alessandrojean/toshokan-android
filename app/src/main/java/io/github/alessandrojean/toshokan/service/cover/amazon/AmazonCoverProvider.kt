@@ -6,6 +6,7 @@ import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
+import io.github.alessandrojean.toshokan.util.extension.getRequest
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import io.github.alessandrojean.toshokan.util.toAmazonCoverUrl
 import io.github.alessandrojean.toshokan.util.toIsbn10
@@ -29,10 +30,7 @@ class AmazonCoverProvider @Inject constructor(
 
   override val baseUrl = AMAZON_IMAGES_URL
 
-  override fun findRequest(book: SimpleBookInfo): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url(book.code.toAmazonCoverUrl()!!)
-  }
+  override fun findRequest(book: SimpleBookInfo) = getRequest(book.code.toAmazonCoverUrl()!!)
 
   override suspend fun findParse(response: HttpResponse): List<BookCover.Result> {
     val bodyStream = response.body<ByteArray>().inputStream()

@@ -34,6 +34,7 @@ import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverRepository
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
+import io.github.alessandrojean.toshokan.util.extension.currentTime
 import io.github.alessandrojean.toshokan.util.extension.parseLocaleValueOrNull
 import io.github.alessandrojean.toshokan.util.extension.toLocaleString
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
@@ -80,11 +81,11 @@ class ManageBookScreenModel @AssistedInject constructor(
   var store by mutableStateOf<Store?>(null)
   var groupText by mutableStateOf("")
   var group by mutableStateOf<BookGroup?>(null)
-  var labelPriceCurrency by mutableStateOf<Currency>(currency)
+  var labelPriceCurrency by mutableStateOf(currency)
   var labelPriceValue by mutableStateOf("")
-  var paidPriceCurrency by mutableStateOf<Currency>(currency)
+  var paidPriceCurrency by mutableStateOf(currency)
   var paidPriceValue by mutableStateOf("")
-  var boughtAt by mutableStateOf<Long?>(Date().time)
+  var boughtAt by mutableStateOf<Long?>(currentTime)
   var isFuture by mutableStateOf(false)
   var cover by mutableStateOf<BookCover?>(null)
   var dimensionWidth by mutableStateOf("")

@@ -46,6 +46,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
@@ -227,25 +228,28 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             },
             onDeleteClick = { showDeleteDialog = true },
             onPaginationCollectionClick = {
-              val searchFilters = SearchFilters.Incomplete(
-                collections = listOfNotNull(resultState?.book?.title?.toTitleParts()?.title)
-              )
-              navigator.push(SearchScreen(searchFilters))
+              navigator.push {
+                val collection = Collection(
+                  title = resultState?.book?.title?.toTitleParts()?.title.orEmpty(),
+                  groupId = resultState?.book?.group_id
+                )
+                SearchScreen(
+                  filters = SearchFilters.Incomplete(
+                    collections = listOfNotNull(collection.takeIf { resultState?.book != null })
+                  )
+                )
+              }
             },
             onPaginationFirstClick = {
-//              navigator.replace(BookScreen(bookNeighbors!!.first!!.id))
               bookScreenModel.navigate(resultState!!.neighbors!!.first!!.id)
             },
             onPaginationLastClick = {
-//              navigator.replace(BookScreen(bookNeighbors!!.last!!.id))
               bookScreenModel.navigate(resultState!!.neighbors!!.last!!.id)
             },
             onPaginationPreviousClick = {
-//              navigator.replace(BookScreen(bookNeighbors!!.previous!!.id))
               bookScreenModel.navigate(resultState!!.neighbors!!.previous!!.id)
             },
             onPaginationNextClick = {
-//              navigator.replace(BookScreen(bookNeighbors!!.next!!.id))
               bookScreenModel.navigate(resultState!!.neighbors!!.next!!.id)
             },
             onFavoriteChange = { bookScreenModel.toggleFavorite() },

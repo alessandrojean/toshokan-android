@@ -5,15 +5,14 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
 import io.github.alessandrojean.toshokan.service.lookup.Provider
+import io.github.alessandrojean.toshokan.util.extension.getRequest
+import io.github.alessandrojean.toshokan.util.extension.urlWithBuilder
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import javax.inject.Inject
 
 class GoogleBooksLookup @Inject constructor (
@@ -29,11 +28,8 @@ class GoogleBooksLookup @Inject constructor (
     append(HttpHeaders.UserAgent, "Toshokan " + System.getProperty("http.agent"))
   }
 
-  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url("$baseUrl/volumes")
-
-    url {
+  override fun searchRequest(isbn: String) = getRequest {
+    urlWithBuilder("$baseUrl/volumes") {
       parameters.append("q", "isbn:" + isbn.replace("-", ""))
     }
   }

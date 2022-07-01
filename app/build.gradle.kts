@@ -97,8 +97,6 @@ android {
       "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
       "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi",
       "-opt-in=coil.annotation.ExperimentalCoilApi",
-      "-opt-in=com.russhwolf.settings.ExperimentalSettingsApi",
-      "-opt-in=com.russhwolf.settings.ExperimentalSettingsImplementation"
     )
   }
 

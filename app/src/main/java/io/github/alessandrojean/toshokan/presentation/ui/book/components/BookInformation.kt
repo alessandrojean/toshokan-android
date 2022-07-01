@@ -31,6 +31,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Tag
+import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.DateRange
 import io.github.alessandrojean.toshokan.domain.SearchFilters
@@ -232,7 +233,9 @@ fun BookInformation(
           navigator.push {
             SearchScreen(
               filters = SearchFilters.Incomplete(
-                collections = listOf(titleParts!!.title)
+                collections = listOf(
+                  Collection(title = titleParts!!.title, groupId = book!!.group_id)
+                )
               )
             )
           }

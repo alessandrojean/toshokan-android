@@ -127,6 +127,7 @@
   <string name="by_period">Por período</string>
   <string name="count">Contagem</string>
   <string name="read">Leitura</string>
+  <string name="pages_read">Páginas lidas</string>
   <string name="total_expense">Gasto total</string>
   <string name="total_savings">Economia total</string>
   <string name="period_expense">Gasto no período</string>
@@ -134,6 +135,8 @@
   <string name="read_count">Lidos</string>
   <string name="period_current">Mês atual (%s)</string>
   <string name="period_full_month_pattern">MMMM \'de\' yyyy</string>
+  <string name="rankings">Rankings</string>
+  <string name="authors">Autores</string>
 
   <!-- Books -->
   <string name="information">Informações</string>

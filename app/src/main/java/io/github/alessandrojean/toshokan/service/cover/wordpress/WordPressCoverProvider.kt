@@ -7,6 +7,9 @@ import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
+import io.github.alessandrojean.toshokan.util.extension.getRequest
+import io.github.alessandrojean.toshokan.util.extension.headers
+import io.github.alessandrojean.toshokan.util.extension.urlWithBuilder
 import io.github.alessandrojean.toshokan.util.removeDashes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -44,15 +47,12 @@ class WordPressCoverProvider @AssistedInject constructor(
     append(HttpHeaders.Accept, ContentType.Application.Json.toString())
   }
 
-  override fun findRequest(book: SimpleBookInfo): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url("$baseUrl/wp-json/wp/v2/$collection")
-    headers.appendAll(this@WordPressCoverProvider.headers)
-
-    url {
+  override fun findRequest(book: SimpleBookInfo) = getRequest {
+    urlWithBuilder("$baseUrl/wp-json/wp/v2/$collection") {
       parameters.append("_embed", "wp:featuredmedia")
       parameters.append(queryParameter, transformer(book))
     }
+    headers(this@WordPressCoverProvider.headers)
   }
 
   override suspend fun findParse(response: HttpResponse): List<BookCover.Result> {

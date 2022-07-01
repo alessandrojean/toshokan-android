@@ -122,7 +122,7 @@ fun <T> FullScreenItemPickerDialog(
   if (visible) {
     val listState = rememberLazyListState(
       initialFirstVisibleItemIndex = if (selected.isNotEmpty()) {
-        items.indexOf(selected.first())
+        items.indexOf(selected.first()).coerceAtLeast(0)
       } else {
         0
       }
@@ -270,7 +270,7 @@ fun <T> FullScreenItemPickerDialog(
                 items(filteredItems, key = itemKey) { itemOption ->
                   ItemOption(
                     modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
                     text = itemText(itemOption),
                     role = role,
                     selected = itemOption in selectedState,

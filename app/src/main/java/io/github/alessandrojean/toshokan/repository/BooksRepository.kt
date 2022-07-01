@@ -101,8 +101,18 @@ class BooksRepository @Inject constructor(
     return database.bookQueries.allTitles().asFlow().mapToList()
       .map { allTitles ->
         allTitles.groupBy { it.title.toTitleParts().title }
-          .filterValues { collection -> collection.all { collection[0].group_id == it.group_id } }
-          .map { (key, value) -> Collection(key, value.size) }
+          .flatMap { (collectionName, volumes) ->
+            volumes
+              .groupBy { it.group_id }
+              .map { (groupId, volumesByGroup) ->
+                Collection(
+                  title = collectionName,
+                  count = volumesByGroup.size,
+                  groupId = groupId,
+                  groupName = volumesByGroup[0].group_name
+                )
+              }
+          }
       }
       .flowOn(Dispatchers.IO)
   }
@@ -186,9 +196,15 @@ class BooksRepository @Inject constructor(
       .asFlow()
       .mapToList()
       .map { searchResults ->
-        var results = if (filters.collections.isNotEmpty()) {
-          val allTitles = filters.collections.map { it.title }
-          searchResults.filter { it.title.toTitleParts().title in allTitles }
+        val collections = filters.collections
+
+        var results = if (collections.isNotEmpty()) {
+          val allTitles = collections.map { it.title }
+          val allGroupIds = collections.mapNotNull { it.groupId }
+
+          searchResults
+            .filter { it.title.toTitleParts().title in allTitles }
+            .filter { allGroupIds.isEmpty() || it.group_id in allGroupIds }
         } else {
           searchResults
         }

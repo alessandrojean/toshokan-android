@@ -5,6 +5,8 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
 import io.github.alessandrojean.toshokan.service.lookup.Provider
+import io.github.alessandrojean.toshokan.util.extension.headers
+import io.github.alessandrojean.toshokan.util.extension.postRequest
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -43,10 +45,9 @@ class CblLookup @Inject constructor (
     return super.searchByIsbn(isbn)
   }
 
-  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Post
+  override fun searchRequest(isbn: String) = postRequest {
     url("$baseUrl/search?api-version=$CBL_API_VERSION")
-    headers.appendAll(this@CblLookup.headers)
+    headers(this@CblLookup.headers)
     contentType(ContentType.Application.Json)
     setBody(
       CblSearchRequest(

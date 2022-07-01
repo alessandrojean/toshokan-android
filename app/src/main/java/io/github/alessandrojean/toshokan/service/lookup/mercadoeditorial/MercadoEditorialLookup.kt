@@ -7,6 +7,8 @@ import io.github.alessandrojean.toshokan.service.lookup.LookupBookContributor
 import io.github.alessandrojean.toshokan.service.lookup.LookupBookResult
 import io.github.alessandrojean.toshokan.service.lookup.LookupProvider
 import io.github.alessandrojean.toshokan.service.lookup.Provider
+import io.github.alessandrojean.toshokan.util.extension.getRequest
+import io.github.alessandrojean.toshokan.util.extension.urlWithBuilder
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -40,11 +42,8 @@ class MercadoEditorialLookup @Inject constructor (
     return super.searchByIsbn(isbn)
   }
 
-  override fun searchRequest(isbn: String): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url("$baseUrl/book")
-
-    url {
+  override fun searchRequest(isbn: String) = getRequest {
+    urlWithBuilder("$baseUrl/book") {
       parameters.append("isbn", isbn.replace("-", ""))
     }
   }

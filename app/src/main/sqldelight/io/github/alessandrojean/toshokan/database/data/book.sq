@@ -57,8 +57,9 @@ FROM Book
 WHERE code IS NOT NULL;
 
 allTitles:
-SELECT title, group_id
+SELECT title, group_id, BookGroup.name AS group_name
 FROM Book
+INNER JOIN BookGroup ON BookGroup.id = Book.group_id
 ORDER BY title COLLATE UNICODE ASC;
 
 countGroupBooks:
@@ -139,7 +140,9 @@ SELECT count(id) AS count,
   (SELECT sum(label_price_value) FROM Book
     WHERE label_price_currency = :currency
     AND is_future = 0) AS real_total_expense,
-  (SELECT count(DISTINCT book_id) FROM Reading) AS read_count
+  (SELECT count(DISTINCT book_id) FROM Reading) AS read_count,
+  (SELECT sum(page_count) FROM Book
+    WHERE id IN (SELECT DISTINCT book_id FROM Reading)) AS pages_read
 FROM Book
 WHERE is_future = 0;
 
@@ -154,7 +157,13 @@ SELECT count(id) AS bought_count,
   (SELECT count(DISTINCT book_id) FROM Reading
     WHERE read_at IS NOT NULL
       AND read_at >= :startPeriod
-      AND read_at <= :endPeriod) AS read_count
+      AND read_at <= :endPeriod) AS read_count,
+  (SELECT sum(page_count) FROM Book
+    WHERE bought_at IS NOT NULL
+      AND bought_at >= :startPeriod
+      AND bought_at <= :endPeriod
+      AND is_future = 0
+      AND id IN (SELECT DISTINCT book_id FROM Reading)) AS pages_read
 FROM Book
 WHERE bought_at IS NOT NULL
   AND bought_at >= :startPeriod

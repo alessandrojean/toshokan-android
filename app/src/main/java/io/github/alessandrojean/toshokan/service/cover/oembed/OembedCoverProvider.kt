@@ -7,6 +7,8 @@ import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.service.cover.CoverProvider
 import io.github.alessandrojean.toshokan.service.cover.CoverProviderWebsite
 import io.github.alessandrojean.toshokan.service.cover.SimpleBookInfo
+import io.github.alessandrojean.toshokan.util.extension.getRequest
+import io.github.alessandrojean.toshokan.util.extension.urlWithBuilder
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
@@ -39,11 +41,8 @@ class OembedCoverProvider @AssistedInject constructor(
     append(HttpHeaders.Accept, ContentType.Application.Json.toString())
   }
 
-  override fun findRequest(book: SimpleBookInfo): HttpRequestBuilder = HttpRequestBuilder().apply {
-    method = HttpMethod.Get
-    url("$baseUrl/wp-json/oembed/1.0/embed")
-
-    url {
+  override fun findRequest(book: SimpleBookInfo) = getRequest {
+    urlWithBuilder("$baseUrl/wp-json/oembed/1.0/embed") {
       parameters.append("url", baseUrl + createPath(book))
     }
   }
