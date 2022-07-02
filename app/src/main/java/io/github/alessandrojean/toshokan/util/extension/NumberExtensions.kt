@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.util.extension
 
+import android.icu.text.MessageFormat
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -53,4 +54,8 @@ fun Float.toLocaleCurrencyString(
   options.invoke(numberFormat)
 
   return numberFormat.format(this.toDouble())
+}
+
+fun Int.toOrdinal(locale: Locale = Locale.getDefault()): String {
+  return MessageFormat("{0,ordinal}", locale).format(arrayOf(this))
 }

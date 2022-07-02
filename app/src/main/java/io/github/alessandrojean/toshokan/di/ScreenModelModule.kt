@@ -15,6 +15,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.book.reading.ReadingScr
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreenModel
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreenModel
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreenModel
+import io.github.alessandrojean.toshokan.presentation.ui.statistics.ranking.RankingScreenModel
 
 @Module
 @InstallIn(ActivityComponent::class)
@@ -46,6 +47,13 @@ abstract class ScreenModelModule {
   @ScreenModelFactoryKey(SearchScreenModel.Factory::class)
   abstract fun bindSearchScreenModelFactory(
     searchScreenModelFactory: SearchScreenModel.Factory
+  ): ScreenModelFactory
+
+  @Binds
+  @IntoMap
+  @ScreenModelFactoryKey(RankingScreenModel.Factory::class)
+  abstract fun bindRankingScreenModelFactory(
+    rankingScreenModelFactory: RankingScreenModel.Factory
   ): ScreenModelFactory
 
   @Binds

@@ -137,6 +137,16 @@
   <string name="period_full_month_pattern">MMMM \'de\' yyyy</string>
   <string name="rankings">Rankings</string>
   <string name="authors">Autores</string>
+  <string name="ranking_authors">Ranking de autores</string>
+  <string name="ranking_publishers">Ranking de editoras</string>
+  <string name="ranking_stores">Ranking de lojas</string>
+  <string name="ranking_collections">Ranking de coleções</string>
+  <string name="ranking_groups">Ranking de grupos</string>
+  <string name="ranking_tags">Ranking de tags</string>
+  <plurals name="book_count">
+    <item quantity="one">%s livro</item>
+    <item quantity="other">%s livros</item>
+  </plurals>
 
   <!-- Books -->
   <string name="information">Informações</string>

@@ -17,9 +17,13 @@ import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -37,6 +41,7 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItems
 import io.github.alessandrojean.toshokan.presentation.ui.core.picker.showDateRangePicker
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.components.StatisticsList
+import io.github.alessandrojean.toshokan.presentation.ui.statistics.ranking.RankingScreen
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
 import io.github.alessandrojean.toshokan.util.extension.lastDayOfCurrentMonth
 import io.github.alessandrojean.toshokan.util.extension.push
@@ -54,10 +59,15 @@ class StatisticsScreen : AndroidScreen() {
     val activity = context as? AppCompatActivity
     val navigator = LocalNavigator.currentOrThrow
 
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState) }
+
     Scaffold(
+      modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
       topBar = {
         EnhancedSmallTopAppBar(
           contentPadding = WindowInsets.statusBars.asPaddingValues(),
+          scrollBehavior = scrollBehavior,
           title = { Text(stringResource(R.string.statistics)) },
           actions = {
             IconToggleButton(
@@ -148,7 +158,8 @@ class StatisticsScreen : AndroidScreen() {
                       )
                     )
                   }
-                }
+                },
+                onRankingClick = { type -> navigator.push(RankingScreen(type)) }
               )
             }
           }

@@ -31,6 +31,17 @@ lastInsertedId:
 SELECT max(id)
 FROM Store;
 
+storeRanking:
+SELECT store_id,
+  Store.name AS store_name,
+  count(*) AS count
+FROM Book
+INNER JOIN Store ON Store.id = Book.store_id
+WHERE store_id IS NOT NULL
+GROUP BY store_id
+ORDER BY count DESC
+LIMIT :limit;
+
 insert:
 INSERT OR IGNORE INTO Store(
   id,

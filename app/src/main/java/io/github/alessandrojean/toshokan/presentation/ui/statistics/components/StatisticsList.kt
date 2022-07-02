@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.PeriodStatistics
 import io.github.alessandrojean.toshokan.database.data.Statistics
+import io.github.alessandrojean.toshokan.presentation.ui.statistics.ranking.RankingScreen
 import io.github.alessandrojean.toshokan.util.extension.formatToLocaleDate
 import io.github.alessandrojean.toshokan.util.extension.isInCurrentMonth
 import io.github.alessandrojean.toshokan.util.extension.isStartAndEndOfSameMonth
@@ -60,7 +61,8 @@ fun StatisticsList(
   onShowValueClick: () -> Unit,
   onChangePeriodClick: () -> Unit,
   onPeriodBoughtClick: () -> Unit,
-  onPeriodReadClick: () -> Unit
+  onPeriodReadClick: () -> Unit,
+  onRankingClick: (RankingScreen.RankingType) -> Unit
 ) {
   val bookCount = remember(statistics.count) { statistics.count.toLocaleString() }
   val totalExpense = remember(statistics.total_expense) {
@@ -248,17 +250,20 @@ fun StatisticsList(
         RankingCard(
           modifier = Modifier.weight(1f),
           title = stringResource(R.string.authors),
-          icon = rememberVectorPainter(Icons.Outlined.Group)
+          icon = rememberVectorPainter(Icons.Outlined.Group),
+          onClick = { onRankingClick(RankingScreen.RankingType.AUTHOR) }
         )
         RankingCard(
           modifier = Modifier.weight(1f),
           title = stringResource(R.string.publishers),
-          icon = rememberVectorPainter(Icons.Outlined.Domain)
+          icon = rememberVectorPainter(Icons.Outlined.Domain),
+          onClick = { onRankingClick(RankingScreen.RankingType.PUBLISHER) }
         )
         RankingCard(
           modifier = Modifier.weight(1f),
           title = stringResource(R.string.stores),
-          icon = rememberVectorPainter(Icons.Outlined.LocalMall)
+          icon = rememberVectorPainter(Icons.Outlined.LocalMall),
+          onClick = { onRankingClick(RankingScreen.RankingType.STORE) }
         )
       }
     }
@@ -272,17 +277,20 @@ fun StatisticsList(
         RankingCard(
           modifier = Modifier.weight(1f),
           title = stringResource(R.string.filter_collection),
-          icon = rememberVectorPainter(Icons.Outlined.CollectionsBookmark)
+          icon = rememberVectorPainter(Icons.Outlined.CollectionsBookmark),
+          onClick = { onRankingClick(RankingScreen.RankingType.COLLECTION) }
         )
         RankingCard(
           modifier = Modifier.weight(1f),
           title = stringResource(R.string.groups),
-          icon = rememberVectorPainter(Icons.Outlined.GroupWork)
+          icon = rememberVectorPainter(Icons.Outlined.GroupWork),
+          onClick = { onRankingClick(RankingScreen.RankingType.GROUP) }
         )
         RankingCard(
           modifier = Modifier.weight(1f),
           title = stringResource(R.string.tags),
-          icon = rememberVectorPainter(Icons.Outlined.Label)
+          icon = rememberVectorPainter(Icons.Outlined.Label),
+          onClick = { onRankingClick(RankingScreen.RankingType.TAG) }
         )
       }
     }

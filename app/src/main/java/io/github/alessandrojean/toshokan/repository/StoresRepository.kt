@@ -4,8 +4,10 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Store
+import io.github.alessandrojean.toshokan.domain.RankingItem
 import io.github.alessandrojean.toshokan.util.extension.currentTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,6 +30,19 @@ class StoresRepository @Inject constructor(
 
   fun findByIds(ids: List<Long>): List<Store> {
     return database.storeQueries.findByIds(ids).executeAsList()
+  }
+
+  fun subscribeToRanking(limit: Long = 20): Flow<List<RankingItem>> {
+    return database.storeQueries
+      .storeRanking(
+        limit = limit,
+        mapper = { storeId, storeName, count ->
+          RankingItem(itemId = storeId, title = storeName, count = count)
+        }
+      )
+      .asFlow()
+      .mapToList()
+      .flowOn(Dispatchers.IO)
   }
 
   suspend fun insert(

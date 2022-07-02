@@ -28,6 +28,7 @@ import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.Price
+import io.github.alessandrojean.toshokan.domain.RankingItem
 import io.github.alessandrojean.toshokan.domain.RawTag
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.domain.SortColumn
@@ -115,6 +116,21 @@ class BooksRepository @Inject constructor(
           }
       }
       .flowOn(Dispatchers.IO)
+  }
+
+  fun subscribeToCollectionsRanking(limit: Int = 20): Flow<List<RankingItem>> {
+    return subscribeToCollections().map { collections ->
+      collections.sortedByDescending { it.count }
+        .take(limit)
+        .map { collection ->
+          RankingItem(
+            itemId = collection.groupId,
+            title = collection.title,
+            count = collection.count.toLong(),
+            extra = collection.groupName
+          )
+        }
+    }
   }
 
   fun groupBooksPaginated(groupId: Long, isFuture: Boolean = false): Flow<PagingData<Book>> {

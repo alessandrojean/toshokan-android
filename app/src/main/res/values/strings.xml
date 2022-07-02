@@ -165,6 +165,16 @@
   <string name="period_full_month_pattern">MMMM yyyy</string>
   <string name="rankings">Rankings</string>
   <string name="authors">Authors</string>
+  <string name="ranking_authors">Authors ranking</string>
+  <string name="ranking_publishers">Publishers ranking</string>
+  <string name="ranking_stores">Stores ranking</string>
+  <string name="ranking_collections">Collections ranking</string>
+  <string name="ranking_groups">Groups ranking</string>
+  <string name="ranking_tags">Tags ranking</string>
+  <plurals name="book_count">
+    <item quantity="one">%s book</item>
+    <item quantity="other">%s books</item>
+  </plurals>
 
   <!-- Books -->
   <string name="information">Information</string>

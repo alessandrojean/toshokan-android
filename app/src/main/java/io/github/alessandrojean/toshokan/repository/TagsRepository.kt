@@ -4,6 +4,7 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.github.alessandrojean.toshokan.database.ToshokanDatabase
 import io.github.alessandrojean.toshokan.database.data.Tag
+import io.github.alessandrojean.toshokan.domain.RankingItem
 import io.github.alessandrojean.toshokan.util.extension.currentTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,19 @@ class TagsRepository @Inject constructor(
 
   fun findAll(): List<Tag> {
     return database.tagQueries.selectAll().executeAsList()
+  }
+
+  fun subscribeToRanking(limit: Long = 20): Flow<List<RankingItem>> {
+    return database.tagQueries
+      .tagRanking(
+        limit = limit,
+        mapper = { tagId, tagName, count ->
+          RankingItem(itemId = tagId, title = tagName, count = count)
+        }
+      )
+      .asFlow()
+      .mapToList()
+      .flowOn(Dispatchers.IO)
   }
 
   suspend fun insert(name: String, isNsfw: Boolean = false): Long? = withContext(Dispatchers.IO) {

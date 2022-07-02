@@ -37,6 +37,16 @@ lastInsertedId:
 SELECT max(id)
 FROM Publisher;
 
+publisherRanking:
+SELECT publisher_id,
+  Publisher.name AS publisher_name,
+  count(*) AS count
+FROM Book
+INNER JOIN Publisher ON Publisher.id = Book.publisher_id
+GROUP BY publisher_id
+ORDER BY count DESC
+LIMIT :limit;
+
 insert:
 INSERT OR IGNORE INTO Publisher(
   name,

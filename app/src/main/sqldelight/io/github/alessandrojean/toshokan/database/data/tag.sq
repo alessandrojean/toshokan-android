@@ -32,6 +32,16 @@ lastInsertedId:
 SELECT max(id)
 FROM Tag;
 
+tagRanking:
+SELECT tag_id,
+  Tag.name AS tag_name,
+  count(*) AS count
+FROM BookTag
+INNER JOIN Tag ON Tag.id = BookTag.tag_id
+GROUP BY tag_id
+ORDER BY count DESC
+LIMIT :limit;
+
 insert:
 INSERT OR IGNORE INTO Tag(
   id,

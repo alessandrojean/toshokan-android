@@ -43,6 +43,16 @@ lastInsertedId:
 SELECT max(id)
 FROM BookGroup;
 
+groupRanking:
+SELECT group_id,
+  BookGroup.name AS group_name,
+  count(*) AS count
+FROM Book
+INNER JOIN BookGroup ON BookGroup.id = Book.group_id
+GROUP BY group_id
+ORDER BY count DESC
+LIMIT :limit;
+
 insert:
 INSERT OR IGNORE INTO BookGroup(
   id,

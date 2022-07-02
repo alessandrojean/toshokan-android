@@ -43,6 +43,17 @@ lastInsertedId:
 SELECT max(id)
 FROM Person;
 
+authorRanking:
+SELECT person_id,
+  Person.name AS person_name,
+  count(*) AS count
+FROM BookCredit
+INNER JOIN Person ON Person.id = BookCredit.person_id
+WHERE role IN :authorRoles
+GROUP BY person_id
+ORDER BY count DESC
+LIMIT :limit;
+
 insert:
 INSERT INTO Person(
   name,
