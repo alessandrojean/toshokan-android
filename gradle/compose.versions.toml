@@ -1,0 +1,24 @@
+[versions]
+compiler = "1.2.0"
+compose = "1.2.0-rc03"
+accompanist = "0.24.13-rc"
+material3 = "1.0.0-alpha14"
+
+[libraries]
+activity = "androidx.activity:activity-compose:1.6.0-alpha05"
+ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+ui-toolingPreview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+
+material3-core = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+material3-adapter = "com.google.android.material:compose-theme-adapter-3:1.0.14"
+material-core = "com.google.android.material:material:1.7.0-alpha02"
+material-icons = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose" }
+
+accompanist-flowLayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist"}
+accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanist" }
+accompanist-pagerIndicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
+accompanist-placeholder = { module = "com.google.accompanist:accompanist-placeholder-material", version.ref = "accompanist" }
+accompanist-swipeRefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanist" }
+accompanist-systemUiController = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }

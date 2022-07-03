@@ -1,0 +1,51 @@
+[versions]
+aboutlib = "10.3.1"
+hilt = "2.42"
+ktor = "2.0.1"
+okhttp = "4.10.0"
+sqldelight = "1.5.3"
+voyager = "1.0.0-rc02"
+
+[libraries]
+coilCompose = "io.coil-kt:coil-compose:2.1.0"
+composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.8.1"
+desugarJdk = "com.android.tools:desugar_jdk_libs:1.1.5"
+jsoup = "org.jsoup:jsoup:1.15.1"
+logcat = "com.squareup.logcat:logcat:0.1"
+mlkit-barcodeScanning = "com.google.mlkit:barcode-scanning:17.0.2"
+okio = "com.squareup.okio:okio:3.1.0"
+subsamplingImageView = "com.github.tachiyomiorg:subsampling-scale-image-view:846abe0"
+
+aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlib" }
+aboutLibraries-compose = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutlib" }
+aboutLibraries-gradle = { module = "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin", version.ref = "aboutlib" }
+
+android-tools-r8 = "com.android.tools:r8:3.3.28"
+
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+hilt-gradle = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+okhttp-core = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+
+sqldelight-android-driver = { module = "com.squareup.sqldelight:android-driver", version.ref ="sqldelight" }
+sqldelight-coroutines = { module = "com.squareup.sqldelight:coroutines-extensions-jvm", version.ref ="sqldelight" }
+sqldelight-android-paging = { module = "com.squareup.sqldelight:android-paging3-extensions", version.ref ="sqldelight" }
+sqldelight-gradle = { module="com.squareup.sqldelight:gradle-plugin", version.ref ="sqldelight" }
+
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
+voyager-androidx = { module = "cafe.adriel.voyager:voyager-androidx", version.ref = "voyager" }
+voyager-hilt = { module = "cafe.adriel.voyager:voyager-hilt", version.ref = "voyager" }
+
+[bundles]
+ktor = ["ktor-client-core", "ktor-client-android", "ktor-client-logging", "ktor-client-contentNegotiation", "ktor-serialization-json"]
+okhttp = ["okhttp-core", "okhttp-logging"]
+voyager = ["voyager-navigator", "voyager-transitions", "voyager-androidx", "voyager-hilt"]

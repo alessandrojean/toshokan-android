@@ -4,12 +4,13 @@ plugins {
   kotlin("plugin.parcelize")
   kotlin("kapt")
   id("dagger.hilt.android.plugin")
-  kotlin("plugin.serialization") version "1.6.21"
+  kotlin("plugin.serialization")
   id("com.squareup.sqldelight")
   id("com.mikepenz.aboutlibraries.plugin")
 }
 
 android {
+  namespace = "io.github.alessandrojean.toshokan"
   compileSdk = AndroidConfig.compileSdk
 
   defaultConfig {
@@ -105,153 +106,89 @@ android {
   }
 
   composeOptions {
-    // https://android-developers.googleblog.com/2022/06/independent-versioning-of-Jetpack-Compose-libraries.html
-    kotlinCompilerExtensionVersion = "1.2.0"
+    kotlinCompilerExtensionVersion = compose.versions.compiler.get()
   }
 
   packagingOptions {
     resources {
       excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
- }
-  namespace = "io.github.alessandrojean.toshokan"
+  }
+
+  sqldelight {
+    database("ToshokanDatabase") {
+      packageName = "io.github.alessandrojean.toshokan.database"
+    }
+  }
 }
 
 dependencies {
-  // Kotlin
-  val coroutinesVersion = rootProject.extra["coroutines_version"]
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:$coroutinesVersion")
+  // Compose
+  implementation(compose.activity)
+  implementation(compose.material3.core)
+  implementation(compose.material3.adapter)
+  implementation(compose.material.core)
+  implementation(compose.material.icons)
+  implementation(compose.accompanist.flowLayout)
+  implementation(compose.accompanist.pager)
+  implementation(compose.accompanist.pagerIndicators)
+  implementation(compose.accompanist.permissions)
+  implementation(compose.accompanist.placeholder)
+  implementation(compose.accompanist.swipeRefresh)
+  implementation(compose.accompanist.systemUiController)
+  debugImplementation(compose.ui.tooling)
+  debugImplementation(compose.ui.toolingPreview)
 
-  // Core
-  implementation("androidx.core:core-ktx:1.8.0")
-  implementation("androidx.core:core-splashscreen:1.0.0-rc01")
-  implementation("androidx.appcompat:appcompat:1.4.2")
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+  // AndroidX libraries
+  implementation(androidx.appCompat)
+  implementation(androidx.coreKtx)
+  implementation(androidx.dataStore)
+  implementation(androidx.paging.runtimeKtx)
+  implementation(androidx.paging.compose)
+  implementation(androidx.paletteKtx)
+  implementation(androidx.splashScreen)
+  implementation(androidx.bundles.camera)
+  implementation(androidx.bundles.lifecycle)
 
-  // Lifecycle
-  val lifecycleVersion = "2.5.0"
-  implementation("androidx.lifecycle:lifecycle-process:$lifecycleVersion")
-  implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
-  implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycleVersion")
-  implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
-  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
+  // Desugaring
+  coreLibraryDesugaring(libs.desugarJdk)
+
+  // KotlinX libraries
+  implementation(kotlinx.bundles.coroutines)
+  implementation(kotlinx.bundles.serialization)
+
+  // Other libraries
+  implementation(libs.aboutLibraries.core)
+  implementation(libs.aboutLibraries.compose)
+  implementation(libs.coilCompose)
+  implementation(libs.composeReorderable)
+  implementation(libs.jsoup)
+  implementation(libs.logcat)
+  implementation(libs.mlkit.barcodeScanning)
+  implementation(libs.okio)
+  implementation(libs.sqldelight.android.driver)
+  implementation(libs.sqldelight.coroutines)
+  implementation(libs.sqldelight.android.paging)
+  implementation(libs.subsamplingImageView)
+  implementation(libs.bundles.ktor)
+  implementation(libs.bundles.okhttp)
+  implementation(libs.bundles.voyager)
+
+  implementation(libs.hilt.android)
+  kapt(libs.hilt.compiler)
 
   // Test
-  testImplementation("junit:junit:4.+")
-  androidTestImplementation("androidx.test.ext:junit:1.1.3")
-  androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-
-  // Compose
-  // https://android-developers.googleblog.com/2022/06/independent-versioning-of-Jetpack-Compose-libraries.html
-  val composeVersion = rootProject.extra["compose_version"]
-  implementation("androidx.activity:activity-compose:1.6.0-alpha05")
-  implementation("androidx.compose.ui:ui:1.2.0-rc03")
-  implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
-  implementation("androidx.compose.material:material-icons-extended:$composeVersion")
-  androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-  debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
-
-  // Navigation (Voyager)
-  val voyagerVersion = "1.0.0-rc02"
-  implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
-  implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
-  implementation("cafe.adriel.voyager:voyager-androidx:$voyagerVersion")
-  implementation("cafe.adriel.voyager:voyager-hilt:$voyagerVersion")
-
-  // Material Design
-  implementation("com.google.android.material:material:1.7.0-alpha02")
-  implementation("com.google.android.material:compose-theme-adapter-3:1.0.13")
-  implementation("androidx.compose.material3:material3:1.0.0-alpha14")
-
-  // Accompanist
-  val accompanistVersion = "0.24.13-rc"
-  implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
-  implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
-  implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
-  implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
-  implementation("com.google.accompanist:accompanist-swiperefresh:$accompanistVersion")
-  implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
-  implementation("com.google.accompanist:accompanist-placeholder-material:$accompanistVersion")
-
-  // Androidx CameraX
-  val cameraxVersion = "1.1.0-rc01"
-  implementation("androidx.camera:camera-core:$cameraxVersion")
-  implementation("androidx.camera:camera-camera2:$cameraxVersion")
-  implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
-  implementation("androidx.camera:camera-view:$cameraxVersion")
-
-  // Preferences
-  implementation("androidx.datastore:datastore-preferences:1.0.0")
-
-  // Palette
-  implementation("androidx.palette:palette-ktx:1.0.0")
-
-  // Paging3
-  implementation("androidx.paging:paging-runtime-ktx:3.1.1")
-  implementation("androidx.paging:paging-compose:1.0.0-alpha15")
-
-  // Google ML Kit
-  implementation("com.google.mlkit:barcode-scanning:17.0.2")
-
-  // Ktor
-  val ktorVersion = "2.0.1"
-  implementation("io.ktor:ktor-client-core:$ktorVersion")
-  implementation("io.ktor:ktor-client-android:$ktorVersion")
-  implementation("io.ktor:ktor-client-logging:$ktorVersion")
-  implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-  implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-
-  // Kotlinx.serialization
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.3.3")
-
-  // Jsoup
-  implementation("org.jsoup:jsoup:1.15.1")
-
-  // Hilt
-  val hiltVersion = rootProject.extra["hilt_version"]
-  implementation("com.google.dagger:hilt-android:$hiltVersion")
-  kapt("com.google.dagger:hilt-compiler:$hiltVersion")
-
-  // Coil
-  implementation("io.coil-kt:coil-compose:2.1.0")
-
-  // OkHttp (used for Coil stuff)
-  val okHttpVersion = "4.10.0"
-  implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
-  implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
-
-  // SQLDelight
-  val sqlDelightVersion = rootProject.extra["sqldelight_version"]
-  implementation("com.squareup.sqldelight:android-driver:$sqlDelightVersion")
-  implementation("com.squareup.sqldelight:coroutines-extensions-jvm:$sqlDelightVersion")
-  implementation("com.squareup.sqldelight:android-paging3-extensions:$sqlDelightVersion")
-
-  // Compose Reorderable
-  implementation("org.burnoutcrew.composereorderable:reorderable:0.8.1")
-
-  // Logcat
-  implementation("com.squareup.logcat:logcat:0.1")
-
-  // Subsampling Scale Image View
-  implementation("com.github.tachiyomiorg:subsampling-scale-image-view:846abe0")
-
-  // Okio
-  implementation("com.squareup.okio:okio:3.1.0")
-
-  // About Libraries
-  val aboutLibVersion = rootProject.extra["aboutlib_version"]
-  implementation("com.mikepenz:aboutlibraries-core:$aboutLibVersion")
-  implementation("com.mikepenz:aboutlibraries-compose:$aboutLibVersion")
+  // testImplementation("junit:junit:4.+")
+  // androidTestImplementation("androidx.test.ext:junit:1.1.3")
+  // androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }
 
 kapt {
   correctErrorTypes = true
 }
 
-sqldelight {
-  database("ToshokanDatabase") {
-    packageName = "io.github.alessandrojean.toshokan.database"
+buildscript {
+  dependencies {
+    classpath(kotlinx.gradle)
   }
 }

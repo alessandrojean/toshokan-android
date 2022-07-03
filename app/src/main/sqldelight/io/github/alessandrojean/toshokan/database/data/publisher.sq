@@ -43,6 +43,7 @@ SELECT publisher_id,
   count(*) AS count
 FROM Book
 INNER JOIN Publisher ON Publisher.id = Book.publisher_id
+WHERE is_future = 0
 GROUP BY publisher_id
 ORDER BY count DESC
 LIMIT :limit;

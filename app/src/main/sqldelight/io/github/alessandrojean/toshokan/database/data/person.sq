@@ -49,7 +49,8 @@ SELECT person_id,
   count(*) AS count
 FROM BookCredit
 INNER JOIN Person ON Person.id = BookCredit.person_id
-WHERE role IN :authorRoles
+INNER JOIN Book ON Book.id = BookCredit.book_id
+WHERE role IN :authorRoles AND is_future = 0
 GROUP BY person_id
 ORDER BY count DESC
 LIMIT :limit;

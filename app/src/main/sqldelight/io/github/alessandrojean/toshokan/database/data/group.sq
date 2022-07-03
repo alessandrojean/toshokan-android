@@ -49,6 +49,7 @@ SELECT group_id,
   count(*) AS count
 FROM Book
 INNER JOIN BookGroup ON BookGroup.id = Book.group_id
+WHERE is_future = 0
 GROUP BY group_id
 ORDER BY count DESC
 LIMIT :limit;

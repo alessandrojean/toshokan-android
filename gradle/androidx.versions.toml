@@ -1,0 +1,34 @@
+[versions]
+agp = "7.2.1"
+camera = "1.1.0-rc01"
+lifecycle = "2.5.0"
+
+[libraries]
+appCompat = "androidx.appcompat:appcompat:1.4.2"
+coreKtx = "androidx.core:core-ktx:1.8.0"
+dataStore = "androidx.datastore:datastore-preferences:1.0.0"
+paletteKtx = "androidx.palette:palette-ktx:1.0.0"
+splashScreen = "androidx.core:core-splashscreen:1.0.0-rc01"
+
+camera-core = { module = "androidx.camera:camera-core", version.ref = "camera" }
+camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }
+camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
+camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
+
+lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycle" }
+lifecycle-livedataKtx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
+lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle" }
+lifecycle-runtimeKtx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
+
+paging-runtimeKtx = "androidx.paging:paging-runtime-ktx:3.1.1"
+paging-compose = "androidx.paging:paging-compose:1.0.0-alpha15"
+
+[bundles]
+camera = ["camera-core", "camera-camera2", "camera-lifecycle", "camera-view"]
+lifecycle = ["lifecycle-common", "lifecycle-livedataKtx", "lifecycle-process", "lifecycle-runtimeKtx", "lifecycle-viewmodel-compose", "lifecycle-viewmodel-savedstate"]
+
+[plugins]
+application = { id = "com.android.application", version.ref = "agp" }
+library = { id = "com.android.library", version.ref = "agp" }

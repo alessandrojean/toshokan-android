@@ -37,7 +37,7 @@ SELECT store_id,
   count(*) AS count
 FROM Book
 INNER JOIN Store ON Store.id = Book.store_id
-WHERE store_id IS NOT NULL
+WHERE store_id IS NOT NULL AND is_future = 0
 GROUP BY store_id
 ORDER BY count DESC
 LIMIT :limit;
