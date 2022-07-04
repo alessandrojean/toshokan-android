@@ -1,7 +1,7 @@
 [versions]
 aboutlib = "10.3.1"
 hilt = "2.42"
-ktor = "2.0.1"
+ktor = "2.0.3"
 okhttp = "4.10.0"
 sqldelight = "1.5.3"
 voyager = "1.0.0-rc02"
