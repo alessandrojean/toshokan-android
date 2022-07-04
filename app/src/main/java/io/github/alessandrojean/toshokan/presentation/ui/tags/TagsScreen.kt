@@ -261,6 +261,7 @@ class TagsScreen : AndroidScreen() {
           rememberVectorPainter(Icons.Outlined.Label)
         },
         contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(end = 24.dp)
       )
       Text(

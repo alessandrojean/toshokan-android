@@ -75,7 +75,7 @@ fun StatisticCard(
         Icon(
           imageVector = icon,
           contentDescription = title,
-          tint = MaterialTheme.colorScheme.onSurfaceVariant
+          tint = MaterialTheme.colorScheme.secondary
         )
       }
 

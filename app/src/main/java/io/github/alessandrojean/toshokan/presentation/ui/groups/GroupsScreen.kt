@@ -3,6 +3,7 @@ package io.github.alessandrojean.toshokan.presentation.ui.groups
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -13,13 +14,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectableGroup
@@ -48,6 +53,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -67,10 +73,11 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.Selecti
 import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupDialog
 import io.github.alessandrojean.toshokan.presentation.ui.groups.manage.ManageGroupMode
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
+import io.github.alessandrojean.toshokan.util.extension.plus
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.detectReorder
-import org.burnoutcrew.reorderable.draggedItem
-import org.burnoutcrew.reorderable.move
-import org.burnoutcrew.reorderable.rememberReorderLazyListState
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
 class GroupsScreen : AndroidScreen() {
@@ -96,9 +103,9 @@ class GroupsScreen : AndroidScreen() {
 
     val groups by groupsViewModel.groups.collectAsStateWithLifecycle(emptyList())
     val reorderingItems = remember { mutableStateListOf<BookGroup>() }
-    val reorderableState = rememberReorderLazyListState(
+    val reorderableState = rememberReorderableLazyListState(
       listState = listState,
-      onMove = { from, to -> reorderingItems.move(from.index, to.index) }
+      onMove = { from, to -> reorderingItems.add(to.index, reorderingItems.removeAt(from.index)) }
     )
 
     BackHandler(enabled = selectionMode || uiState.reorderMode) {
@@ -225,52 +232,42 @@ class GroupsScreen : AndroidScreen() {
       content = { innerPadding ->
         if (groups.isEmpty()) {
           NoItemsFound(
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+              .padding(innerPadding)
+              .navigationBarsPadding(),
             text = stringResource(R.string.no_groups_found),
             icon = Icons.Outlined.GroupWork
           )
         } else {
           LazyColumn(
-            contentPadding = innerPadding,
             modifier = Modifier
+              .fillMaxSize()
+              .padding(innerPadding)
               .selectableGroup()
-              .let {
-                if (uiState.reorderMode) {
-                  it.reorderable(reorderableState)
-                } else {
-                  it
-                }
-              },
-            state = if (uiState.reorderMode) reorderableState.listState else listState,
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+              .then(if (uiState.reorderMode) Modifier.reorderable(reorderableState) else Modifier),
+            contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+            state = reorderableState.listState
           ) {
-            itemsIndexed(
-              items = if (uiState.reorderMode) reorderingItems else groups
-            ) { idx, group ->
-              GroupItem(
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .let { modifier ->
-                    if (uiState.reorderMode) {
-                      modifier
-                        .draggedItem(reorderableState.offsetByIndex(idx))
-                        .detectReorder(reorderableState)
-                    } else {
-                      modifier
+            items(
+              items = if (uiState.reorderMode) reorderingItems else groups,
+              key = { it.id }
+            ) { group ->
+              ReorderableItem(reorderableState, key = group.id) { isDragging ->
+                GroupItem(
+                  modifier = Modifier.fillMaxWidth(),
+                  group = group,
+                  selected = group.id in uiState.selected,
+                  reorderMode = uiState.reorderMode,
+                  reordering = isDragging,
+                  reorderableState = reorderableState,
+                  onClick = {
+                    if (selectionMode) {
+                      groupsViewModel.toggleSelection(group.id)
                     }
                   },
-                group = group,
-                selected = group.id in uiState.selected,
-                reorderMode = uiState.reorderMode,
-                reordering = reorderableState.draggedIndex == idx,
-                onClick = {
-                  if (selectionMode) {
-                    groupsViewModel.toggleSelection(group.id)
-                  }
-                },
-                onLongClick = { groupsViewModel.toggleSelection(group.id) }
-              )
+                  onLongClick = { groupsViewModel.toggleSelection(group.id) }
+                )
+              }
             }
           }
         }
@@ -324,9 +321,18 @@ class GroupsScreen : AndroidScreen() {
     selected: Boolean = false,
     reordering: Boolean = false,
     reorderMode: Boolean = false,
+    reorderableState: ReorderableLazyListState,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {}
   ) {
+    val backgroundColor by animateColorAsState(
+      targetValue = if (selected || reordering) {
+        MaterialTheme.colorScheme.selection
+      } else {
+        MaterialTheme.colorScheme.surface
+      }
+    )
+
     Row(
       modifier = modifier
         .let { letModifier ->
@@ -340,20 +346,17 @@ class GroupsScreen : AndroidScreen() {
             letModifier
           }
         }
-        .background(
-          color = if (selected || reordering) {
-            MaterialTheme.colorScheme.selection
-          } else {
-            MaterialTheme.colorScheme.surface
-          }
-        )
+        .background(backgroundColor)
         .padding(16.dp)
     ) {
       if (reorderMode) {
         Icon(
-          imageVector = Icons.Outlined.DragIndicator,
+          painter = rememberVectorPainter(Icons.Outlined.DragIndicator),
           contentDescription = null,
-          modifier = Modifier.padding(end = 24.dp)
+          tint = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier
+            .padding(end = 24.dp)
+            .then(if (reorderMode) Modifier.detectReorder(reorderableState) else Modifier)
         )
       }
       Text(
