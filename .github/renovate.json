@@ -1,4 +1,7 @@
 {
   "extends": ["config:base"],
-  "schedule": ["every sunday"]
+  "schedule": ["every sunday"],
+  "ignoreDeps": [
+    "com.android.tools:desugar_jdk_libs"
+  ]
 }
