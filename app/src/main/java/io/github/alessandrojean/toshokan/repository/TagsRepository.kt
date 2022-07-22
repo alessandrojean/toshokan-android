@@ -34,6 +34,10 @@ class TagsRepository @Inject constructor(
     return database.tagQueries.findByIds(ids).executeAsList()
   }
 
+  fun findByName(name: String): Tag? {
+    return database.tagQueries.findByName(name).executeAsOneOrNull()
+  }
+
   fun findAll(): List<Tag> {
     return database.tagQueries.selectAll().executeAsList()
   }

@@ -63,6 +63,7 @@ class BooksRepository @Inject constructor(
   private val groupsRepository: GroupsRepository,
   private val storesRepository: StoresRepository,
   private val peopleRepository: PeopleRepository,
+  private val tagsRepository: TagsRepository,
   private val coverCache: CoverCache
 ) {
 
@@ -330,6 +331,17 @@ class BooksRepository @Inject constructor(
       }
     }
 
+    val tags = book.tags.map { tag ->
+      if (tag.id != null) {
+        tag.toRawTag()
+      } else {
+        RawTag(
+          tagId = tagsRepository.findByName(tag.title!!)?.id
+            ?: tagsRepository.insert(tag.title)
+        )
+      }
+    }
+
     insert(
       code = book.code,
       title = book.title,
@@ -348,7 +360,7 @@ class BooksRepository @Inject constructor(
       dimensionWidth = book.dimensions.width,
       dimensionHeight = book.dimensions.height,
       contributors = contributors,
-      tags = book.tags.map(DomainTag::toRawTag)
+      tags = tags
     )
   }
 

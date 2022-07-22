@@ -18,6 +18,12 @@ FROM Tag
 WHERE (SELECT count(*) FROM BookTag WHERE BookTag.tag_id = Tag.id) > 0
 ORDER BY name COLLATE UNICODE ASC;
 
+findByName:
+SELECT *
+FROM Tag
+WHERE name = ?
+LIMIT 1;
+
 findById:
 SELECT *
 FROM Tag
