@@ -77,14 +77,28 @@ fun Long.formatToLocaleDateTime(
 
 val SHEET_TIME_ZONE: ZoneId = ZoneId.of("America/Sao_Paulo")
 
-fun String.toSheetDate(): Long? {
-  return runCatching { LocalDate.parse(this, DateTimeFormatter.ISO_LOCAL_DATE) }
+fun String.toUtcEpochMilliFromSheet(formatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE): Long? {
+  return runCatching { LocalDate.parse(this, formatter) }
     .getOrNull()
     ?.atTime(0, 0)
     ?.atZone(SHEET_TIME_ZONE)
     ?.withZoneSameInstant(ZoneOffset.UTC)
     ?.toInstant()
     ?.toEpochMilli()
+}
+
+fun Long.toIsoStringToSheet(formatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE): String {
+  val date = LocalDateTime
+    .ofInstant(Instant.ofEpochMilli(this), ZoneOffset.UTC)
+    .atZone(ZoneOffset.UTC)
+    .withZoneSameInstant(SHEET_TIME_ZONE)
+
+  return when (formatter) {
+    DateTimeFormatter.ISO_LOCAL_DATE_TIME -> {
+      formatter.format(date).substringBeforeLast(".")
+    }
+    else -> formatter.format(date)
+  }
 }
 
 fun Long.toUtcEpochMilli(): Long =

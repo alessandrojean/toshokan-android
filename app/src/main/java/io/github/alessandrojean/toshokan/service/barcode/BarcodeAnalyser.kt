@@ -25,7 +25,7 @@ class BarcodeAnalyser(
     if (currentTimestamp - lastAnalyzedTimestamp >= threshold) {
       image.image?.let { imageToAnalyze ->
         val options = BarcodeScannerOptions.Builder()
-          .setBarcodeFormats(Barcode.FORMAT_EAN_13)
+          .setBarcodeFormats(Barcode.FORMAT_EAN_13, Barcode.FORMAT_QR_CODE)
           .build()
         val barcodeScanner = BarcodeScanning.getClient(options)
         val imageToProcess = InputImage.fromMediaImage(

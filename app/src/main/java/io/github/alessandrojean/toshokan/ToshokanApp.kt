@@ -11,8 +11,9 @@ import coil.disk.DiskCache
 import coil.util.DebugLogger
 import dagger.hilt.android.HiltAndroidApp
 import io.github.alessandrojean.toshokan.data.cache.CoverCache
-import io.github.alessandrojean.toshokan.data.coil.BookCoverFetcher
 import io.github.alessandrojean.toshokan.data.coil.BookCoverKeyer
+import io.github.alessandrojean.toshokan.data.coil.CoverFetcher
+import io.github.alessandrojean.toshokan.data.coil.DomainBookCoverKeyer
 import io.github.alessandrojean.toshokan.data.notification.Notifications
 import io.github.alessandrojean.toshokan.data.preference.PreferencesManager
 import io.github.alessandrojean.toshokan.data.preference.Theme
@@ -64,8 +65,10 @@ class ToshokanApp : Application(), ImageLoaderFactory {
       diskCache(diskCacheInit)
 
       components {
-        add(BookCoverFetcher.Factory(coverCache, lazy(callFactoryInit), lazy(diskCacheInit)))
+        add(CoverFetcher.Factory(coverCache, BookCoverKeyer(), lazy(callFactoryInit), lazy(diskCacheInit)))
+        add(CoverFetcher.Factory(coverCache, DomainBookCoverKeyer(), lazy(callFactoryInit), lazy(diskCacheInit)))
         add(BookCoverKeyer())
+        add(DomainBookCoverKeyer())
       }
 
       if (BuildConfig.DEBUG) {
@@ -87,7 +90,7 @@ class ToshokanApp : Application(), ImageLoaderFactory {
 }
 
 /**
- * Direct copy of Coil's internal SingletonDiskCache so that [BookCoverFetcher] can access it.
+ * Direct copy of Coil's internal SingletonDiskCache so that [CoverFetcher] can access it.
  */
 internal object CoilDiskCache {
 

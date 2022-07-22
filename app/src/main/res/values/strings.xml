@@ -43,6 +43,7 @@
   <string name="action_filter">Filter</string>
   <string name="action_close">Close</string>
   <string name="action_select_suggestion">Select this suggestion</string>
+  <string name="action_add_to_library">Add to library</string>
 
   <!-- Common states -->
   <string name="error_happened">An error happened</string>

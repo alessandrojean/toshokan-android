@@ -24,6 +24,10 @@ class StoresRepository @Inject constructor(
     return database.storeQueries.selectAll().executeAsList()
   }
 
+  fun findByName(name: String): Store? {
+    return database.storeQueries.findByName(name).executeAsOneOrNull()
+  }
+
   fun findById(storeId: Long): Store? {
     return database.storeQueries.findById(storeId).executeAsOneOrNull()
   }

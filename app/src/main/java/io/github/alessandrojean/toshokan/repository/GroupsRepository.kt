@@ -34,6 +34,10 @@ class GroupsRepository @Inject constructor(
     return database.groupQueries.selectAll().executeAsList()
   }
 
+  fun findByName(name: String): BookGroup? {
+    return database.groupQueries.findByName(name).executeAsOneOrNull()
+  }
+
   fun findById(id: Long): BookGroup? {
     return database.groupQueries.findById(id).executeAsOneOrNull()
   }

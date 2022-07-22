@@ -36,7 +36,6 @@ enum class IsbnLookupState {
 @HiltViewModel
 class IsbnLookupViewModel @Inject constructor(
   application: Application,
-  private val booksRepository: BooksRepository,
   private val lookupRepository: LookupRepository,
   private val preferencesManager: PreferencesManager
 ) : AndroidViewModel(application) {
@@ -151,9 +150,5 @@ class IsbnLookupViewModel @Inject constructor(
         state = IsbnLookupState.EMPTY
       }
     }
-  }
-
-  fun checkDuplicates(): Long? {
-    return booksRepository.findByCode(searchQuery.text.removeDashes())?.id
   }
 }

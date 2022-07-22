@@ -1,6 +1,9 @@
 package io.github.alessandrojean.toshokan.presentation.ui.main
 
+import android.content.Intent
+import android.os.Parcelable
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -41,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import cafe.adriel.voyager.core.screen.Screen
@@ -49,106 +53,154 @@ import cafe.adriel.voyager.transitions.FadeTransition
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen.BookData
 import io.github.alessandrojean.toshokan.presentation.ui.core.provider.LocalNavigationBarControl
 import io.github.alessandrojean.toshokan.presentation.ui.core.provider.NavigationBarControl
 import io.github.alessandrojean.toshokan.presentation.ui.library.LibraryScreen
 import io.github.alessandrojean.toshokan.presentation.ui.more.MoreScreen
 import io.github.alessandrojean.toshokan.presentation.ui.statistics.StatisticsScreen
+import io.github.alessandrojean.toshokan.util.extension.SheetUtils
+import kotlinx.parcelize.Parcelize
+import java.io.Serializable
+
+sealed class IntentData {
+  @Parcelize
+  data class SheetShare(val base64Data: String) : IntentData(), Parcelable, Serializable
+}
+
+private const val TOSHOKAN_WEB_HOST = "toshokan-app.netlify.app"
+private const val TOSHOKAN_WEB_SHARE = "share"
+private const val TOSHOKAN_WEB_DATA = "d"
+
+private fun Intent?.isToshokanShare(): Boolean {
+  return this?.data?.host == TOSHOKAN_WEB_HOST &&
+    data?.pathSegments?.firstOrNull() == TOSHOKAN_WEB_SHARE &&
+    !data?.getQueryParameter(TOSHOKAN_WEB_DATA).isNullOrEmpty()
+}
 
 @Composable
 fun MainNavHost() {
-  Navigator(remember { TopLevelRoutes.Library.screen }) { navigator ->
-    var hideBottomNavigation by remember { mutableStateOf(false) }
-    val isBottomBarVisible = TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
-
-    val systemUiController = rememberSystemUiController()
-    val navigationBarColor = if (isBottomBarVisible || navigator.isEmpty) {
-      MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation()
-    } else {
-      MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
-    }
-
-    DisposableEffect(navigator.lastItem) {
-      onDispose {
-        hideBottomNavigation = false
+  val activity = LocalContext.current as? AppCompatActivity
+  val intent = remember { activity?.intent }
+  val intentData = remember {
+    when {
+      intent.isToshokanShare() -> {
+        IntentData.SheetShare(intent!!.data!!.getQueryParameter(TOSHOKAN_WEB_DATA)!!)
       }
+      else -> null
     }
+  }
 
-    SideEffect {
-      systemUiController.setNavigationBarColor(
-        color = navigationBarColor
-      )
-    }
+  val initialStack = remember {
+    when (intentData) {
+      is IntentData.SheetShare -> {
+        val book = SheetUtils.decodeBook(intentData.base64Data)?.toDomainBook()
 
-    val navigationBarControl = NavigationBarControl(
-      show = { hideBottomNavigation = false },
-      hide = { hideBottomNavigation = true }
-    )
-
-    Scaffold(
-      modifier = Modifier.windowInsetsPadding(
-        WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
-      ),
-      content = { innerPadding ->
-        CompositionLocalProvider(LocalNavigationBarControl provides navigationBarControl) {
-          FadeTransition(navigator) { screen ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-              screen.Content()
-            }
-          }
-        }
-      },
-      bottomBar = {
-        AnimatedVisibility(
-          visible = isBottomBarVisible,
-          enter = fadeIn() + slideInVertically { it } +
-            expandVertically(expandFrom = Alignment.Top, clip = false),
-          exit = fadeOut() + slideOutVertically { it } +
-            shrinkVertically(clip = false)
-        ) {
-          Box(
-            modifier = Modifier
-              .navigationBarsPadding()
-              .background(MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation())
-          ) {
-            NavigationBar {
-              TopLevelRoutes.values.forEach {
-                val isSelected = navigator.lastItem.key == it.screen.key
-
-                NavigationBarItem(
-                  icon = {
-                    Icon(
-                      if (isSelected) it.selectedIcon else it.unselectedIcon,
-                      contentDescription = null
-                    )
-                  },
-                  label = {
-                    Text(
-                      text = stringResource(it.text),
-                      maxLines = 1,
-                      overflow = TextOverflow.Ellipsis
-                    )
-                  },
-                  selected = isSelected,
-                  onClick = {
-                    if (!isSelected) {
-                      if (navigator.lastItem is LibraryScreen) {
-                        navigator.push(it.screen)
-                      } else if (it.screen !is LibraryScreen) {
-                        navigator.replace(it.screen)
-                      } else {
-                        navigator.replaceAll(it.screen)
-                      }
-                    }
-                  }
-                )
-              }
-            }
-          }
-        }
+        listOfNotNull(
+          TopLevelRoutes.Library.screen,
+          book?.let { BookScreen(BookData.External(it)) }
+        )
       }
+      else -> listOf(TopLevelRoutes.Library.screen)
+    }
+  }
+
+  Navigator(initialStack) { NavigatorContent(it) }
+}
+
+@Composable
+fun NavigatorContent(navigator: Navigator) {
+  var hideBottomNavigation by remember { mutableStateOf(false) }
+  val isBottomBarVisible = TopLevelRoutes.isTopLevelRoute(navigator) && !hideBottomNavigation
+
+  val systemUiController = rememberSystemUiController()
+  val navigationBarColor = if (isBottomBarVisible || navigator.isEmpty) {
+    MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation()
+  } else {
+    MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation().copy(alpha = 0.7f)
+  }
+
+  DisposableEffect(navigator.lastItem) {
+    onDispose {
+      hideBottomNavigation = false
+    }
+  }
+
+  SideEffect {
+    systemUiController.setNavigationBarColor(
+      color = navigationBarColor
     )
   }
+
+  val navigationBarControl = NavigationBarControl(
+    show = { hideBottomNavigation = false },
+    hide = { hideBottomNavigation = true }
+  )
+
+  Scaffold(
+    modifier = Modifier.windowInsetsPadding(
+      WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
+    ),
+    content = { innerPadding ->
+      CompositionLocalProvider(LocalNavigationBarControl provides navigationBarControl) {
+        FadeTransition(navigator) { screen ->
+          Box(modifier = Modifier.padding(innerPadding)) {
+            screen.Content()
+          }
+        }
+      }
+    },
+    bottomBar = {
+      AnimatedVisibility(
+        visible = isBottomBarVisible,
+        enter = fadeIn() + slideInVertically { it } +
+          expandVertically(expandFrom = Alignment.Top, clip = false),
+        exit = fadeOut() + slideOutVertically { it } +
+          shrinkVertically(clip = false)
+      ) {
+        Box(
+          modifier = Modifier
+            .navigationBarsPadding()
+            .background(MaterialTheme.colorScheme.surfaceColorAtNavigationBarElevation())
+        ) {
+          NavigationBar {
+            TopLevelRoutes.values.forEach {
+              val isSelected = navigator.lastItem.key == it.screen.key
+
+              NavigationBarItem(
+                icon = {
+                  Icon(
+                    if (isSelected) it.selectedIcon else it.unselectedIcon,
+                    contentDescription = null
+                  )
+                },
+                label = {
+                  Text(
+                    text = stringResource(it.text),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                  )
+                },
+                selected = isSelected,
+                onClick = {
+                  if (!isSelected) {
+                    if (navigator.lastItem is LibraryScreen) {
+                      navigator.push(it.screen)
+                    } else if (it.screen !is LibraryScreen) {
+                      navigator.replace(it.screen)
+                    } else {
+                      navigator.replaceAll(it.screen)
+                    }
+                  }
+                }
+              )
+            }
+          }
+        }
+      }
+    }
+  )
 }
 
 private enum class TopLevelRoutes(

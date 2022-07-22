@@ -17,6 +17,12 @@ SELECT *
 FROM Store
 ORDER BY name COLLATE UNICODE ASC;
 
+findByName:
+SELECT *
+FROM Store
+WHERE name = ?
+LIMIT 1;
+
 findById:
 SELECT *
 FROM Store

@@ -2,6 +2,7 @@ package io.github.alessandrojean.toshokan.service.link
 
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.domain.DomainBook
 import io.github.alessandrojean.toshokan.service.link.LinkProvider.Companion.ISBN_10
 import io.github.alessandrojean.toshokan.service.link.LinkProvider.Companion.ISBN_13
 import io.github.alessandrojean.toshokan.util.toIsbnInformation
@@ -28,6 +29,7 @@ class LinkRepository @Inject constructor() {
       name = R.string.skoob,
       icon = R.drawable.ic_skoob_logo,
       category = LinkCategory.DATABASE,
+      condition = { it.code?.toIsbnInformation()?.country == "BR" },
       urlWithPlaceholder = "https://www.skoob.com.br/livro/lista/busca:$ISBN_13/tipo:isbn"
     ),
     /* Stores */
@@ -74,7 +76,7 @@ class LinkRepository @Inject constructor() {
       category = LinkCategory.STORE,
       condition = { book ->
         book.code?.toIsbnInformation()?.country == "BR" &&
-          book.publisher_name.contains("NewPOP", ignoreCase = true)
+          book.publisher.title?.contains("NewPOP", ignoreCase = true) == true
       },
       urlWithPlaceholder = "https://www.lojanewpop.com.br/buscar?q=$ISBN_13"
     ),
@@ -86,7 +88,7 @@ class LinkRepository @Inject constructor() {
     )
   )
 
-  fun generateBookLinks(book: CompleteBook): List<BookLink> {
+  fun generateBookLinks(book: DomainBook): List<BookLink> {
     return providers.mapNotNull { it.generateUrl(book) }
   }
 

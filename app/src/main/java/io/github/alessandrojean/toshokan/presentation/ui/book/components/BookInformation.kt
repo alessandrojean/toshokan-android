@@ -34,6 +34,9 @@ import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.domain.DateRange
+import io.github.alessandrojean.toshokan.domain.DomainBook
+import io.github.alessandrojean.toshokan.domain.DomainContributor
+import io.github.alessandrojean.toshokan.domain.DomainTag
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
@@ -49,14 +52,16 @@ import java.text.DateFormat
 @Composable
 fun BookInformation(
   modifier: Modifier = Modifier,
-  book: CompleteBook?,
-  contributors: List<BookContributor>,
-  tags: List<Tag>,
+  book: DomainBook?,
+  contributors: List<DomainContributor>,
+  tags: List<DomainTag>,
   hasBookNeighbors: Boolean = false,
+  inLibrary: Boolean,
   color: Color = MaterialTheme.colorScheme.surface,
   tonalElevation: Dp = 6.dp,
   bottomPadding: Dp = 0.dp,
   bottomBarVisible: Boolean = false,
+  onAddToLibraryClick: () -> Unit,
   onReadingClick: () -> Unit,
   onEditClick: () -> Unit,
   onDeleteClick: () -> Unit
@@ -72,8 +77,8 @@ fun BookInformation(
   val isbnInformation by remember(book?.code) {
     derivedStateOf { book?.code?.toIsbnInformation() }
   }
-  val bookRead by remember(book?.reading_count) {
-    derivedStateOf { (book?.reading_count ?: 0) > 0 }
+  val bookRead by remember(book?.readingCount) {
+    derivedStateOf { (book?.readingCount ?: 0) > 0 }
   }
 
   val consumeInsets = if (bottomBarVisible) {
@@ -82,8 +87,8 @@ fun BookInformation(
     Modifier
   }
 
-  val createdAt = remember(book?.created_at) { book?.created_at?.formatToLocaleDate() }
-  val updatedAt = remember(book?.updated_at) { book?.updated_at?.formatToLocaleDate() }
+  val createdAt = remember(book?.createdAt) { book?.createdAt?.formatToLocaleDate() }
+  val updatedAt = remember(book?.updatedAt) { book?.updatedAt?.formatToLocaleDate() }
   val titleParts = remember(book?.title) { book?.title?.toTitleParts() }
 
   var synopsisToggleable by remember { mutableStateOf(false) }
@@ -113,10 +118,12 @@ fun BookInformation(
         placeholder = book == null,
         title = book?.title.orEmpty(),
         authors = remember(bookAuthors) {
-          bookAuthors.joinToString(", ") { it.person_name }
+          bookAuthors.joinToString(", ") { it.name!! }
         },
         isRead = bookRead,
-        isFuture = book?.is_future == true,
+        isFuture = book?.isFuture == true,
+        inLibrary = inLibrary,
+        onAddToLibraryClick = onAddToLibraryClick,
         onReadingClick = onReadingClick,
         onEditClick = onEditClick,
         onDeleteClick = onDeleteClick
@@ -141,7 +148,7 @@ fun BookInformation(
           navigator.push {
             SearchScreen(
               filters = SearchFilters.Incomplete(
-                tags = listOf(tag.id)
+                tags = listOfNotNull(tag.id)
               )
             )
           }
@@ -178,13 +185,14 @@ fun BookInformation(
       }
       BookContributors(
         contributors = contributors,
+        inLibrary = inLibrary,
         containerColor = color,
         tonalElevation = tonalElevation,
         onContributorClick = { contributor ->
           navigator.push {
             SearchScreen(
               filters = SearchFilters.Incomplete(
-                contributors = listOf(contributor.person_id)
+                contributors = listOfNotNull(contributor.personId)
               )
             )
           }
@@ -192,39 +200,40 @@ fun BookInformation(
       )
       BookMetadata(
         enabled = book != null,
-        publisher = book?.publisher_name.orEmpty(),
+        inLibrary = inLibrary,
+        publisher = book?.publisher?.title.orEmpty(),
         hasBookNeighbors = hasBookNeighbors,
         series = titleParts?.title,
         language = remember(isbnInformation) {
           isbnInformation?.language?.toLanguageDisplayName()
         },
-        pageCount = book?.page_count?.takeIf { it > 0 },
-        group = book?.group_name.orEmpty(),
-        dimensions = remember(book?.dimension_width, book?.dimension_height) {
+        pageCount = book?.pageCount?.takeIf { it > 0 },
+        group = book?.group?.title.orEmpty(),
+        dimensions = remember(book?.dimensions?.width, book?.dimensions?.height) {
           context.getString(
             R.string.dimensions_full,
-            book?.dimension_width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
-            book?.dimension_height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
+            book?.dimensions?.width?.toLocaleString { maximumFractionDigits = 1 }.orEmpty(),
+            book?.dimensions?.height?.toLocaleString { maximumFractionDigits = 1 }.orEmpty()
           )
         },
-        labelPrice = remember(book?.label_price_currency, book?.label_price_value) {
-          book?.label_price_value?.toLocaleCurrencyString(book.label_price_currency).orEmpty()
+        labelPrice = remember(book?.labelPrice?.currency, book?.labelPrice?.value) {
+          book?.labelPrice?.value?.toLocaleCurrencyString(book.labelPrice.currency).orEmpty()
         },
-        paidPrice = remember(book?.paid_price_currency, book?.paid_price_value) {
-          book?.paid_price_value?.toLocaleCurrencyString(book.paid_price_currency).orEmpty()
+        paidPrice = remember(book?.paidPrice?.currency, book?.paidPrice?.value) {
+          book?.paidPrice?.value?.toLocaleCurrencyString(book.paidPrice.currency).orEmpty()
         },
-        store = book?.store_name.orEmpty(),
-        boughtAt = remember(book?.bought_at) {
-          book?.bought_at?.formatToLocaleDate(format = DateFormat.LONG)
+        store = book?.store?.title.orEmpty(),
+        boughtAt = remember(book?.boughtAt) {
+          book?.boughtAt?.formatToLocaleDate(format = DateFormat.LONG)
         },
-        latestReading = remember(book?.latest_reading) {
-          book?.latest_reading?.formatToLocaleDate(format = DateFormat.LONG)
+        latestReading = remember(book?.latestReading) {
+          book?.latestReading?.formatToLocaleDate(format = DateFormat.LONG)
         },
         onPublisherClick = {
           navigator.push {
             SearchScreen(
               filters = SearchFilters.Incomplete(
-                publishers = listOf(book!!.publisher_id)
+                publishers = listOfNotNull(book!!.publisher.id)
               )
             )
           }
@@ -234,7 +243,7 @@ fun BookInformation(
             SearchScreen(
               filters = SearchFilters.Incomplete(
                 collections = listOf(
-                  Collection(title = titleParts!!.title, groupId = book!!.group_id)
+                  Collection(title = titleParts!!.title, groupId = book!!.group.id)
                 )
               )
             )
@@ -244,7 +253,7 @@ fun BookInformation(
           navigator.push {
             SearchScreen(
               filters = SearchFilters.Incomplete(
-                groups = listOf(book!!.group_id)
+                groups = listOfNotNull(book!!.group.id)
               )
             )
           }
@@ -253,17 +262,17 @@ fun BookInformation(
           navigator.push {
             SearchScreen(
               filters = SearchFilters.Incomplete(
-                stores = listOfNotNull(book!!.store_id)
+                stores = listOfNotNull(book!!.store.id)
               )
             )
           }
         },
         onBoughtAtClick = {
-          if (book?.bought_at != null) {
+          if (book?.boughtAt != null) {
             navigator.push {
               SearchScreen(
                 filters = SearchFilters.Incomplete(
-                  boughtAt = DateRange(start = book.bought_at, end = book.bought_at)
+                  boughtAt = DateRange(start = book.boughtAt, end = book.boughtAt)
                 )
               )
             }

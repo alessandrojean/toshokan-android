@@ -41,6 +41,18 @@ fun Float.toLocaleString(
 }
 
 fun Float.toLocaleCurrencyString(
+  currency: String,
+  locale: Locale = Locale.getDefault(),
+  options: android.icu.text.NumberFormat.() -> Unit = {}
+): String {
+  return toLocaleCurrencyString(
+    currency = android.icu.util.Currency.getInstance(currency),
+    locale = locale,
+    options = options
+  )
+}
+
+fun Float.toLocaleCurrencyString(
   currency: android.icu.util.Currency,
   locale: Locale = Locale.getDefault(),
   options: android.icu.text.NumberFormat.() -> Unit = {}

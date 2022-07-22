@@ -64,7 +64,7 @@ fun BookCollectionBottomPagination(
           BadgedBox(
             badge = {
               Badge {
-                Text(bookNeighbors!!.count.toString())
+                Text((bookNeighbors?.count ?: 0).toString())
               }
             }
           ) {

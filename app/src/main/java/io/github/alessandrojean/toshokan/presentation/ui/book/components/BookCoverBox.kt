@@ -40,11 +40,12 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import io.github.alessandrojean.toshokan.database.data.Book
+import io.github.alessandrojean.toshokan.domain.DomainBook
 
 @Composable
 fun BookCoverBox(
   modifier: Modifier = Modifier,
-  book: Book?,
+  book: DomainBook?,
   containerColor: Color = MaterialTheme.colorScheme.background,
   topBarHeightDp: Float = 64f,
   bottomOffsetDp: Float = 18f,
@@ -103,7 +104,7 @@ fun BookCoverBox(
         ),
       contentAlignment = Alignment.Center
     ) {
-      if (coverPainter.state is AsyncImagePainter.State.Error || book?.cover_url.isNullOrBlank()) {
+      if (coverPainter.state !is AsyncImagePainter.State.Success || book?.coverUrl.isNullOrBlank()) {
         Icon(
           modifier = Modifier.size(96.dp),
           imageVector = Icons.Outlined.Image,

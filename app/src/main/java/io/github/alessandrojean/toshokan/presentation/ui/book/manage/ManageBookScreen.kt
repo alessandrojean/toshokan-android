@@ -85,6 +85,7 @@ import io.github.alessandrojean.toshokan.database.data.Person
 import io.github.alessandrojean.toshokan.domain.Contributor
 import io.github.alessandrojean.toshokan.domain.CreditRole
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen.BookData
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.ContributorsTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.CoverTab
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.components.InformationTab
@@ -245,7 +246,7 @@ data class ManageBookScreen(
                     manageBookScreenModel.create { bookId ->
                       if (bookId != null) {
                         navigator.popUntil { it is LibraryScreen }
-                        navigator.push(BookScreen(bookId))
+                        navigator.push(BookScreen(BookData.Database(bookId)))
                       }
                     }
                   } else {

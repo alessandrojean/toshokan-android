@@ -27,6 +27,12 @@ import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
 import io.github.alessandrojean.toshokan.domain.Collection
 import io.github.alessandrojean.toshokan.domain.Contributor
+import io.github.alessandrojean.toshokan.domain.DomainBook
+import io.github.alessandrojean.toshokan.domain.DomainContributor
+import io.github.alessandrojean.toshokan.domain.DomainDimensions
+import io.github.alessandrojean.toshokan.domain.DomainPrice
+import io.github.alessandrojean.toshokan.domain.DomainRelation
+import io.github.alessandrojean.toshokan.domain.DomainTag
 import io.github.alessandrojean.toshokan.domain.Price
 import io.github.alessandrojean.toshokan.domain.RankingItem
 import io.github.alessandrojean.toshokan.domain.RawTag
@@ -53,6 +59,10 @@ import javax.inject.Singleton
 class BooksRepository @Inject constructor(
   @ApplicationContext private val context: Context,
   private val database: ToshokanDatabase,
+  private val publishersRepository: PublishersRepository,
+  private val groupsRepository: GroupsRepository,
+  private val storesRepository: StoresRepository,
+  private val peopleRepository: PeopleRepository,
   private val coverCache: CoverCache
 ) {
 
@@ -64,8 +74,45 @@ class BooksRepository @Inject constructor(
     return database.bookQueries.findAllCodes().executeAsList()
   }
 
-  fun findByIdAsFlow(id: Long): Flow<CompleteBook?> {
-    return database.bookQueries.completeBook(id).asFlow().mapToOneOrNull().flowOn(Dispatchers.IO)
+  fun findByIdAsFlow(id: Long): Flow<DomainBook?> {
+    return database.bookQueries.completeBook(id).asFlow().mapToOneOrNull()
+      .map { bookDb ->
+        if (bookDb == null) {
+          return@map null
+        }
+
+        DomainBook(
+          id = bookDb.id,
+          code = bookDb.code,
+          group = DomainRelation(bookDb.group_id, bookDb.group_name),
+          title = bookDb.title,
+          contributors = emptyList(),
+          publisher = DomainRelation(bookDb.publisher_id, bookDb.publisher_name),
+          dimensions = DomainDimensions(bookDb.dimension_width, bookDb.dimension_height),
+          isFuture = bookDb.is_future,
+          labelPrice = DomainPrice(
+            currency = bookDb.label_price_currency.currencyCode,
+            value = bookDb.label_price_value
+          ),
+          paidPrice = DomainPrice(
+            currency = bookDb.paid_price_currency.currencyCode,
+            value = bookDb.paid_price_value
+          ),
+          store = DomainRelation(bookDb.store_id, bookDb.store_name),
+          coverUrl = bookDb.cover_url,
+          boughtAt = bookDb.bought_at,
+          isFavorite = bookDb.is_favorite ?: false,
+          synopsis = bookDb.synopsis,
+          notes = bookDb.notes,
+          tags = emptyList(),
+          readingCount = bookDb.reading_count,
+          latestReading = bookDb.latest_reading,
+          pageCount = bookDb.page_count,
+          createdAt = bookDb.created_at,
+          updatedAt = bookDb.updated_at,
+        )
+      }
+      .flowOn(Dispatchers.IO)
   }
 
   fun findSimpleById(id: Long): Flow<Book?> {
@@ -76,8 +123,19 @@ class BooksRepository @Inject constructor(
     return database.bookQueries.findByCode(code).executeAsOneOrNull()
   }
 
-  fun findBookContributorsAsFlow(id: Long): Flow<List<BookContributor>> {
-    return database.bookCreditQueries.bookContributor(id).asFlow().mapToList().flowOn(Dispatchers.IO)
+  fun findBookContributorsAsFlow(id: Long): Flow<List<DomainContributor>> {
+    return database.bookCreditQueries.bookContributor(id).asFlow().mapToList()
+      .map { contributorsDb ->
+        contributorsDb.map { contributorDb ->
+          DomainContributor(
+            id = contributorDb.id,
+            personId = contributorDb.person_id,
+            name = contributorDb.person_name,
+            role = contributorDb.role
+          )
+        }
+      }
+      .flowOn(Dispatchers.IO)
   }
 
   fun findBookContributors(id: Long): List<BookContributor> {
@@ -88,8 +146,19 @@ class BooksRepository @Inject constructor(
     return database.bookTagQueries.findByBookId(id).executeAsList()
   }
 
-  fun findBookTagsAsFlow(id: Long): Flow<List<Tag>> {
-    return database.bookTagQueries.findByBookId(id).asFlow().mapToList().flowOn(Dispatchers.IO)
+  fun findBookTagsAsFlow(id: Long): Flow<List<DomainTag>> {
+    return database.bookTagQueries.findByBookId(id).asFlow()
+      .mapToList()
+      .map { tagsDb ->
+        tagsDb.map { tagDb ->
+          DomainTag(
+            id = tagDb.id,
+            title = tagDb.name,
+            isNsfw = tagDb.is_nsfw
+          )
+        }
+      }
+      .flowOn(Dispatchers.IO)
   }
 
   fun findReadings(id: Long, descending: Boolean = true): Flow<List<Reading>> {
@@ -241,6 +310,48 @@ class BooksRepository @Inject constructor(
       .flowOn(Dispatchers.IO)
   }
 
+  suspend fun insertDomain(book: DomainBook): Long? = withContext(Dispatchers.IO) {
+    val publisherId = publishersRepository.findByName(book.publisher.title!!)?.id
+      ?: publishersRepository.insert(name = book.publisher.title)
+    val groupId = groupsRepository.findByName(book.group.title!!)?.id
+      ?: groupsRepository.insert(book.group.title)
+    val storeId = storesRepository.findByName(book.store.title!!)?.id
+      ?: storesRepository.insert(book.store.title)
+
+    val contributors = book.contributors.map { contributor ->
+      if (contributor.id != null) {
+        Contributor(personId = contributor.id, role = contributor.role)
+      } else {
+        Contributor(
+          personId = peopleRepository.findByName(contributor.name!!)?.id
+            ?: peopleRepository.insert(contributor.name),
+          role = contributor.role
+        )
+      }
+    }
+
+    insert(
+      code = book.code,
+      title = book.title,
+      volume = book.title.toTitleParts().number,
+      synopsis = book.synopsis,
+      notes = book.notes,
+      publisherId = publisherId!!,
+      groupId = groupId!!,
+      paidPrice = book.paidPrice.toPrice(),
+      labelPrice = book.labelPrice.toPrice(),
+      storeId = storeId!!,
+      boughtAt = book.boughtAt,
+      isFuture = book.isFuture,
+      pageCount = book.pageCount ?: 0,
+      cover = book.coverUrl?.let { BookCover.External(it) },
+      dimensionWidth = book.dimensions.width,
+      dimensionHeight = book.dimensions.height,
+      contributors = contributors,
+      tags = book.tags.map(DomainTag::toRawTag)
+    )
+  }
+
   suspend fun insert(
     code: String?,
     title: String,
@@ -385,7 +496,7 @@ class BooksRepository @Inject constructor(
       }
     }
 
-    val customCoverFile = coverCache.getCustomCoverFile(id)
+    val customCoverFile = coverCache.getCustomCoverFile(id.toString())
 
     val coverResult = runCatching {
       if (customCoverFile.exists() && cover !is BookCover.Custom) {
@@ -407,7 +518,7 @@ class BooksRepository @Inject constructor(
   }
 
   suspend fun deleteCover(id: Long, coverUrl: String?) = withContext(Dispatchers.IO) {
-    if (coverCache.getCustomCoverFile(id).exists()) {
+    if (coverCache.getCustomCoverFile(id.toString()).exists()) {
       coverCache.deleteCustomCover(id)
     } else {
       database.bookQueries.clearCoverUrl(id)

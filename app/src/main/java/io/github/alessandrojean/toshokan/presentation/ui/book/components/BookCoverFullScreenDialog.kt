@@ -42,6 +42,7 @@ import coil.request.ImageRequest
 import coil.size.Size
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.Book
+import io.github.alessandrojean.toshokan.domain.DomainBook
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ZoomableImage
 import io.github.alessandrojean.toshokan.util.extension.bottom
 import io.github.alessandrojean.toshokan.util.extension.top
@@ -51,7 +52,7 @@ import io.github.alessandrojean.toshokan.util.extension.topPadding
 fun BookCoverFullScreenDialog(
   modifier: Modifier = Modifier,
   containerColor: Color = MaterialTheme.colorScheme.background,
-  book: Book?,
+  book: DomainBook?,
   onShareClick: (Bitmap?) -> Unit,
   onSaveClick: (Bitmap?) -> Unit,
   onEditClick: () -> Unit,
@@ -120,37 +121,39 @@ fun BookCoverFullScreenDialog(
           )
         }
 
-        Box {
-          var editExpanded by remember { mutableStateOf(false) }
+        if (book?.id != null) {
+          Box {
+            var editExpanded by remember { mutableStateOf(false) }
 
-          IconButton(
-            enabled = imageState is AsyncImagePainter.State.Success,
-            onClick = { editExpanded = true }
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.MoreVert,
-              contentDescription = stringResource(R.string.action_edit)
-            )
-          }
+            IconButton(
+              enabled = imageState is AsyncImagePainter.State.Success,
+              onClick = { editExpanded = true }
+            ) {
+              Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = stringResource(R.string.action_edit)
+              )
+            }
 
-          DropdownMenu(
-            expanded = editExpanded,
-            onDismissRequest = { editExpanded = false }
-          ) {
-            DropdownMenuItem(
-              text = { Text(stringResource(R.string.action_edit)) },
-              onClick = {
-                onEditClick()
-                editExpanded = false
-              }
-            )
-            DropdownMenuItem(
-              text = { Text(stringResource(R.string.action_delete)) },
-              onClick = {
-                onDeleteClick()
-                editExpanded = false
-              }
-            )
+            DropdownMenu(
+              expanded = editExpanded,
+              onDismissRequest = { editExpanded = false }
+            ) {
+              DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_edit)) },
+                onClick = {
+                  onEditClick()
+                  editExpanded = false
+                }
+              )
+              DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_delete)) },
+                onClick = {
+                  onDeleteClick()
+                  editExpanded = false
+                }
+              )
+            }
           }
         }
 

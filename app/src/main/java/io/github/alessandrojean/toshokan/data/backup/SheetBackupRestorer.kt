@@ -34,7 +34,7 @@ import io.github.alessandrojean.toshokan.repository.PublishersRepository
 import io.github.alessandrojean.toshokan.repository.StoresRepository
 import io.github.alessandrojean.toshokan.repository.TagsRepository
 import io.github.alessandrojean.toshokan.service.cover.BookCover
-import io.github.alessandrojean.toshokan.util.extension.toSheetDate
+import io.github.alessandrojean.toshokan.util.extension.toUtcEpochMilliFromSheet
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.Dispatchers
@@ -77,9 +77,9 @@ class SheetBackupRestorer @AssistedInject constructor(
         return@withContext false
       }
 
-      val backupString = context.contentResolver.openInputStream(uri)!!.source().gzip().buffer()
+      val backupGunzipped = context.contentResolver.openInputStream(uri)!!.source().gzip().buffer()
         .use { it.readByteArray() }
-      val backup = parser.decodeFromByteArray<ToshokanSheet>(backupString)
+      val backup = parser.decodeFromByteArray<ToshokanSheet>(backupGunzipped)
 
       if (backup.library.isEmpty()) {
         throw SheetRestoreException(context.getString(R.string.error_backup_no_books))
@@ -137,7 +137,7 @@ class SheetBackupRestorer @AssistedInject constructor(
         paidPrice = sheetBook.paidPrice.toPrice(),
         labelPrice = sheetBook.labelPrice.toPrice(),
         storeId = storesMap[sheetBook.store]!!,
-        boughtAt = sheetBook.boughtAt?.toSheetDate(),
+        boughtAt = sheetBook.boughtAt?.toUtcEpochMilliFromSheet(),
         isFuture = sheetBook.status == ToshokanSheetStatus.FUTURE,
         cover = sheetBook.coverUrl?.let { BookCover.External(it) },
         dimensionWidth = sheetBook.dimensions.width,
@@ -153,7 +153,7 @@ class SheetBackupRestorer @AssistedInject constructor(
       )
 
       if (sheetBook.status == ToshokanSheetStatus.READ) {
-        booksRepository.insertReading(bookId!!, sheetBook.readAt?.toSheetDate())
+        booksRepository.insertReading(bookId!!, sheetBook.readAt?.toUtcEpochMilliFromSheet())
       }
 
       restoreProgress++

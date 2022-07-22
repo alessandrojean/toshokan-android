@@ -20,6 +20,7 @@ import coil.imageLoader
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.alessandrojean.toshokan.database.data.Book
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.domain.DomainBook
 import io.github.alessandrojean.toshokan.util.storage.DiskUtil
 import java.io.File
 import java.io.IOException
@@ -42,18 +43,34 @@ class CoverCache @Inject constructor(@ApplicationContext private val context: Co
     return getCoverFile(book.cover_url)
   }
 
+  fun getCoverFile(book: CompleteBook): File? {
+    return getCoverFile(book.cover_url)
+  }
+
+  fun getCoverFile(book: DomainBook): File? {
+    return getCoverFile(book.coverUrl)
+  }
+
   fun getCoverFile(coverUrl: String?): File? {
     return coverUrl?.let {
       File(cacheDir, DiskUtil.hashKeyForDisk(it))
     }
   }
 
-  fun getCustomCoverFile(book: Book): File = getCustomCoverFile(book.id)
+  fun getCustomCoverFile(book: DomainBook): File {
+    return if (book.id != null) {
+      getCustomCoverFile(book.id.toString())
+    } else {
+      getCustomCoverFile(book.toString())
+    }
+  }
 
-  fun getCustomCoverFile(book: CompleteBook): File = getCustomCoverFile(book.id)
+  fun getCustomCoverFile(book: Book): File = getCustomCoverFile(book.id.toString())
 
-  fun getCustomCoverFile(id: Long): File {
-    return File(customCoverCacheDir, DiskUtil.hashKeyForDisk(id.toString()))
+  fun getCustomCoverFile(book: CompleteBook): File = getCustomCoverFile(book.id.toString())
+
+  fun getCustomCoverFile(key: String): File {
+    return File(customCoverCacheDir, DiskUtil.hashKeyForDisk(key))
   }
 
   @Throws(IOException::class)
@@ -63,7 +80,7 @@ class CoverCache @Inject constructor(@ApplicationContext private val context: Co
 
   @Throws(IOException::class)
   fun setCustomCoverToCache(bookId: Long, inputStream: InputStream) {
-    getCustomCoverFile(bookId).outputStream().use { output ->
+    getCustomCoverFile(bookId.toString()).outputStream().use { output ->
       inputStream.copyTo(output)
     }
   }
@@ -89,7 +106,7 @@ class CoverCache @Inject constructor(@ApplicationContext private val context: Co
   fun deleteCustomCover(book: Book): Boolean = deleteCustomCover(book.id)
 
   fun deleteCustomCover(bookId: Long): Boolean {
-    return getCustomCoverFile(bookId).let {
+    return getCustomCoverFile(bookId.toString()).let {
       it.exists() && it.delete()
     }
   }

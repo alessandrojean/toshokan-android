@@ -1,6 +1,7 @@
 package io.github.alessandrojean.toshokan.presentation.ui.barcodescanner
 
 import android.Manifest
+import android.os.Parcelable
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.FlashOff
 import androidx.compose.material.icons.outlined.FlashOn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -46,6 +48,7 @@ import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -77,29 +80,88 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import cafe.adriel.voyager.androidx.AndroidScreen
+import cafe.adriel.voyager.hilt.getViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.common.Barcode
 import io.github.alessandrojean.toshokan.R
+import io.github.alessandrojean.toshokan.domain.DomainBook
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen.BookData
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.EnhancedSmallTopAppBar
 import io.github.alessandrojean.toshokan.presentation.ui.isbnlookup.IsbnLookupScreen
 import io.github.alessandrojean.toshokan.service.barcode.BarcodeAnalyser
+import io.github.alessandrojean.toshokan.util.extension.SheetUtils
 import io.github.alessandrojean.toshokan.util.extension.bottomPadding
+import io.github.alessandrojean.toshokan.util.extension.push
+import io.github.alessandrojean.toshokan.util.extension.replace
 import io.github.alessandrojean.toshokan.util.isValidBarcode
+import io.github.alessandrojean.toshokan.util.removeDashes
 import kotlinx.coroutines.guava.await
+import kotlinx.parcelize.Parcelize
+import java.io.Serializable
 import java.util.concurrent.Executors
 
 class BarcodeScannerScreen : AndroidScreen() {
+
+  sealed class BarcodeResult {
+    @Parcelize
+    data class SheetBook(val book: DomainBook) : BarcodeResult(), Parcelable, Serializable
+
+    @Parcelize
+    data class Isbn(val isbn: String) : BarcodeResult(), Parcelable, Serializable
+
+    val code: String
+      get () = when (this) {
+        is SheetBook -> book.code.orEmpty().removeDashes()
+        is Isbn -> isbn.removeDashes()
+      }
+  }
 
   @Composable
   override fun Content() {
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
     val navigator = LocalNavigator.currentOrThrow
+    val viewModel = getViewModel<BarcodeScannerViewModel>()
 
     var enableTorch by rememberSaveable { mutableStateOf(false) }
     var hasFlashUnit by rememberSaveable { mutableStateOf(false) }
+
+    var result by remember { mutableStateOf<BarcodeResult?>(null) }
+
+    var showDuplicateDialog by remember { mutableStateOf(false) }
+    var duplicateId by remember { mutableStateOf<Long?>(null) }
+    var processing by remember { mutableStateOf(false) }
+
+    DuplicateDialog(
+      visible = showDuplicateDialog,
+      onDismiss = { showDuplicateDialog = false },
+      onCreateDuplicate = {
+        showDuplicateDialog = false
+
+        if (navigator.lastItem is BarcodeScannerScreen) {
+          when (result) {
+            is BarcodeResult.SheetBook -> {
+              navigator.replace {
+                BookScreen(BookData.External((result as BarcodeResult.SheetBook).book))
+              }
+            }
+            is BarcodeResult.Isbn -> {
+              navigator.push {
+                IsbnLookupScreen((result as BarcodeResult.Isbn).isbn)
+              }
+            }
+            else -> {}
+          }
+        }
+      },
+      onViewBook = {
+        navigator.replace { BookScreen(BookData.Database(duplicateId!!)) }
+        showDuplicateDialog = false
+      }
+    )
 
     Scaffold(
       topBar = {
@@ -151,13 +213,59 @@ class BarcodeScannerScreen : AndroidScreen() {
                   .padding(innerPadding),
                 enableTorch = enableTorch,
                 onHasFlashUnitDetected = { hasFlashUnit = it },
-                onBarcodeDetected = { barcodes ->
-                  val barcodeValid = barcodes
-                    .filterNot { it.rawValue.isNullOrBlank() }
-                    .firstOrNull { it.rawValue.orEmpty().isValidBarcode() }
+                onBarcodeDetected = barcodeHandle@ { barcodes ->
+                  if (showDuplicateDialog || processing) {
+                    return@barcodeHandle
+                  }
 
-                  if (barcodeValid != null && navigator.lastItem is BarcodeScannerScreen) {
-                    navigator.push(IsbnLookupScreen(barcodeValid.rawValue!!))
+                  val firstBarcode = barcodes.firstOrNull { it.rawBytes != null }
+                    ?: return@barcodeHandle
+
+                  processing = true
+
+                  val sheetBook = SheetUtils.decodeBook(firstBarcode)?.toDomainBook()
+                  val isbnBarcode = firstBarcode.rawValue.orEmpty().takeIf(String::isValidBarcode)
+
+                  result = when {
+                    sheetBook != null -> BarcodeResult.SheetBook(sheetBook)
+                    isbnBarcode != null -> BarcodeResult.Isbn(isbnBarcode)
+                    else -> null
+                  }
+
+                  if (result == null) {
+                    processing = false
+                    return@barcodeHandle
+                  }
+
+                  val existingId = viewModel.checkDuplicates(result!!.code)
+
+                  if (existingId != null) {
+                    duplicateId = existingId
+                    showDuplicateDialog = true
+                    processing = false
+                    return@barcodeHandle
+                  }
+
+                  if (navigator.lastItem is BarcodeScannerScreen) {
+                    when (result) {
+                      is BarcodeResult.SheetBook -> {
+                        processing = false
+
+                        navigator.replace {
+                          BookScreen(BookData.External((result as BarcodeResult.SheetBook).book))
+                        }
+                      }
+                      is BarcodeResult.Isbn -> {
+                        processing = false
+
+                        navigator.push {
+                          IsbnLookupScreen((result as BarcodeResult.Isbn).isbn)
+                        }
+                      }
+                      else -> {
+                        processing = false
+                      }
+                    }
                   }
                 }
               )
@@ -317,7 +425,7 @@ class BarcodeScannerScreen : AndroidScreen() {
   fun Overlay(
     modifier: Modifier = Modifier,
     widthPercentage: Float = 0.7f,
-    aspectRatio: Float = 2f / 1f,
+    aspectRatio: Float = 1f,
     animationDurationMillis: Int = 1_500,
     anchorColor: Color = MaterialTheme.colorScheme.primary,
     containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
@@ -402,6 +510,42 @@ class BarcodeScannerScreen : AndroidScreen() {
           cornerRadius = cornerRadius
         )
       }
+    }
+  }
+
+  @Composable
+  fun DuplicateDialog(
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    onViewBook: () -> Unit,
+    onCreateDuplicate: () -> Unit
+  ) {
+    if (visible) {
+      AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.book_duplicate_title)) },
+        text = { Text(stringResource(R.string.book_duplicate_warning)) },
+        dismissButton = {
+          TextButton(
+            onClick = {
+              onCreateDuplicate.invoke()
+              onDismiss.invoke()
+            }
+          ) {
+            Text(stringResource(R.string.action_create_duplicate))
+          }
+        },
+        confirmButton = {
+          TextButton(
+            onClick = {
+              onViewBook.invoke()
+              onDismiss.invoke()
+            }
+          ) {
+            Text(stringResource(R.string.action_view_book))
+          }
+        }
+      )
     }
   }
 

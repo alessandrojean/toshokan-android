@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
@@ -39,11 +40,13 @@ fun BookBasicInfo(
   authors: String,
   isRead: Boolean,
   isFuture: Boolean,
+  inLibrary: Boolean,
   tonalElevation: Dp = 6.dp,
   buttonRowCorner: Dp = 18.dp,
   buttonRowContentPadding: PaddingValues = PaddingValues(12.dp),
   buttonRowContainerColor: Color = MaterialTheme.colorScheme
     .surfaceVariant.withTonalElevation(tonalElevation),
+  onAddToLibraryClick: () -> Unit,
   onReadingClick: () -> Unit,
   onEditClick: () -> Unit,
   onDeleteClick: () -> Unit
@@ -84,6 +87,22 @@ fun BookBasicInfo(
         disabledContainerColor = buttonRowContainerColor.copy(alpha = 0.25f)
       )
 
+      if (!inLibrary) {
+        ExpandedIconButton(
+          modifier = Modifier.weight(1f),
+          icon = Icons.Outlined.Add,
+          text = stringResource(R.string.action_add_to_library),
+          colors = buttonColors,
+          shape = RoundedCornerShape(
+            topStart = buttonRowCorner,
+            bottomStart = buttonRowCorner
+          ),
+          contentPadding = buttonRowContentPadding,
+          enabled = !placeholder && !inLibrary,
+          onClick = onAddToLibraryClick,
+        )
+      }
+
       ExpandedIconButton(
         modifier = Modifier.weight(1f),
         icon = if (isRead) {
@@ -97,37 +116,48 @@ fun BookBasicInfo(
           stringResource(R.string.book_unread)
         },
         colors = buttonColors,
-        shape = RoundedCornerShape(
-          topStart = buttonRowCorner,
-          bottomStart = buttonRowCorner
-        ),
+        shape = if (inLibrary) {
+          RoundedCornerShape(
+            topStart = buttonRowCorner,
+            bottomStart = buttonRowCorner
+          )
+        } else {
+          RoundedCornerShape(
+            topEnd = buttonRowCorner,
+            bottomEnd = buttonRowCorner
+          )
+        },
         contentPadding = buttonRowContentPadding,
-        enabled = !isFuture && !placeholder,
+        enabled = !isFuture && !placeholder && inLibrary,
         onClick = onReadingClick
       )
-      ExpandedIconButton(
-        modifier = Modifier.weight(1f),
-        icon = Icons.Outlined.Edit,
-        text = stringResource(R.string.action_edit),
-        colors = buttonColors,
-        shape = RectangleShape,
-        contentPadding = buttonRowContentPadding,
-        enabled = !placeholder,
-        onClick = onEditClick
-      )
-      ExpandedIconButton(
-        modifier = Modifier.weight(1f),
-        icon = Icons.Outlined.Delete,
-        text = stringResource(R.string.action_delete),
-        colors = buttonColors,
-        shape = RoundedCornerShape(
-          topEnd = buttonRowCorner,
-          bottomEnd = buttonRowCorner
-        ),
-        contentPadding = buttonRowContentPadding,
-        enabled = !placeholder,
-        onClick = onDeleteClick,
-      )
+
+      if (inLibrary) {
+        ExpandedIconButton(
+          modifier = Modifier.weight(1f),
+          icon = Icons.Outlined.Edit,
+          text = stringResource(R.string.action_edit),
+          colors = buttonColors,
+          shape = RectangleShape,
+          contentPadding = buttonRowContentPadding,
+          enabled = !placeholder && inLibrary,
+          onClick = onEditClick
+        )
+        ExpandedIconButton(
+          modifier = Modifier.weight(1f),
+          icon = Icons.Outlined.Delete,
+          text = stringResource(R.string.action_delete),
+          colors = buttonColors,
+          shape = RoundedCornerShape(
+            topEnd = buttonRowCorner,
+            bottomEnd = buttonRowCorner
+          ),
+          contentPadding = buttonRowContentPadding,
+          enabled = !placeholder && inLibrary,
+          onClick = onDeleteClick,
+        )
+      }
+
     }
   }
 }

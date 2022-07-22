@@ -47,7 +47,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
-import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
@@ -80,8 +79,6 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
     val navigator = LocalNavigator.currentOrThrow
     val history by isbnLookupViewModel.historyFlow.collectAsStateWithLifecycle(emptyList())
 
-    var showDuplicateDialog by remember { mutableStateOf(false) }
-    var duplicateId by remember { mutableStateOf<Long?>(null) }
     val focusManager = LocalFocusManager.current
 
     LifecycleEffect(
@@ -94,24 +91,10 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         ) {
           isbnLookupViewModel.searchQuery = TextFieldValue(isbn, TextRange(isbn.length))
           isbnLookupViewModel.search()
-          isbnLookupViewModel.checkDuplicates()?.let {
-            duplicateId = it
-            showDuplicateDialog = true
-          }
         }
       },
       onDisposed = {
         isbnLookupViewModel.cancelSearch()
-      }
-    )
-
-    DuplicateDialog(
-      visible = showDuplicateDialog,
-      onDismiss = { showDuplicateDialog = false },
-      onCreateDuplicate = { showDuplicateDialog = false },
-      onViewBook = {
-        navigator.replace(BookScreen(bookId = duplicateId!!))
-        showDuplicateDialog = false
       }
     )
 
@@ -154,10 +137,6 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
           onSearchAction = {
             if (internetConnection is ConnectionState.Available) {
               isbnLookupViewModel.search()
-              isbnLookupViewModel.checkDuplicates()?.let {
-                duplicateId = it
-                showDuplicateDialog = true
-              }
             }
           },
           actions = {
@@ -270,42 +249,6 @@ data class IsbnLookupScreen(val isbn: String? = null) : AndroidScreen() {
         }
       }
     )
-  }
-
-  @Composable
-  fun DuplicateDialog(
-    visible: Boolean,
-    onDismiss: () -> Unit,
-    onViewBook: () -> Unit,
-    onCreateDuplicate: () -> Unit
-  ) {
-    if (visible) {
-      AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.book_duplicate_title)) },
-        text = { Text(stringResource(R.string.book_duplicate_warning)) },
-        dismissButton = {
-          TextButton(
-            onClick = {
-              onCreateDuplicate.invoke()
-              onDismiss.invoke()
-            }
-          ) {
-            Text(stringResource(R.string.action_create_duplicate))
-          }
-        },
-        confirmButton = {
-          TextButton(
-            onClick = {
-              onViewBook.invoke()
-              onDismiss.invoke()
-            }
-          ) {
-            Text(stringResource(R.string.action_view_book))
-          }
-        }
-      )
-    }
   }
 
 }

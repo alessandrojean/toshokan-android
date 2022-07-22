@@ -41,16 +41,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.BookContributor
+import io.github.alessandrojean.toshokan.domain.DomainContributor
 import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 
 @Composable
 fun BookContributors(
   modifier: Modifier = Modifier,
-  contributors: List<BookContributor> = emptyList(),
+  contributors: List<DomainContributor> = emptyList(),
+  inLibrary: Boolean,
   minContributors: Int = 4,
   containerColor: Color = MaterialTheme.colorScheme.surface,
   tonalElevation: Dp = 6.dp,
-  onContributorClick: (BookContributor) -> Unit
+  onContributorClick: (DomainContributor) -> Unit
 ) {
   var contributorsExpanded by remember { mutableStateOf(false) }
   val contributorsToggleable by remember(contributors) {
@@ -90,7 +92,7 @@ fun BookContributors(
         visibleContributors.forEach { contributor ->
           BookContributorRow(
             contributor = contributor,
-            onClick = { onContributorClick(contributor) }
+            onClick = { onContributorClick(contributor) }.takeIf { inLibrary }
           )
         }
         if (contributorsToggleable) {
@@ -135,7 +137,7 @@ fun BookContributors(
 @Composable
 fun BookContributorRow(
   modifier: Modifier = Modifier,
-  contributor: BookContributor,
+  contributor: DomainContributor,
   onClick: (() -> Unit)? = null
 ) {
   Row(
@@ -166,7 +168,7 @@ fun BookContributorRow(
     ) {
       Text(
         modifier = Modifier.fillMaxWidth(),
-        text = contributor.person_name,
+        text = contributor.name!!,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
       )

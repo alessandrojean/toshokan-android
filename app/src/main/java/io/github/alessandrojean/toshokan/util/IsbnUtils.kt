@@ -1,6 +1,6 @@
 package io.github.alessandrojean.toshokan.util
 
-val ISBN_REGEX = "^[0-9]{13}$|^[0-9]{9}[0-9xX]$".toRegex()
+val ISBN_REGEX = "^(978|979)[0-9]{10}$|^[0-9]{9}[0-9xX]$".toRegex()
 val ISSN_REGEX = "^[0-9]{7}[0-9xX]$".toRegex()
 val EAN_REGEX = "^[0-9]{13}$".toRegex()
 

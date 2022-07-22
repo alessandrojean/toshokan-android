@@ -22,11 +22,14 @@ import coil.disk.DiskCache
 import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
+import coil.key.Keyer
 import coil.network.HttpException
 import coil.request.Options
 import coil.request.Parameters
 import io.github.alessandrojean.toshokan.data.cache.CoverCache
 import io.github.alessandrojean.toshokan.database.data.Book
+import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.domain.DomainBook
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.suspendCancellableCoroutine
 import logcat.LogPriority
@@ -45,19 +48,26 @@ import java.io.File
 import java.io.IOException
 import kotlin.coroutines.resumeWithException
 
-class BookCoverFetcher(
-  private val book: Book,
+class CoverFetcher<T : Any>(
+  private val entity: T,
+  private val keyer: Keyer<T>,
   private val options: Options,
   private val coverCache: CoverCache,
   private val callFactoryLazy: Lazy<Call.Factory>,
   private val diskCacheLazy: Lazy<DiskCache>
 ) : Fetcher {
 
-  private val diskCacheKey: String? by lazy { BookCoverKeyer().key(book, options) }
+  private val diskCacheKey: String? by lazy { keyer.key(entity, options) }
   private lateinit var url: String
 
   override suspend fun fetch(): FetchResult {
-    val customCoverFile = coverCache.getCustomCoverFile(book)
+    val customCoverFile = when (entity) {
+      is Book -> coverCache.getCustomCoverFile(entity)
+      is CompleteBook -> coverCache.getCustomCoverFile(entity)
+      is DomainBook -> coverCache.getCustomCoverFile(entity)
+      else -> error("Invalid entity type")
+    }
+
     if (customCoverFile.exists()) {
       return fileLoader(customCoverFile)
     }
@@ -79,7 +89,12 @@ class BookCoverFetcher(
   }
 
   private suspend fun httpLoader(): FetchResult {
-    val coverCacheFile = coverCache.getCoverFile(book) ?: error("No cover specified")
+    val coverCacheFile = when (entity) {
+      is Book -> coverCache.getCoverFile(entity)
+      is CompleteBook -> coverCache.getCoverFile(entity)
+      is DomainBook -> coverCache.getCoverFile(entity)
+      else -> error("Invalid entity type")
+    } ?: error("No cover specified")
 
     if (coverCacheFile.exists() && options.diskCachePolicy.readEnabled) {
       return fileLoader(coverCacheFile)
@@ -302,14 +317,15 @@ class BookCoverFetcher(
     File, URL
   }
 
-  class Factory(
+  class Factory<T: Any>(
     private val coverCache: CoverCache,
+    private val keyer: Keyer<T>,
     private val callFactoryLazy: Lazy<Call.Factory>,
     private val diskCacheLazy: Lazy<DiskCache>
-  ) : Fetcher.Factory<Book> {
+  ) : Fetcher.Factory<T> {
 
-    override fun create(data: Book, options: Options, imageLoader: ImageLoader): Fetcher {
-      return BookCoverFetcher(data, options, coverCache, callFactoryLazy, diskCacheLazy)
+    override fun create(data: T, options: Options, imageLoader: ImageLoader): Fetcher {
+      return CoverFetcher(data, keyer, options, coverCache, callFactoryLazy, diskCacheLazy)
     }
 
   }

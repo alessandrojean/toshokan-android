@@ -22,6 +22,7 @@ import io.github.alessandrojean.toshokan.util.extension.toLocaleString
 fun BookMetadata(
   modifier: Modifier = Modifier,
   enabled: Boolean = true,
+  inLibrary: Boolean,
   publisher: String,
   hasBookNeighbors: Boolean,
   series: String? = null,
@@ -62,14 +63,14 @@ fun BookMetadata(
       label = stringResource(R.string.publisher),
       value = publisher,
       enabled = enabled,
-      onClick = onPublisherClick
+      onClick = onPublisherClick.takeIf { inLibrary }
     )
     if (hasBookNeighbors && series != null) {
       BookMetadataRow(
         label = stringResource(R.string.book_series),
         value = series,
         enabled = enabled,
-        onClick = onSeriesClick
+        onClick = onSeriesClick.takeIf { inLibrary }
       )
     }
     language?.let { language ->
@@ -89,7 +90,7 @@ fun BookMetadata(
       label = stringResource(R.string.group),
       value = group,
       enabled = enabled,
-      onClick = onGroupClick
+      onClick = onGroupClick.takeIf { inLibrary }
     )
     BookMetadataRow(
       label = stringResource(R.string.dimensions),
@@ -110,20 +111,20 @@ fun BookMetadata(
       label = stringResource(R.string.store),
       value = store,
       enabled = enabled,
-      onClick = onStoreClick
+      onClick = onStoreClick.takeIf { inLibrary }
     )
     if (boughtAt != null) {
       BookMetadataRow(
         label = stringResource(R.string.bought_at),
         value = boughtAt,
-        onClick = onBoughtAtClick
+        onClick = onBoughtAtClick.takeIf { inLibrary }
       )
     }
     if (latestReading != null) {
       BookMetadataRow(
         label = stringResource(R.string.latest_reading),
         value = latestReading,
-        onClick = onLatestReadingClick
+        onClick = onLatestReadingClick.takeIf { inLibrary }
       )
     }
   }
@@ -135,14 +136,14 @@ fun BookMetadataRow(
   label: String,
   value: String,
   enabled: Boolean = true,
-  onClick: () -> Unit = {}
+  onClick: (() -> Unit)? = null
 ) {
   Column(
     modifier = Modifier
       .fillMaxWidth()
       .clickable(
-        enabled = enabled,
-        onClick = onClick
+        enabled = enabled && onClick != null,
+        onClick = onClick ?: {}
       )
       .padding(horizontal = 24.dp, vertical = 10.dp)
       .then(modifier)

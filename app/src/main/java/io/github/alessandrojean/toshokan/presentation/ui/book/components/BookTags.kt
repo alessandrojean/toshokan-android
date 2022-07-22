@@ -28,15 +28,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowRow
 import io.github.alessandrojean.toshokan.database.data.Tag
+import io.github.alessandrojean.toshokan.domain.DomainTag
 import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 
 @Composable
 fun BookTags(
   modifier: Modifier = Modifier,
-  tags: List<Tag>,
+  tags: List<DomainTag>,
   contentPadding: PaddingValues = PaddingValues(),
   expanded: Boolean = false,
-  onTagClick: (Tag) -> Unit = {}
+  onTagClick: (DomainTag) -> Unit = {}
 ) {
   if (tags.isNotEmpty()) {
     Box(
@@ -65,7 +66,7 @@ fun BookTags(
           horizontalArrangement = Arrangement.spacedBy(8.dp),
           state = rememberLazyListState()
         ) {
-          items(tags, key = { it.id }) { tag ->
+          items(tags) { tag ->
             TagChip(
               tag = tag,
               onClick = { onTagClick(tag) }
@@ -80,14 +81,14 @@ fun BookTags(
 @Composable
 fun TagChip(
   modifier: Modifier = Modifier,
-  tag: Tag,
+  tag: DomainTag,
   contentPadding: PaddingValues = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
   onClick: () -> Unit = {}
 ) {
   TagChip(
     modifier = modifier,
-    name = tag.name,
-    isNsfw = tag.is_nsfw,
+    name = tag.title!!,
+    isNsfw = tag.isNsfw,
     contentPadding = contentPadding,
     onClick = onClick
   )

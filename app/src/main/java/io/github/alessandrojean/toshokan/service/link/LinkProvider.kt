@@ -3,19 +3,20 @@ package io.github.alessandrojean.toshokan.service.link
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
+import io.github.alessandrojean.toshokan.domain.DomainBook
 import io.github.alessandrojean.toshokan.util.isValidIsbn
 import io.github.alessandrojean.toshokan.util.removeDashes
 import io.github.alessandrojean.toshokan.util.toIsbn10
 
 class LinkProvider(
   @StringRes val name: Int,
-  private val condition: (CompleteBook) -> Boolean = { true },
+  private val condition: (DomainBook) -> Boolean = { true },
   @DrawableRes val icon: Int? = null,
   private val urlWithPlaceholder: String,
   val category: LinkCategory = LinkCategory.DATABASE
 ) {
 
-  fun generateUrl(book: CompleteBook): BookLink? {
+  fun generateUrl(book: DomainBook): BookLink? {
     if (!book.code.orEmpty().isValidIsbn() || !condition.invoke(book)) {
       return null
     }

@@ -25,6 +25,12 @@ FROM BookGroup
 WHERE (SELECT count(*) FROM Book WHERE Book.group_id = BookGroup.id) > 0
 ORDER BY sort ASC;
 
+findByName:
+SELECT *
+FROM BookGroup
+WHERE name = ?
+LIMIT 1;
+
 findById:
 SELECT *
 FROM BookGroup

@@ -59,6 +59,7 @@ import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen.BookData
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BoxedCircularProgressIndicator
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.ModalBottomSheet
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItemsFound
@@ -409,7 +410,7 @@ class SearchScreen(private val filters: SearchFilters? = null) : AndroidScreen()
                   state = gridState,
                   results = state.results,
                   onResultClick = {
-                    navigator.push(BookScreen(it.id))
+                    navigator.push(BookScreen(BookData.Database(it.id)))
                   }
                 )
               }

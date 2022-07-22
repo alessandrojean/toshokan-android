@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -58,6 +59,10 @@ import io.github.alessandrojean.toshokan.database.data.BookContributor
 import io.github.alessandrojean.toshokan.database.data.CompleteBook
 import io.github.alessandrojean.toshokan.database.data.Tag
 import io.github.alessandrojean.toshokan.domain.BookNeighbors
+import io.github.alessandrojean.toshokan.domain.DomainBook
+import io.github.alessandrojean.toshokan.domain.DomainContributor
+import io.github.alessandrojean.toshokan.domain.DomainRelation
+import io.github.alessandrojean.toshokan.domain.DomainTag
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.theme.DividerOpacity
 import io.github.alessandrojean.toshokan.util.extension.bottom
@@ -68,15 +73,17 @@ import kotlin.math.min
 @Composable
 fun BookScreenContent(
   modifier: Modifier = Modifier,
-  book: CompleteBook?,
-  simpleBook: Book?,
-  bookContributors: List<BookContributor>,
-  bookTags: List<Tag>,
+  book: DomainBook?,
+  bookContributors: List<DomainContributor>,
+  bookTags: List<DomainTag>,
   bookNeighbors: BookNeighbors?,
+  inLibrary: Boolean,
   showBookNavigation: Boolean = true,
   showLinksButton: Boolean = true,
   bottomBarTonalElevation: Dp = 24.dp,
   onNavigateBackClick: () -> Unit,
+  onAddToLibraryClick: () -> Unit,
+  onShareClick: () -> Unit,
   onReadingClick: () -> Unit,
   onEditClick: () -> Unit,
   onDeleteClick: () -> Unit,
@@ -172,7 +179,7 @@ fun BookScreenContent(
             },
             actions = {
               IconToggleButton(
-                checked = book?.is_favorite == true,
+                checked = book?.isFavorite == true,
                 onCheckedChange = { newValue ->
                   onFavoriteChange(newValue)
                   scope.launch {
@@ -186,19 +193,19 @@ fun BookScreenContent(
                     )
                   }
                 },
-                enabled = book != null,
+                enabled = book?.id != null,
                 colors = IconButtonDefaults.iconToggleButtonColors(
                   contentColor = LocalContentColor.current,
                   checkedContentColor = LocalContentColor.current
                 )
               ) {
                 Icon(
-                  imageVector = if (book?.is_favorite == true) {
+                  imageVector = if (book?.isFavorite == true) {
                     Icons.Filled.Star
                   } else {
                     Icons.Outlined.StarOutline
                   },
-                  contentDescription = if (book?.is_favorite == true) {
+                  contentDescription = if (book?.isFavorite == true) {
                     stringResource(R.string.action_remove_from_favorites)
                   } else {
                     stringResource(R.string.action_add_to_favorites)
@@ -211,6 +218,15 @@ fun BookScreenContent(
                   Icon(
                     imageVector = Icons.Outlined.Link,
                     contentDescription = stringResource(R.string.action_view_links)
+                  )
+                }
+              }
+
+              if (book != null) {
+                IconButton(onClick = onShareClick) {
+                  Icon(
+                    imageVector = Icons.Outlined.Share,
+                    contentDescription = stringResource(R.string.action_share)
                   )
                 }
               }
@@ -242,7 +258,7 @@ fun BookScreenContent(
             .graphicsLayer {
               alpha = coverOpacity
             },
-          book = simpleBook,
+          book = book,
           bottomOffsetDp = coverBottomOffsetDp,
           topBarHeightDp = 52f,
           onImageSuccess = onImageSuccess,
@@ -258,6 +274,8 @@ fun BookScreenContent(
           contributors = bookContributors,
           tags = bookTags,
           hasBookNeighbors = bookNeighbors != null,
+          inLibrary = inLibrary,
+          onAddToLibraryClick = onAddToLibraryClick,
           onReadingClick = onReadingClick,
           onEditClick = onEditClick,
           onDeleteClick = onDeleteClick

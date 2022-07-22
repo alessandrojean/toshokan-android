@@ -68,6 +68,7 @@ import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTona
 import io.github.alessandrojean.toshokan.presentation.extensions.withTonalElevation
 import io.github.alessandrojean.toshokan.presentation.ui.barcodescanner.BarcodeScannerScreen
 import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen
+import io.github.alessandrojean.toshokan.presentation.ui.book.BookScreen.BookData
 import io.github.alessandrojean.toshokan.presentation.ui.book.components.BookDeleteDialog
 import io.github.alessandrojean.toshokan.presentation.ui.book.manage.ManageBookScreen
 import io.github.alessandrojean.toshokan.presentation.ui.core.components.BaseSelectionTopAppBar
@@ -268,7 +269,7 @@ class LibraryScreen : AndroidScreen() {
                     if (selectionMode) {
                       screenModel.toggleSelected(book.id)
                     } else {
-                      navigator.push(BookScreen(book.id))
+                      navigator.push(BookScreen(BookData.Database(book.id)))
                     }
                   },
                   onBookLongClick = { book ->

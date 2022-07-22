@@ -1,5 +1,6 @@
 package io.github.alessandrojean.toshokan.presentation.ui.book
 
+import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -47,6 +48,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.domain.Collection
+import io.github.alessandrojean.toshokan.domain.DomainBook
 import io.github.alessandrojean.toshokan.domain.SearchFilters
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceColorAtNavigationBarElevation
 import io.github.alessandrojean.toshokan.presentation.extensions.surfaceWithTonalElevation
@@ -61,18 +63,35 @@ import io.github.alessandrojean.toshokan.presentation.ui.core.components.NoItems
 import io.github.alessandrojean.toshokan.presentation.ui.search.SearchScreen
 import io.github.alessandrojean.toshokan.presentation.ui.theme.ModalBottomSheetExtraLargeShape
 import io.github.alessandrojean.toshokan.util.extension.collectAsStateWithLifecycle
+import io.github.alessandrojean.toshokan.util.extension.md5
 import io.github.alessandrojean.toshokan.util.extension.push
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
+import java.io.Serializable
 
-data class BookScreen(val bookId: Long) : AndroidScreen() {
+data class BookScreen(val bookData: BookData) : AndroidScreen() {
 
-  override val key = "book_screen_$bookId"
+  override val key = "book_screen_${bookData.identifier}"
+
+  sealed class BookData {
+    @Parcelize
+    data class Database(val bookId: Long) : BookData(), Parcelable, Serializable
+
+    @Parcelize
+    data class External(val book: DomainBook) : BookData(), Parcelable, Serializable
+
+    val identifier: Long
+      get () = when (this) {
+        is Database -> bookId
+        is External -> book.id ?: 0L
+      }
+  }
 
   @Composable
   override fun Content() {
     val bookScreenModel = getScreenModel<BookScreenModel, BookScreenModel.Factory> { factory ->
-      factory.create(bookId)
+      factory.create(bookData)
     }
     val state by bookScreenModel.state.collectAsStateWithLifecycle()
     val resultState = state as? BookScreenModel.State.Result
@@ -143,8 +162,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
       skipHalfExpanded = true
     )
 
-    LaunchedEffect(resultState?.book?.cover_url) {
-      if (resultState?.book?.cover_url.orEmpty().isBlank()) {
+    LaunchedEffect(resultState?.book?.coverUrl) {
+      if (resultState?.book?.coverUrl.orEmpty().isBlank()) {
         palette = null
       }
     }
@@ -165,6 +184,8 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
     BackHandler(linksBottomSheetState.isVisible) {
       scope.launch { linksBottomSheetState.hide() }
     }
+
+    BackHandler(state is BookScreenModel.State.Writing) { }
 
     Box(
       modifier = Modifier.fillMaxSize(),
@@ -206,10 +227,10 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         ) {
           BookScreenContent(
             book = resultState?.book,
-            simpleBook = resultState?.simpleBook,
             bookContributors = resultState?.contributors.orEmpty(),
             bookTags = resultState?.tags.orEmpty(),
             bookNeighbors = resultState?.neighbors,
+            inLibrary = bookScreenModel.inLibrary,
             showBookNavigation = showBookNavigation,
             showLinksButton = resultState?.links.orEmpty().isNotEmpty(),
             bottomBarTonalElevation = bottomBarTonalElevation,
@@ -218,7 +239,17 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
             onLinkClick = {
               scope.launch { linksBottomSheetState.show() }
             },
-            onReadingClick = { navigator.push(ReadingScreen(bookId)) },
+            onAddToLibraryClick = {
+              bookScreenModel.addToLibrary()
+            },
+            onShareClick = {
+              bookScreenModel.shareWebUrl()
+            },
+            onReadingClick = {
+              resultState?.book?.id?.let { bookId ->
+                navigator.push(ReadingScreen(bookId))
+              }
+            },
             onEditClick = {
               if (resultState?.book != null) {
                 navigator.push(
@@ -231,7 +262,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
               navigator.push {
                 val collection = Collection(
                   title = resultState?.book?.title?.toTitleParts()?.title.orEmpty(),
-                  groupId = resultState?.book?.group_id
+                  groupId = resultState?.book?.group?.id
                 )
                 SearchScreen(
                   filters = SearchFilters.Incomplete(
@@ -269,7 +300,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
         exit = fadeOut()
       ) {
         BookCoverFullScreenDialog(
-          book = resultState!!.simpleBook!!,
+          book = resultState!!.book!!,
           onShareClick = { bitmap -> bookScreenModel.shareImage(bitmap, resultState.book!!) },
           onSaveClick = { bitmap -> bookScreenModel.saveImage(bitmap, resultState.book!!) },
           onEditClick = {
@@ -284,7 +315,7 @@ data class BookScreen(val bookId: Long) : AndroidScreen() {
           },
           onDeleteClick = {
             showCoverFullScreenDialog = false
-            bookScreenModel.deleteCover(resultState.book?.cover_url)
+            bookScreenModel.deleteCover(resultState.book?.coverUrl)
           },
           onDismiss = { showCoverFullScreenDialog = false }
         )
