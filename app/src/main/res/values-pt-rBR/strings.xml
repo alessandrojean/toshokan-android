@@ -148,6 +148,9 @@
     <item quantity="one">%s livro</item>
     <item quantity="other">%s livros</item>
   </plurals>
+  <string name="charts">Gráficos</string>
+  <string name="monthly_expense">Gasto mensal</string>
+  <string name="monthly_boughts_and_reads">Livros comprados e lidos por mês</string>
 
   <!-- Books -->
   <string name="information">Informações</string>

@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.patrykandpatryk.vico.core.entry.ChartEntryModelProducer
 import io.github.alessandrojean.toshokan.R
 import io.github.alessandrojean.toshokan.database.data.PeriodStatistics
 import io.github.alessandrojean.toshokan.database.data.Statistics
@@ -54,6 +55,8 @@ fun StatisticsList(
   contentPadding: PaddingValues = PaddingValues(),
   statistics: Statistics,
   periodStatistics: PeriodStatistics,
+  monthlyExpenseProducer: ChartEntryModelProducer,
+  monthlyBoughtsAndReadsProducer: ChartEntryModelProducer,
   currency: Currency,
   startPeriod: Long,
   endPeriod: Long,
@@ -175,6 +178,30 @@ fun StatisticsList(
         icon = Icons.Outlined.Savings,
         showValue = showValue,
         onClick = onShowValueClick
+      )
+    }
+    item {
+      StatisticHeader(
+        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp, start = 16.dp, end = 16.dp),
+        title = stringResource(R.string.charts)
+      )
+    }
+    item("monthly_expense_chart") {
+      MonthlyExpenseChart(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp),
+        chartModelProducer = monthlyExpenseProducer,
+        currency = currency
+      )
+    }
+    item("monthly_boughts_and_reads_chart") {
+      MonthlyBoughtsAndReadsChart(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp),
+        chartModelProducer = monthlyBoughtsAndReadsProducer,
+        currency = currency
       )
     }
     item {

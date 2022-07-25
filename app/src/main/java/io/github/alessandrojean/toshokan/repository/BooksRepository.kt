@@ -41,7 +41,11 @@ import io.github.alessandrojean.toshokan.domain.SortColumn
 import io.github.alessandrojean.toshokan.domain.SortDirection
 import io.github.alessandrojean.toshokan.service.cover.BookCover
 import io.github.alessandrojean.toshokan.util.extension.currentTime
+import io.github.alessandrojean.toshokan.util.extension.firstDay
+import io.github.alessandrojean.toshokan.util.extension.lastDay
+import io.github.alessandrojean.toshokan.util.extension.lastDayOfCurrentMonth
 import io.github.alessandrojean.toshokan.util.extension.toTitleParts
+import io.github.alessandrojean.toshokan.util.extension.toZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -50,6 +54,8 @@ import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import logcat.logcat
 import java.text.Collator
+import java.time.Month
+import java.time.Year
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -229,6 +235,58 @@ class BooksRepository @Inject constructor(
       )
       .asFlow()
       .mapToOne()
+      .flowOn(Dispatchers.IO)
+  }
+
+  fun subscribeToMonthlyExpense(currency: Currency, year: Year): Flow<Map<Month, Float>> {
+    return database.bookQueries
+      .monthlyExpense(
+        currency = currency,
+        startPeriod = year.firstDay,
+        endPeriod = if (year.value == Year.now().value) lastDayOfCurrentMonth else year.lastDay
+      )
+      .asFlow()
+      .mapToList()
+      .map { entries ->
+        entries
+          .map { it.bought_at.toZonedDateTime() to it.paid_price_value }
+          .groupBy({ it.first.month }) { it.second }
+          .mapValues { (_, values) -> values.sum() }
+      }
+      .flowOn(Dispatchers.IO)
+  }
+
+  fun subscribeToMonthlyBoughts(year: Year): Flow<Map<Month, Int>> {
+    return database.bookQueries
+      .monthlyBoughts(
+        startPeriod = year.firstDay,
+        endPeriod = if (year.value == Year.now().value) lastDayOfCurrentMonth else year.lastDay
+      )
+      .asFlow()
+      .mapToList()
+      .map { entries ->
+        entries
+          .map { it.toZonedDateTime() }
+          .groupBy { it.month }
+          .mapValues { (_, values) -> values.size }
+      }
+      .flowOn(Dispatchers.IO)
+  }
+
+  fun subscribeToMonthlyReads(year: Year): Flow<Map<Month, Int>> {
+    return database.bookQueries
+      .monthlyReads(
+        startPeriod = year.firstDay,
+        endPeriod = if (year.value == Year.now().value) lastDayOfCurrentMonth else year.lastDay
+      )
+      .asFlow()
+      .mapToList()
+      .map { entries ->
+        entries
+          .map { it.toZonedDateTime() }
+          .groupBy { it.month }
+          .mapValues { (_, values) -> values.size }
+      }
       .flowOn(Dispatchers.IO)
   }
 

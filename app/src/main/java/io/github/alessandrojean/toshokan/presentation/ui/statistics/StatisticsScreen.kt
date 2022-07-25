@@ -119,6 +119,8 @@ class StatisticsScreen : AndroidScreen() {
                 contentPadding = innerPadding,
                 statistics = state.statistics,
                 periodStatistics = state.periodStatistics,
+                monthlyExpenseProducer = screenModel.monthlyExpenseModelProducer,
+                monthlyBoughtsAndReadsProducer = screenModel.monthlyBoughtsAndReadsModelProducer,
                 currency = screenModel.currency,
                 startPeriod = screenModel.startPeriod,
                 endPeriod = screenModel.endPeriod,

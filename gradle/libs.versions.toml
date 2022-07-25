@@ -4,6 +4,7 @@ hilt = "2.42"
 ktor = "2.0.3"
 okhttp = "4.10.0"
 sqldelight = "1.5.3"
+vico = "1.2.0"
 voyager = "1.0.0-rc02"
 
 [libraries]
@@ -45,7 +46,11 @@ voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", vers
 voyager-androidx = { module = "cafe.adriel.voyager:voyager-androidx", version.ref = "voyager" }
 voyager-hilt = { module = "cafe.adriel.voyager:voyager-hilt", version.ref = "voyager" }
 
+vico-compose = { module = "com.patrykandpatryk.vico:compose", version.ref = "vico" }
+vico-compose-m3 = { module = "com.patrykandpatryk.vico:compose-m3", version.ref = "vico" }
+
 [bundles]
 ktor = ["ktor-client-core", "ktor-client-android", "ktor-client-logging", "ktor-client-contentNegotiation", "ktor-serialization-json"]
 okhttp = ["okhttp-core", "okhttp-logging"]
+vico = ["vico-compose", "vico-compose-m3"]
 voyager = ["voyager-navigator", "voyager-transitions", "voyager-androidx", "voyager-hilt"]

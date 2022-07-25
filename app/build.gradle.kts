@@ -172,6 +172,7 @@ dependencies {
   implementation(libs.subsamplingImageView)
   implementation(libs.bundles.ktor)
   implementation(libs.bundles.okhttp)
+  implementation(libs.bundles.vico)
   implementation(libs.bundles.voyager)
 
   implementation(libs.hilt.android)

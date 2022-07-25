@@ -176,6 +176,9 @@
     <item quantity="one">%s book</item>
     <item quantity="other">%s books</item>
   </plurals>
+  <string name="charts">Charts</string>
+  <string name="monthly_expense">Monthly expense</string>
+  <string name="monthly_boughts_and_reads">Books bought and read per month</string>
 
   <!-- Books -->
   <string name="information">Information</string>

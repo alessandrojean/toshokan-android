@@ -6,9 +6,13 @@ import java.text.DateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Month
+import java.time.MonthDay
+import java.time.Year
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.Calendar
@@ -102,18 +106,35 @@ fun Long.toIsoStringToSheet(formatter: DateTimeFormatter = DateTimeFormatter.ISO
 }
 
 fun Long.toUtcEpochMilli(): Long =
-  LocalDateTime
-    .ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
-    .atZone(ZoneId.systemDefault())
+  toZonedDateTime(ZoneId.systemDefault())
     .withZoneSameInstant(ZoneOffset.UTC)
     .toInstant()
     .toEpochMilli()
 
 fun Long.toLocalEpochMilli(): Long =
-  LocalDateTime
-    .ofInstant(Instant.ofEpochMilli(this), ZoneOffset.UTC)
-    .atZone(ZoneOffset.UTC)
+  toZonedDateTime()
     .withZoneSameInstant(ZoneId.systemDefault())
+    .toInstant()
+    .toEpochMilli()
+
+fun Long.toZonedDateTime(zoneId: ZoneId = ZoneOffset.UTC): ZonedDateTime =
+  LocalDateTime
+    .ofInstant(Instant.ofEpochMilli(this), zoneId)
+    .atZone(zoneId)
+
+val Year.firstDay: Long
+  get () = atDay(1)
+    .atTime(0, 0)
+    .atZone(ZoneId.systemDefault())
+    .withZoneSameInstant(ZoneOffset.UTC)
+    .toInstant()
+    .toEpochMilli()
+
+val Year.lastDay: Long
+  get () = atMonthDay(MonthDay.of(12, 31))
+    .atTime(0, 0)
+    .atZone(ZoneId.systemDefault())
+    .withZoneSameInstant(ZoneOffset.UTC)
     .toInstant()
     .toEpochMilli()
 
