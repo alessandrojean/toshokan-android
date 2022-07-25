@@ -4,7 +4,7 @@ hilt = "2.43"
 ktor = "2.0.3"
 okhttp = "4.10.0"
 sqldelight = "1.5.3"
-vico = "1.2.0"
+vico = "1.3.0"
 voyager = "1.0.0-rc02"
 
 [libraries]
