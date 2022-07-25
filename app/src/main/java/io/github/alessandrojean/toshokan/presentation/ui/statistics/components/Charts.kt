@@ -30,6 +30,7 @@ import com.patrykandpatryk.vico.compose.axis.vertical.startAxis
 import com.patrykandpatryk.vico.compose.chart.Chart
 import com.patrykandpatryk.vico.compose.chart.column.columnChart
 import com.patrykandpatryk.vico.compose.chart.line.lineChart
+import com.patrykandpatryk.vico.compose.chart.line.lineSpec
 import com.patrykandpatryk.vico.compose.component.shapeComponent
 import com.patrykandpatryk.vico.compose.legend.verticalLegend
 import com.patrykandpatryk.vico.compose.legend.verticalLegendItem
@@ -40,6 +41,7 @@ import com.patrykandpatryk.vico.compose.style.currentChartStyle
 import com.patrykandpatryk.vico.core.axis.AxisPosition
 import com.patrykandpatryk.vico.core.axis.formatter.AxisValueFormatter
 import com.patrykandpatryk.vico.core.axis.formatter.DecimalFormatAxisValueFormatter
+import com.patrykandpatryk.vico.core.axis.horizontal.HorizontalAxis
 import com.patrykandpatryk.vico.core.chart.values.ChartValues
 import com.patrykandpatryk.vico.core.component.shape.Shapes
 import com.patrykandpatryk.vico.core.component.text.textComponent
@@ -147,7 +149,7 @@ fun MonthlyExpenseChart(
       chart = lineChart(
         minY = minY.toFloat(),
         maxY = maxY.toFloat(),
-        maxX = maxX
+        maxX = maxX,
       ),
       chartModelProducer = chartModelProducer,
       startAxis = startAxis(
@@ -169,6 +171,7 @@ fun MonthlyExpenseChart(
         ),
         valueFormatter = remember { ShortMonthFormatter() },
         guideline = null,
+        tickPosition = HorizontalAxis.TickPosition.Center()
       ),
     )
   }
