@@ -52,7 +52,7 @@ class LinkRepository @Inject constructor() {
       icon = R.drawable.ic_amazon_logo,
       category = LinkCategory.STORE,
       condition = { it.code?.toIsbnInformation()?.country == "BR" },
-      urlWithPlaceholder = "https://www.amazon.com.br/dp/$ISBN_10"
+      urlWithPlaceholder = "https://www.amazon.com.br/dp/$ISBN_10?m=A1ZZFT5FULY4LN"
     ),
     LinkProvider(
       name = R.string.amazon_es,
