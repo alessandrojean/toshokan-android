@@ -53,13 +53,9 @@ class MagentoCoverProvider @AssistedInject constructor(
     val imageUrl = productImage.attr("content")
       .takeIf { !it.contains("placeholder") } ?: return emptyList()
 
-    val fullImageUrl = imageUrl.replace(CACHE_PATH_REGEX, "/")
+    val fullImageUrl = imageUrl.substringBefore("?")
 
     return listOf(BookCover.Result(source = website.title, imageUrl = fullImageUrl))
-  }
-
-  companion object {
-    private val CACHE_PATH_REGEX = "/cache/[a-f0-9]*/".toRegex()
   }
 
 }
