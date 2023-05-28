@@ -5,7 +5,7 @@ accompanist = "0.24.13-rc"
 material3 = "1.0.0-alpha14"
 
 [libraries]
-activity = "androidx.activity:activity-compose:1.6.0-alpha05"
+activity = "androidx.activity:activity-compose:1.7.2"
 ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 ui-toolingPreview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
