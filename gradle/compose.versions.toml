@@ -11,8 +11,8 @@ ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose
 ui-toolingPreview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 
 material3-core = { module = "androidx.compose.material3:material3", version.ref = "material3" }
-material3-adapter = "com.google.android.material:compose-theme-adapter-3:1.0.14"
-material-core = "com.google.android.material:material:1.7.0-alpha03"
+material3-adapter = "com.google.android.material:compose-theme-adapter-3:1.1.1"
+material-core = "com.google.android.material:material:1.9.0"
 material-icons = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose" }
 
 accompanist-flowLayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist"}
