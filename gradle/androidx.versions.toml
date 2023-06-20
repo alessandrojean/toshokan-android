@@ -1,5 +1,5 @@
 [versions]
-agp = "7.2.1"
+agp = "7.4.2"
 camera = "1.1.0"
 lifecycle = "2.5.0"
 
