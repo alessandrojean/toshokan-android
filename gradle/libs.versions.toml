@@ -21,7 +21,7 @@ aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref
 aboutLibraries-compose = { module = "com.mikepenz:aboutlibraries-compose", version.ref = "aboutlib" }
 aboutLibraries-gradle = { module = "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin", version.ref = "aboutlib" }
 
-android-tools-r8 = "com.android.tools:r8:3.3.28"
+android-tools-r8 = "com.android.tools:r8:3.3.75"
 
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
