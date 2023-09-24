@@ -9,7 +9,7 @@ voyager = "1.0.0-rc02"
 
 [libraries]
 coilCompose = "io.coil-kt:coil-compose:2.1.0"
-composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.9.2"
+composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.9.6"
 desugarJdk = "com.android.tools:desugar_jdk_libs:1.1.5"
 jsoup = "org.jsoup:jsoup:1.15.2"
 logcat = "com.squareup.logcat:logcat:0.1"
