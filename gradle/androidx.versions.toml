@@ -23,7 +23,7 @@ lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel
 lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
 
 paging-runtimeKtx = "androidx.paging:paging-runtime-ktx:3.1.1"
-paging-compose = "androidx.paging:paging-compose:1.0.0-alpha15"
+paging-compose = "androidx.paging:paging-compose:1.0.0-alpha20"
 
 [bundles]
 camera = ["camera-core", "camera-camera2", "camera-lifecycle", "camera-view"]
